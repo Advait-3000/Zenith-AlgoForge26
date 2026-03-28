@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Activity, Brain, ShieldAlert, CheckCircle, FileText, ChevronRight, User, Info, Smartphone, Download } from 'lucide-react';
+import { X, Activity, Brain, ShieldAlert, CheckCircle, FileText, User, Info, Smartphone, Download } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 interface PatientModalProps {
@@ -12,7 +12,6 @@ const PatientModal: React.FC<PatientModalProps> = ({ patientId, onClose }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Disable body scroll when modal is open
     document.body.style.overflow = 'hidden';
     apiService.patients.getReport(patientId).then((res: any) => {
       setReport(res.data);
@@ -27,72 +26,79 @@ const PatientModal: React.FC<PatientModalProps> = ({ patientId, onClose }) => {
   if (loading) return null;
 
   const riskColors = {
-    high: 'text-rose-600 bg-rose-50 border-rose-200 shadow-rose-100',
-    medium: 'text-amber-600 bg-amber-50 border-amber-200 shadow-amber-100',
-    low: 'text-emerald-600 bg-emerald-50 border-emerald-200 shadow-emerald-100',
+    high: 'text-red-700 bg-red-50 border-red-200',
+    medium: 'text-amber-700 bg-amber-50 border-amber-200',
+    low: 'text-emerald-700 bg-emerald-50 border-emerald-200',
   };
 
   const riskBadge = report.riskLevel as keyof typeof riskColors;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-md transition-all animate-in fade-in duration-300">
-      <div className="w-[90%] max-w-5xl h-[90vh] bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col scale-in-center animate-in zoom-in-95 duration-500 border border-white/50 relative">
-        {/* Close Button UI */}
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-all animate-in fade-in duration-300 font-sans">
+      <div className="w-[90%] max-w-5xl h-[90vh] bg-[#F7FEFE] rounded-2xl shadow-xl overflow-hidden flex flex-col scale-in-center animate-in zoom-in-95 duration-500 relative">
         <button
           onClick={onClose}
-          className="absolute top-8 right-8 p-3 bg-slate-50 border border-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 rounded-full transition-all z-20 group active:scale-90"
+          className="absolute top-6 right-6 p-2 bg-white border border-slate-200 text-[#717171] hover:bg-slate-50 hover:text-[#FF7070] rounded-full transition-all z-20"
         >
-          <X size={24} className="group-hover:rotate-90 transition-transform" />
+          <X size={24} />
         </button>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-10 lg:p-14">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Left Column: AI Breakdown */}
-            <div className="lg:col-span-7 space-y-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-primary-100/50 rounded-2xl flex items-center justify-center text-primary-600 shadow-inner">
-                    <User size={32} />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-black text-slate-800 tracking-tighter">
-                      {report.patientInfo.name}
-                    </h2>
-                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 mt-1">
-                      Patient ID: {patientId} <span className="w-1 h-1 bg-slate-300 rounded-full"></span> {report.patientInfo.age} Yrs
-                    </p>
-                  </div>
+        <div className="flex-1 overflow-y-auto mt-4 p-8 lg:p-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-7 space-y-8">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white border border-[#306F6F]/10 rounded-full flex items-center justify-center text-[#306F6F]">
+                  <User size={32} />
+                </div>
+                <div>
+                  <h2 className="text-[28px] font-bold text-[#212121] tracking-tight">
+                    {report.patientInfo.name}
+                  </h2>
+                  <p className="text-[14px] text-[#717171] flex items-center gap-2 mt-1">
+                    ID: {patientId} <span className="w-1 h-1 bg-slate-300 rounded-full"></span> {report.patientInfo.age} Yrs
+                  </p>
                 </div>
               </div>
 
-              <div className={`p-8 rounded-[2rem] border-2 shadow-lg transition-all ${riskColors[riskBadge]}`}>
+              {/* OCR File Viewer Box */}
+              <div className="flex items-center justify-between bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+                 <div className="flex flex-col">
+                    <span className="font-semibold text-[15px] text-[#212121]">Raw Medical Report</span>
+                    <span className="text-[13px] text-[#717171]">OCR Extracted Source Document</span>
+                 </div>
+                 <button className="px-4 py-2 border border-[#306F6F] text-[#306F6F] hover:bg-[#F7FEFE] rounded-lg text-[13px] font-medium transition-colors flex items-center gap-2">
+                    <FileText size={16} /> View Original
+                 </button>
+              </div>
+
+              <div className={`p-6 rounded-2xl border transition-all ${riskColors[riskBadge]}`}>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <Brain className="animate-pulse" size={24} />
-                    <span className="font-black uppercase tracking-widest text-sm">Zenith AI Analysis</span>
+                  <div className="flex items-center gap-2.5">
+                    <Brain size={20} />
+                    <span className="font-semibold text-[15px]">Zenith AI Analysis</span>
                   </div>
-                  <div className="px-4 py-1.5 bg-white border border-current rounded-full font-black text-[10px] uppercase tracking-tighter flex items-center gap-2">
+                  <div className="px-3 py-1 bg-white border border-current rounded-md font-medium text-[13px] capitalize flex items-center gap-2">
                     <ShieldAlert size={14} />
                     {report.riskLevel} Risk
                   </div>
                 </div>
-                <p className="text-lg font-bold leading-relaxed tracking-tight text-slate-800 italic opacity-90">
+                <p className="text-[15px] leading-relaxed font-medium">
                   "{report.aiSummary}"
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <h4 className="flex items-center gap-3 text-sm font-black uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-4">
-                  <Info size={18} className="text-primary-500" />
+              <div className="space-y-4">
+                <h4 className="flex items-center gap-2 text-[15px] font-semibold text-[#212121] border-b border-slate-200 pb-3">
+                  <Info size={18} className="text-[#306F6F]" />
                   Key Clinical Findings
                 </h4>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                   {report.keyFindings.map((finding: string, i: number) => (
-                    <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary-100 transition-colors group">
-                      <div className="w-6 h-6 bg-white rounded-lg flex items-center justify-center text-primary-500 shadow-sm border border-slate-100 group-hover:bg-primary-500 group-hover:text-white transition-all transform group-hover:rotate-12">
-                        <Activity size={12} />
+                    <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-white border border-slate-200 hover:border-[#306F6F] transition-colors">
+                      <div className="mt-0.5 text-[#306F6F]">
+                        <Activity size={16} />
                       </div>
-                      <span className="text-sm font-bold text-slate-700 leading-tight">
+                      <span className="text-[14px] font-medium text-[#212121] leading-tight">
                         {finding}
                       </span>
                     </div>
@@ -100,67 +106,65 @@ const PatientModal: React.FC<PatientModalProps> = ({ patientId, onClose }) => {
                 </div>
               </div>
 
-              <div className="p-8 bg-gradient-to-br from-primary-600 to-primary-500 rounded-[2.5rem] text-white shadow-xl shadow-primary-200">
-                <h4 className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.15em] mb-6 opacity-80">
+              <div className="p-6 bg-[#306F6F] rounded-2xl text-white shadow-md">
+                <h4 className="flex items-center gap-2 text-[15px] font-semibold mb-5">
                   <Smartphone size={18} />
                   AI Recommended Plan
                 </h4>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {report.recommendations.map((rec: string, i: number) => (
-                    <div key={i} className="flex items-center gap-4 bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/20 group hover:translate-x-2 transition-transform cursor-pointer">
-                      <CheckCircle size={20} className="text-primary-100" />
-                      <span className="text-sm font-bold">{rec}</span>
-                      <ChevronRight size={16} className="ml-auto opacity-50 group-hover:opacity-100" />
+                    <div key={i} className="flex items-center gap-3 bg-white/10 p-4 rounded-xl border border-white/20">
+                      <CheckCircle size={18} className="text-[#F7FEFE]" />
+                      <span className="text-[14px] font-medium">{rec}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Vitals & History */}
-            <div className="lg:col-span-5 flex flex-col gap-10">
-              <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 shadow-inner">
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-3">
-                  <Activity size={18} className="text-primary-500" />
-                  Current Vital Indicators
+            <div className="lg:col-span-5 flex flex-col gap-8">
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h4 className="text-[15px] font-semibold text-[#212121] mb-5 flex items-center gap-2">
+                  <Activity size={18} className="text-[#306F6F]" />
+                  Current Vitals
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   {Object.entries(report.patientInfo.vitals).map(([key, val]: any) => (
-                    <div key={key} className="bg-white p-5 rounded-3xl border border-slate-100 flex flex-col items-center group hover:scale-105 transition-transform duration-300 shadow-sm">
-                      <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">{key}</p>
-                      <p className="text-xl font-black text-slate-800 group-hover:text-primary-600 transition-colors uppercase">{val}</p>
+                    <div key={key} className="bg-[#F7FEFE] p-4 rounded-xl border border-slate-100 flex flex-col items-center">
+                      <p className="text-[12px] text-[#717171] mb-1 capitalize">{key}</p>
+                      <p className="text-[18px] font-semibold text-[#212121]">{val}</p>
                     </div>
                   ))}
-                  <div className="bg-white p-5 rounded-3xl border border-slate-100 flex flex-col items-center group hover:scale-105 transition-transform duration-300 shadow-sm">
-                    <p className="text-[10px] font-black uppercase text-slate-400 mb-1 tracking-widest">Blood</p>
-                    <p className="text-xl font-black text-slate-800 group-hover:text-primary-600 transition-colors uppercase">{report.patientInfo.bloodType}</p>
+                  <div className="bg-[#F7FEFE] p-4 rounded-xl border border-slate-100 flex flex-col items-center">
+                    <p className="text-[12px] text-[#717171] mb-1 capitalize">Blood Type</p>
+                    <p className="text-[18px] font-semibold text-[#212121]">{report.patientInfo.bloodType}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-6">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-3">
-                    <FileText size={18} className="text-primary-500" />
-                    Clinical History
+              <div className="flex-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-between mb-5 border-b border-slate-100 pb-3">
+                  <h4 className="text-[15px] font-semibold text-[#212121] flex items-center gap-2">
+                    <FileText size={18} className="text-[#306F6F]" />
+                    History
                   </h4>
-                  <button className="p-2 transition-colors hover:bg-slate-50 rounded-lg group">
-                    <Download size={18} className="text-slate-400 group-hover:text-primary-500" />
+                  <button className="p-1.5 hover:bg-slate-50 rounded-lg">
+                    <Download size={18} className="text-[#A0A0A0]" />
                   </button>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {report.pastReports.map((r: any) => (
-                    <div key={r.id} className="p-5 bg-white border border-slate-100 rounded-[2rem] flex items-center justify-between group hover:border-primary-100 hover:shadow-xl hover:shadow-primary-50/50 transition-all cursor-pointer">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-colors">
-                          <FileText size={20} />
+                    <div key={r.id} className="p-4 bg-[#F7FEFE] border border-slate-100 rounded-xl flex items-center justify-between hover:border-slate-200 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white rounded-lg text-[#306F6F]">
+                          <FileText size={18} />
                         </div>
                         <div>
-                          <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{r.title}</p>
-                          <p className="text-[10px] text-slate-400 font-bold">{r.date}</p>
+                          <p className="text-[14px] font-medium text-[#212121]">{r.title}</p>
+                          <p className="text-[12px] text-[#717171]">{r.date}</p>
                         </div>
                       </div>
-                      <span className={`text-[10px] font-black uppercase px-3 py-1 bg-slate-50 border border-slate-100 text-slate-500 rounded-full group-hover:border-emerald-200 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all`}>
+                      <span className="text-[12px] font-medium px-2.5 py-1 bg-white border border-slate-200 text-[#717171] rounded-md capitalize">
                         {r.result}
                       </span>
                     </div>
@@ -168,9 +172,14 @@ const PatientModal: React.FC<PatientModalProps> = ({ patientId, onClose }) => {
                 </div>
               </div>
 
-              <button className="w-full py-5 bg-slate-800 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-slate-700 transition-all hover:scale-[1.03] active:scale-[0.98] mt-auto">
-                Issue Final Assessment
-              </button>
+              <div className="flex items-center gap-4 mt-auto">
+                <button className="flex-1 py-4 bg-white border border-[#A0A0A0] text-[#717171] hover:border-[#212121] hover:text-[#212121] rounded-[0.75rem] font-semibold text-[15px] transition-colors">
+                  Reschedule
+                </button>
+                <button className="flex-1 py-4 bg-[#306F6F] text-white rounded-[0.75rem] font-semibold text-[15px] hover:opacity-90 transition-opacity">
+                  Final Assessment
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAppDispatch, loginSuccess } from '../../store';
-import logoImg from '../../assets/logo.png';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -28,102 +27,71 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7FEFE] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Background decorations for a dynamic humanised web feel */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary-200/40 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] bg-primary-300/30 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="w-full max-w-[1000px] bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row overflow-hidden relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        
-        {/* Left Side: Dynamic Logo & Brand Column */}
-        <div className="md:w-5/12 bg-primary-500 p-10 md:p-14 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 opacity-90 z-0"></div>
-          {/* Subtle animated background shapes */}
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-white opacity-10 rounded-full blur-2xl"></div>
-          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-primary-300 opacity-20 rounded-full blur-3xl"></div>
-          
-          <div className="relative z-10 flex items-center gap-3">
-             <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg">
-                <img src={logoImg} alt="Cura Logo" className="w-full h-full object-contain" />
-             </div>
-             <span className="text-white text-2xl font-bold tracking-tight">Cura</span>
-          </div>
-
-          <div className="relative z-10 mt-16 md:mt-24 mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4 tracking-tighter">
-              Healthcare, <br />
-              <span className="text-primary-100">humanised.</span>
-            </h2>
-            <p className="text-primary-100 text-sm md:text-base leading-relaxed opacity-90 max-w-sm">
-              Providing exceptional patient care starts with the right tools. Access your dashboard to manage appointments and medical records effortlessly.
-            </p>
-          </div>
-          
-          <div className="relative z-10 flex items-center gap-2 mt-auto">
-             <div className="w-2 h-2 rounded-full bg-white transition-all"></div>
-             <div className="w-2 h-2 rounded-full bg-white/40 transition-all"></div>
-             <div className="w-2 h-2 rounded-full bg-white/40 transition-all"></div>
-          </div>
+    <div className="min-h-screen bg-[#F7FEFE] font-sans flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-[480px]">
+        {/* Header / Back Button Simulation like native app */}
+        <div className="mb-8 cursor-pointer" onClick={() => navigate(-1)}>
+            <ArrowLeft color="#212121" size={24} />
         </div>
 
-        {/* Right Side: Login Form (Matching Native App) */}
-        <div className="md:w-7/12 p-10 md:p-16 flex flex-col justify-center bg-white relative">
-          <div className="mb-10">
-            <h1 className="text-[34px] font-bold text-[#212121] mb-2 font-sans tracking-tight">Log in</h1>
-            <p className="text-[16px] text-[#717171] leading-[22px]">Nice to have you back!</p>
+        <div>
+          <h1 className="text-[34px] font-bold text-[#212121] mb-2 tracking-tight">Log in</h1>
+          <p className="text-[16px] text-[#717171] leading-[22px] mb-10">Nice to have you back!</p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[14px] font-medium text-[#212121] block">Email</label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className={`w-full px-4 py-3.5 bg-white border ${email.length > 0 && !isEmailValid ? 'border-[#FF7070]' : 'border-slate-200'} rounded-[0.75rem] focus:ring-4 focus:ring-[#306F6F]/10 focus:border-[#306F6F] outline-none transition-all text-[16px] text-[#212121] placeholder:text-[#A0A0A0]`}
+              />
+            </div>
+            {email.length > 0 && !isEmailValid && (
+              <p className="text-[#FF7070] text-sm mt-1">Email must contain @</p>
+            )}
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[14px] font-medium text-[#212121] block">Email</label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className={`w-full px-4 py-3.5 bg-white border ${email.length > 0 && !isEmailValid ? 'border-[#FF7070] focus:border-[#FF7070]' : 'border-slate-200 focus:border-primary-500'} rounded-[0.75rem] border-[1.5px] focus:ring-4 focus:ring-primary-500/10 outline-none transition-all text-[16px] text-[#212121] placeholder:text-[#A0A0A0]`}
-                />
-              </div>
-              {email.length > 0 && !isEmailValid && (
-                <p className="text-[#FF7070] text-xs mt-1">Email must contain @</p>
-              )}
+          <div className="space-y-2">
+             <label className="text-[14px] font-medium text-[#212121] block">Password</label>
+             <div className="relative group">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className={`w-full pl-4 pr-12 py-3.5 bg-white border ${password.length > 0 && !isPasswordValid ? 'border-[#FF7070]' : 'border-slate-200'} rounded-[0.75rem] focus:ring-4 focus:ring-[#306F6F]/10 focus:border-[#306F6F] outline-none transition-all text-[16px] text-[#212121] placeholder:text-[#A0A0A0]`}
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] hover:text-[#717171] transition-colors"
+                title="Toggle Password Visibility"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
+            {password.length > 0 && !isPasswordValid && (
+              <p className="text-[#FF7070] text-sm mt-1">Incorrect password. Please try again.</p>
+            )}
+          </div>
 
-            <div className="space-y-2">
-               <label className="text-[14px] font-medium text-[#212121] block">Password</label>
-               <div className="relative group">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className={`w-full pl-4 pr-12 py-3.5 bg-white border ${password.length > 0 && !isPasswordValid ? 'border-[#FF7070] focus:border-[#FF7070]' : 'border-slate-200 focus:border-primary-500'} rounded-[0.75rem] border-[1.5px] focus:ring-4 focus:ring-primary-500/10 outline-none transition-all text-[16px] text-[#212121] placeholder:text-[#A0A0A0]`}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A0A0A0] hover:text-[#717171] transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-              {password.length > 0 && !isPasswordValid && (
-                <p className="text-[#FF7070] text-xs mt-1">Incorrect password. Please try again.</p>
-              )}
-            </div>
+          <div className="flex items-center justify-end pt-2">
+            <Link to="/forgot-password" className="text-[16px] font-semibold text-[#306F6F]">
+              Forgot password?
+            </Link>
+          </div>
 
-            <div className="flex items-center justify-end pt-2">
-              <Link to="/forgot-password" className="text-[16px] font-semibold text-primary-500 hover:text-primary-600 transition-colors">
-                Forgot password?
-              </Link>
-            </div>
-
+          <div className="mt-8">
             <button
               type="submit"
-              disabled={loading || !isFormValid}
-              className={`w-full py-4 bg-primary-500 text-white rounded-[0.75rem] font-semibold text-[16px] shadow-lg shadow-primary-500/20 hover:bg-primary-600 hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-[0.98] flex items-center justify-center gap-3 relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg mt-4 ${
-                loading ? 'opacity-70 cursor-wait' : ''
+              disabled={!isFormValid || loading}
+              className={`w-full py-4 text-white rounded-[0.75rem] font-semibold text-[16px] flex items-center justify-center gap-3 transition-opacity ${
+                !isFormValid || loading ? 'bg-[#A0A0A0] cursor-not-allowed' : 'bg-[#306F6F] hover:opacity-90 active:opacity-80'
               }`}
             >
               {loading ? (
@@ -132,14 +100,38 @@ const Login: React.FC = () => {
                 "Log in"
               )}
             </button>
-          </form>
-
-          <div className="mt-10 flex flex-row items-center justify-center">
-            <span className="text-[16px] text-[#717171]">Are you new here? </span>
-            <Link to="/signup" className="text-[16px] font-semibold text-primary-500 ml-1 hover:text-primary-600">
-              Create account
-            </Link>
           </div>
+        </form>
+
+        <div className="mt-8 relative flex items-center justify-center">
+           <div className="absolute w-full h-px bg-slate-200"></div>
+           <span className="bg-[#F7FEFE] px-4 text-[14px] text-[#A0A0A0] relative z-10 font-medium">Or continue with</span>
+        </div>
+
+        <div className="mt-8 space-y-4">
+           <button className="w-full py-4 bg-white border border-slate-200 text-[#212121] font-semibold rounded-[0.75rem] text-[15px] flex items-center justify-center gap-3 hover:bg-slate-50 transition-colors">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Google
+           </button>
+           <button className="w-full py-4 bg-white border border-slate-200 text-[#212121] font-semibold rounded-[0.75rem] text-[15px] flex items-center justify-center gap-3 hover:bg-slate-50 transition-colors">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M16.365 7.043c-.02-.03-.035-.06-.05-.089-1.065-1.967-3.21-3.219-5.46-3.329-1.99-.098-4.105 1.065-5.325 2.505C4.24 7.641 2.871 10.435 3.355 13.565c.535 3.46 2.651 6.83 5.4 9.175.76.65 1.576 1.256 2.451 1.246 1.085-.015 2.02-.635 3.011-1.076.905-.401 1.83-.82 2.84-.79 1.145.035 2.065.59 2.866 1.206.5.385 1.03.805 1.61 1.085.345.165.735.255 1.135.245.905-.025 1.486-.875 1.866-1.581.825-1.531 1.34-3.161 1.76-4.821v-.01c-1.89-1.086-3.081-3.141-2.911-5.302.16-2.025 1.28-3.801 2.921-4.791h.01c-.695-1.025-1.58-1.866-2.61-2.421-1.226-.665-2.686-.98-4.162-.97-1.11.01-2.22.28-3.176.711z" fill="#212121"/>
+                 <path d="M12.015 1.25a5.138 5.138 0 0 0-1.14 3.7c1.17 0 2.48-.465 3.3-1.325.865-.9 1.325-2.25 1.12-3.48A4.956 4.956 0 0 0 12.015 1.25z" fill="#212121"/>
+              </svg>
+              Apple
+           </button>
+        </div>
+
+        <div className="mt-10 flex flex-row items-center justify-center pb-6">
+          <span className="text-[16px] text-[#717171]">Are you new here? </span>
+          <Link to="/signup" className="text-[16px] font-semibold text-[#306F6F] ml-1">
+            Create account
+          </Link>
         </div>
       </div>
     </div>

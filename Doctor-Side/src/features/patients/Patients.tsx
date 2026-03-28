@@ -13,15 +13,15 @@ const Patients: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-in slide-in-from-right duration-500">
+    <div className="space-y-8 font-sans animate-in fade-in duration-500 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tighter uppercase">Patient Registry</h2>
-          <p className="text-slate-400 font-bold text-sm mt-1">Intelligent monitoring of your clinical cases</p>
+          <h2 className="text-[28px] font-bold text-[#212121] tracking-tight">Patient Registry</h2>
+          <p className="text-[#717171] text-[14px] mt-1">Intelligent monitoring of your clinical cases</p>
         </div>
-        <button className="px-8 py-4 bg-primary-600 text-white rounded-[2rem] font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary-200/50 hover:bg-primary-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+        <button className="px-6 py-3 bg-[#306F6F] text-white rounded-[0.75rem] font-medium text-[14px] hover:bg-opacity-90 active:scale-95 transition-all flex items-center gap-2">
           <UserPlus size={18} />
-          Register New Patient Profile
+          Register New Patient
         </button>
       </div>
 
@@ -30,51 +30,49 @@ const Patients: React.FC = () => {
           <div 
             key={p.id}
             onClick={() => setSelectedPatientId(p.id)}
-            className="group bg-white p-6 rounded-[2.5rem] card-shadow border border-slate-50 hover:border-primary-100 hover:bg-primary-50/10 transition-all cursor-pointer relative overflow-hidden active:scale-95 duration-300"
+            className="group bg-white p-6 rounded-2xl border border-slate-200 hover:border-[#306F6F] hover:shadow-md transition-all cursor-pointer relative overflow-hidden"
           >
-            <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl rounded-full opacity-10 transition-opacity group-hover:opacity-30 ${
-              p.risk === 'high' ? 'bg-rose-500' : p.risk === 'medium' ? 'bg-amber-400' : 'bg-emerald-500'
+            <div className={`absolute top-0 right-0 w-20 h-20 blur-2xl rounded-full opacity-0 transition-opacity group-hover:opacity-20 ${
+              p.risk === 'high' ? 'bg-[#FF7070]' : p.risk === 'medium' ? 'bg-amber-400' : 'bg-[#306F6F]'
             }`}></div>
             
-            <div className="flex items-start justify-between mb-6 relative z-10">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-all group-hover:scale-110 shadow-inner ${
-                p.risk === 'high' ? 'bg-rose-50 text-rose-600' : p.risk === 'medium' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
-              }`}>
+            <div className="flex items-start justify-between mb-5 relative z-10">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-[18px] transition-transform group-hover:scale-110 bg-[#F7FEFE] text-[#306F6F] border border-[#306F6F]/10 uppercase">
                 {p.name.charAt(0)}
               </div>
-              <div className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm ${
-                p.risk === 'high' ? 'bg-rose-500 text-white ring-4 ring-rose-50 animate-pulse' : 
-                p.risk === 'medium' ? 'bg-amber-100 text-amber-700 ring-4 ring-amber-50' : 
-                'bg-emerald-100 text-emerald-700 ring-4 ring-emerald-50'
+              <div className={`px-2.5 py-1 rounded-md text-[12px] font-medium capitalize ${
+                p.risk === 'high' ? 'bg-red-50 text-red-700' : 
+                p.risk === 'medium' ? 'bg-amber-50 text-amber-700' : 
+                'bg-emerald-50 text-emerald-700'
               }`}>
-                {p.risk} Risk Level
+                {p.risk} Risk
               </div>
             </div>
 
-            <div className="space-y-4 relative z-10">
+            <div className="space-y-3 relative z-10">
               <div>
-                <h4 className="font-black text-slate-800 uppercase tracking-tight text-base group-hover:text-primary-600 transition-colors uppercase">{p.name}</h4>
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                <h4 className="font-semibold text-[#212121] text-[16px] group-hover:text-[#306F6F] transition-colors">{p.name}</h4>
+                <div className="flex items-center gap-2 text-[13px] text-[#717171] mt-0.5">
                    <span>ID: {p.id}</span>
-                   <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                   <span>{p.age} Yrs old</span>
+                   <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                   <span>{p.age} Yrs</span>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-50 space-y-3">
-                 <div className="flex items-center gap-3 text-slate-500 hover:text-slate-800 transition-colors">
-                    <Activity size={16} className="text-primary-400 group-hover:text-primary-500 group-hover:animate-bounce duration-500" />
-                    <span className="text-[11px] font-black uppercase tracking-tighter">{p.condition}</span>
+              <div className="pt-3 border-t border-slate-100 space-y-2.5">
+                 <div className="flex items-center gap-2.5 text-[#212121]">
+                    <Activity size={16} className="text-[#306F6F]" />
+                    <span className="text-[14px] font-medium">{p.condition}</span>
                  </div>
-                 <div className="flex items-center gap-3 text-slate-400">
-                    <FileText size={16} className="text-slate-300" />
-                    <span className="text-[10px] font-bold tracking-widest uppercase">Last visit: {p.lastVisit}</span>
+                 <div className="flex items-center gap-2.5 text-[#717171]">
+                    <FileText size={16} className="text-[#A0A0A0]" />
+                    <span className="text-[13px]">Last visit: {p.lastVisit}</span>
                  </div>
               </div>
 
-              <button className="w-full mt-4 py-3 bg-slate-50 border border-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-2xl group-hover:bg-primary-500 group-hover:text-white group-hover:border-primary-400 group-hover:shadow-lg group-hover:shadow-primary-100 transition-all flex items-center justify-center gap-2">
-                 Inspect AI Insights
-                 <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              <button className="w-full mt-2 py-2.5 bg-slate-50 border border-slate-200 text-[#717171] text-[14px] font-medium rounded-lg group-hover:bg-[#306F6F] group-hover:text-white group-hover:border-[#306F6F] transition-all flex items-center justify-center gap-2">
+                 Inspect Insights
+                 <ChevronRight size={16} className="transition-transform" />
               </button>
             </div>
           </div>
