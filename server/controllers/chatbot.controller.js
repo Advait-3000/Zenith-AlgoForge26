@@ -2,7 +2,7 @@ import PatientReport from "../models/reports.model.js";
 import ChatbotLog from "../models/chatbot.model.js";
 import { generatePatientFriendlyResponse } from "../services/chatbot.service.js";
 
-// 🔥 Helper: map risk_level → schema enum
+// 🔥 Helper: map severity
 const mapSeverity = (risk) => {
   if (!risk) return "Normal";
 
@@ -12,7 +12,21 @@ const mapSeverity = (risk) => {
   if (value.includes("medium")) return "Moderate";
   if (value.includes("high")) return "Extreme";
 
-  return "Normal"; // fallback
+  return "Normal";
+};
+
+// 🔥 Simple medical keyword filter
+const isMedicalQuestion = (question) => {
+  const medicalKeywords = [
+    "pain", "fever", "headache", "medicine", "tablet", "doctor",
+    "hospital", "symptom", "disease", "infection", "injury",
+    "blood", "pressure", "sugar", "diabetes", "heart",
+    "cough", "cold", "vomit", "nausea", "treatment"
+  ];
+
+  const q = question.toLowerCase();
+
+  return medicalKeywords.some((word) => q.includes(word));
 };
 
 export const askChatbot = async (req, res) => {
@@ -25,6 +39,14 @@ export const askChatbot = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Question is required",
+      });
+    }
+
+    // ❌ Restrict non-medical questions
+    if (!isMedicalQuestion(question)) {
+      return res.status(200).json({
+        success: false,
+        answer: "Please ask medical-related questions only.",
       });
     }
 
@@ -52,7 +74,7 @@ Do NOT assume medical history.
       `;
     }
 
-    // ✅ Generate AI response (with fallback)
+    // ✅ Generate AI response
     let answer;
 
     try {
@@ -61,10 +83,10 @@ Do NOT assume medical history.
       console.error("AI ERROR:", err.message);
 
       answer =
-        "I'm currently unable to process your request. Please try again in a moment.";
+        "I'm currently unable to process your request. Please try again later.";
     }
 
-    // ✅ Map severity safely (ALWAYS valid enum)
+    // ✅ Map severity
     const severity = mapSeverity(report?.risk_level);
 
     // ✅ Save log
@@ -75,12 +97,12 @@ Do NOT assume medical history.
       ai_action_taken: answer,
     });
 
-    // ✅ Response
     return res.status(200).json({
       success: true,
       answer,
       hasReport: !!report,
     });
+
   } catch (err) {
     console.error("CHATBOT ERROR:", err);
 
