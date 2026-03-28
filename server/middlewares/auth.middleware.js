@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 export const protect = async (req, res, next) => {
   try {
     let token;
+    console.log(0)
     
     // 1️⃣ Get token from header
     if (

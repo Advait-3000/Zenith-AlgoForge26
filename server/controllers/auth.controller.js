@@ -118,3 +118,56 @@ export const login = async (req, res) => {
     });
   }
 };
+
+// 🔄 UPDATE PROFILE
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+console.log(1)
+    const { full_name, password, location_coordinates } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Update name
+    if (full_name) user.full_name = full_name;
+
+    // Update password (if provided)
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password_hash = await bcrypt.hash(password, salt);
+    }
+
+    // Update location (optional)
+    if (location_coordinates && location_coordinates.coordinates) {
+      user.location_coordinates = location_coordinates;
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        location_coordinates: user.location_coordinates,
+      },
+    });
+
+  } catch (err) {
+    console.error("Update Profile Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
