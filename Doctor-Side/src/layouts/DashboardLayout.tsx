@@ -27,6 +27,10 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
   const navigate = useNavigate();
   const location = useLocation();
 
+  const savedUserStr = localStorage.getItem('user');
+  const user = savedUserStr ? JSON.parse(savedUserStr) : null;
+  const initial = user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'D';
+
   return (
     <div className="min-h-screen bg-cura-bg flex overflow-hidden">
       {/* Premium Sidebar */}
@@ -139,15 +143,11 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                 
                 <div className="flex items-center gap-4 pl-4 border-l border-slate-100">
                     <div className="text-right hidden sm:block">
-                        <h4 className="text-sm font-bold text-slate-800">Dr. Julian Ross</h4>
+                        <h4 className="text-sm font-bold text-slate-800">{user?.full_name || 'Dr. Julian Ross'}</h4>
                         <p className="text-xs font-semibold text-cura-primary">Chief Cardiologist</p>
                     </div>
-                    <div className="w-12 h-12 bg-cura-primary/10 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white shadow-cura-soft cursor-pointer hover:border-cura-primary/40 transition-all">
-                        <img 
-                            src="https://img.freepik.com/free-photo/doctor-white-coat-isolated-white_144627-4663.jpg" 
-                            alt="Doctor" 
-                            className="w-full h-full object-cover"
-                        />
+                    <div className="w-12 h-12 bg-cura-primary/10 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white shadow-cura-soft cursor-pointer hover:border-cura-primary/40 transition-all font-black text-xl text-cura-primary">
+                        {initial}
                     </div>
                 </div>
             </div>

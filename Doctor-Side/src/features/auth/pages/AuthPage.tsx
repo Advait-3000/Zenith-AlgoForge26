@@ -8,24 +8,83 @@ import appLogo from '../../../assets/applogo.png';
 const AuthPage: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+          role: 'Doctor'
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.token) {
+           localStorage.setItem('token', data.token);
+        }
+        if (data.user) {
+           localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        navigate('/dashboard');
+      } else {
+        console.error("Login failed:", data);
+        alert(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:3000/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          full_name: regName,
+          email: regEmail,
+          password: regPassword,
+          role: 'Doctor'
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.token) {
+           localStorage.setItem('token', data.token);
+        }
+        if (data.user) {
+           localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        navigate('/setup');
+      } else {
+        console.error("Registration failed:", data);
+        alert(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    } finally {
       setLoading(false);
-      navigate('/setup');
-    }, 1500);
+    }
   };
 
   return (
@@ -81,12 +140,18 @@ const AuthPage: React.FC = () => {
                     placeholder="name@hospital.com" 
                     label="Medical Email"
                     icon={<Mail size={20} />}
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
                   />
                   <Input 
                     type="password" 
                     placeholder="••••••••" 
                     label="Access Password"
                     icon={<Lock size={20} />}
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
                   />
                   
                   <div className="flex justify-end">
@@ -129,18 +194,27 @@ const AuthPage: React.FC = () => {
                     placeholder="Dr. Julian Ross" 
                     label="Full Medical Name"
                     icon={<User size={20} />}
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    required
                   />
                   <Input 
                     type="email" 
                     placeholder="julian@cura.com" 
                     label="Medical Email"
                     icon={<AtSign size={20} />}
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    required
                   />
                   <Input 
                     type="password" 
                     placeholder="••••••••" 
                     label="Security Password"
                     icon={<Lock size={20} />}
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    required
                   />
                   
                   <Button className="w-full h-14 mt-4" isLoading={loading}>

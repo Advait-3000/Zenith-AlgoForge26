@@ -43,16 +43,21 @@ export const ProfilePage: React.FC = () => {
     };
 
     const [isEditingBasic, setIsEditingBasic] = useState(false);
-    const [basicInfo, setBasicInfo] = useState({
-        name: 'Dr. Julian Ross',
-        title: 'Chief Cardiologist',
-        email: 'julian.ross@cura.com',
-        phone: '+1 (555) 0922 411',
-        location: 'New York, USA',
-        hospital: 'St. Maria Medical Center',
-        license: 'NY-MD-90123-922',
-        fee: '$180 / Session',
-        language: 'English (Native)'
+    const [basicInfo, setBasicInfo] = useState(() => {
+        const savedUserStr = localStorage.getItem('user');
+        const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
+        
+        return {
+            name: savedUser?.full_name || 'Dr. Julian Ross',
+            title: 'Chief Cardiologist',
+            email: savedUser?.email || 'julian.ross@cura.com',
+            phone: '+1 (555) 0922 411',
+            location: 'New York, USA',
+            hospital: 'St. Maria Medical Center',
+            license: 'NY-MD-90123-922',
+            fee: '$180 / Session',
+            language: 'English (Native)'
+        };
     });
 
     const handleSlotChange = (day: string, value: string) => {
@@ -61,6 +66,27 @@ export const ProfilePage: React.FC = () => {
 
     const handleBasicChange = (field: string, value: string) => {
         setBasicInfo(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSaveBasicInfo = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            await fetch('http://localhost:3000/auth/updateProfile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({
+                    // Send basic info, adapting to common auth/updateProfile backend schema
+                    ...basicInfo
+                })
+            });
+            setIsEditingBasic(false);
+        } catch (error) {
+            console.error("Failed to update profile", error);
+            setIsEditingBasic(false);
+        }
     };
 
     return (
@@ -73,7 +99,7 @@ export const ProfilePage: React.FC = () => {
                 {isEditingBasic ? (
                     <div className="flex items-center gap-3">
                         <Button variant="outline" className="h-12 px-6 shadow-cura-soft" onClick={() => setIsEditingBasic(false)}>Cancel</Button>
-                        <Button className="h-12 px-6 shadow-cura-soft" onClick={() => setIsEditingBasic(false)}>Save Changes</Button>
+                        <Button className="h-12 px-6 shadow-cura-soft" onClick={handleSaveBasicInfo}>Save Changes</Button>
                     </div>
                 ) : (
                     <Button className="h-12 px-6 shadow-cura-soft" onClick={() => setIsEditingBasic(true)}>
@@ -86,9 +112,6 @@ export const ProfilePage: React.FC = () => {
                 {/* Profile Detail Detail Panel */}
                 <div className="lg:col-span-1 space-y-8">
                     <div className="cura-card p-10 flex flex-col items-center">
-                        <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden border-8 border-slate-50 shadow-cura-float mb-6">
-                            <img src="https://img.freepik.com/free-photo/doctor-white-coat-isolated-white_144627-4663.jpg" className="w-full h-full object-cover" />
-                        </div>
                         {isEditingBasic ? (
                             <div className="w-full space-y-3 text-center mb-1">
                                 <input value={basicInfo.name} onChange={e => handleBasicChange('name', e.target.value)} className="w-full text-center text-xl font-black text-slate-800 border-b border-slate-200 outline-none pb-1 focus:border-cura-primary transition-colors" />
