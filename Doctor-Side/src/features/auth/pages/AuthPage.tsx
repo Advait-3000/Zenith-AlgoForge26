@@ -90,7 +90,7 @@ const AuthPage: React.FC = () => {
                   />
                   
                   <div className="flex justify-end">
-                    <button type="button" className="text-sm font-semibold text-cura-primary hover:text-cura-primary-dark transition-colors">
+                    <button type="button" onClick={() => navigate('/forgot-access')} className="text-sm font-semibold text-cura-primary hover:text-cura-primary-dark transition-colors">
                       Forgot Access?
                     </button>
                   </div>

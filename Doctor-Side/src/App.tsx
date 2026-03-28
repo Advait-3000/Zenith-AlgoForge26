@@ -8,10 +8,13 @@ import { ProfilePage } from './features/doctor/pages/ProfilePage';
 
 import { PatientsPage } from './features/patients/pages/PatientsPage';
 
+import { ForgotAccessPage } from './features/auth/pages/ForgotAccessPage';
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<AuthPage />} />
+      <Route path="/forgot-access" element={<ForgotAccessPage />} />
       <Route path="/setup" element={<DoctorProfileSetup />} />
       
       {/* Dashboard Protected Routes */}
