@@ -1,21 +1,35 @@
-
 import jwt from "jsonwebtoken";
 
-export default function(req, res, next) {
-    // Get token from the header
-    const token = req.header('x-auth-token');
+const authMiddleware = (req, res, next) => {
+  // 1. Get the token from the request headers
+  const authHeader = req.headers.authorization;
 
-    // Check if no token exists
-    if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
-    }
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      message: "Access Denied. No valid token currently provided."
+    });
+  }
 
-    // Verify token
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded.user; // Adds user ID and Role to the request object
-        next(); // Move on to the next function (e.g., accessing the dashboard)
-    } catch (err) {
-        res.status(401).json({ message: 'Token is not valid' });
-    }
+  const token = authHeader.split(" ")[1];
+
+  try {
+    // 2. Cryptographically verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 3. Inject the `id`, `email`, and `role` securely into the request pipeline
+    req.user = decoded;
+
+    // Continue down the chain to the AppWrapper Guards (`isDoctor`, etc.)
+    next();
+
+  } catch (error) {
+    console.error("❌ JWT Error:", error.message);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired session token."
+    });
+  }
 };
+
+export default authMiddleware;

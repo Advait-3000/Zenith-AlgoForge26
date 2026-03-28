@@ -1,27 +1,21 @@
+
 import jwt from "jsonwebtoken";
 
-export default function verifyToken(req, res, next) {
-  try {
-    const authHeader = req.headers.authorization;
+export default function(req, res, next) {
+    // Get token from the header
+    const token = req.header('x-auth-token');
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "No token provided",
-      });
+    // Check if no token exists
+    if (!token) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
-    const token = authHeader.split(" ")[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = decoded;
-
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token",
-    });
-  }
+    // Verify token
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Sets user ID and Role from the flattened payload
+        next(); // Move on to the next function (e.g., accessing the dashboard)
+    } catch (err) {
+        res.status(401).json({ message: 'Token is not valid' });
+    }
 };

@@ -58,7 +58,7 @@ export const register = async (req, res) => {
     console.error("Register Error:", err);
     res.status(500).json({
       success: false,
-      message: "Server error",
+      message: err.message || "Server error",
     });
   }
 };

@@ -1,8 +1,10 @@
 import authRouter from "./routes/auth.router.js";
+import scanRouter from "./routes/scanrouter.js";
 
 export default (app) => {
-  app.use("/auth", authRouter);
+  // Maps to: /api/auth/...
+  app.use("/api/auth", authRouter);
 
-  // protected routes
-//   app.use("/api/chatbot", chatbotRouter);
+  // Maps to: /api/ocr/...
+  app.use("/api/ocr", scanRouter);
 };
