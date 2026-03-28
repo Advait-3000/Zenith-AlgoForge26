@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -120,4 +120,4 @@ userSchema.index({ location_coordinates: "2dsphere" });
 // ✅ Role index (fast filtering)
 userSchema.index({ role: 1 });
 
-module.exports = mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema);
