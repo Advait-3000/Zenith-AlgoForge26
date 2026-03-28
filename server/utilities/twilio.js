@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import twilio from "twilio";
-console.log(0)
+
 const client = twilio(
   process.env.TWILIO_SID,
   process.env.TWILIO_AUTH

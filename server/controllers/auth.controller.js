@@ -127,6 +127,31 @@ export const login = async (req, res) => {
 };
 
 
+// 👤 GET CURRENT USER
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password_hash -otp_code -otp_expiry -otp_attempts -otp_last_sent");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    console.error("Get User Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 // 🔄 UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
