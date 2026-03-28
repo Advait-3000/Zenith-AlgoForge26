@@ -1,1 +1,62 @@
 @import "tailwindcss";
+
+@theme {
+  --color-primary-600: #265a5a;
+  --color-primary-500: #306f6f;
+  --color-primary-400: #428e8e;
+  --color-secondary-600: #0ea5e9;
+  --color-secondary-500: #0ea5e9;
+  --color-accent-teal: #e6f4f4;
+  --color-risk-high: #ef4444;
+  --color-risk-medium: #f59e0b;
+  --color-risk-low: #10b981;
+
+  --rounded-xl: 0.75rem;
+  --rounded-2xl: 1rem;
+  --rounded-full: 9999px;
+}
+
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f7fefe;
+  color: #212121;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f7fefe; /* Very soft light grey background from the native app */
+  color: #212121;
+}
+
+/* WeCare style refinements */
+.card {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.stat-card-border {
+  border-bottom-width: 4px; /* The image has a colored bottom border for stat cards */
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
