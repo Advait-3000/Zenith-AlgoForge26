@@ -1,1 +1,98 @@
 @import "tailwindcss";
+
+@theme {
+  --font-inter: "Inter", sans-serif;
+  
+  --color-cura-primary: #0D9488;
+  --color-cura-primary-dark: #0F766E;
+  --color-cura-primary-light: #2DD4BF;
+  --color-cura-secondary: #0EA5E9;
+  --color-cura-secondary-soft: #F0F9FF;
+  --color-cura-bg: #F8FAFC;
+  --color-cura-card: #FFFFFF;
+  --color-cura-text-main: #1E293B;
+  --color-cura-text-soft: #64748B;
+  --color-cura-border: #E2E8F0;
+  --color-cura-risk-high: #EF4444;
+  --color-cura-risk-medium: #F59E0B;
+  --color-cura-risk-low: #10B981;
+
+  --shadow-cura-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-cura-card: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --shadow-cura-float: 0 20px 40px -8px rgba(0, 0, 0, 0.08), 0 12px 20px -10px rgba(0, 0, 0, 0.04);
+}
+
+@layer base {
+  * {
+    @apply border-cura-border;
+  }
+  body {
+    @apply bg-cura-bg text-cura-text-main font-inter antialiased;
+  }
+  input, select, textarea {
+    @apply focus:ring-2 focus:ring-cura-primary outline-none transition-all duration-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-cura-primary hover:bg-cura-primary-dark text-white px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 active:scale-95 flex items-center justify-center gap-2;
+  }
+  .btn-outline {
+    @apply border-2 border-cura-primary text-cura-primary hover:bg-cura-primary hover:text-white px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 active:scale-95 flex items-center justify-center gap-2;
+  }
+  .cura-card {
+    @apply bg-cura-card rounded-2xl shadow-cura-card hover:shadow-cura-float transition-all duration-300 border border-white/40;
+  }
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-cura-border bg-white focus:border-cura-primary focus:ring-4 focus:ring-cura-primary/10 transition-all duration-200;
+  }
+  
+  /* Auth Flip Animations */
+  .auth-perspective {
+    perspective: 1000px;
+  }
+  .auth-flip-card {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .auth-flip-card.flipped {
+    transform: rotateY(180deg);
+  }
+  .auth-front, .auth-back {
+    backface-visibility: hidden;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+  .auth-back {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+}
+
+/* Custom transitions and animations */
+.fade-up {
+  @apply animate-[fadeUp_0.5s_ease-out_forwards];
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
