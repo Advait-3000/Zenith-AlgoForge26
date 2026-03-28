@@ -1,0 +1,366 @@
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Image, 
+  TextInput, 
+  Modal, 
+  Dimensions 
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { 
+  Calendar, 
+  ChevronDown, 
+  X,
+  Trash2,
+  PencilLine
+} from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+
+const { width, height } = Dimensions.get('window');
+
+const USER_IMG = 'https://img.freepik.com/free-photo/portrait-successful-businessman-wearing-gray-suit-against-concrete-wall_23-2148127025.jpg';
+
+export const EditProfileScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: 'Alexander',
+    lastName: 'Johnson',
+    dob: '05/07/1989',
+    phone: '869 846 534',
+    city: 'Boston, MA',
+    address: 'Boylston St, Building 45, Apartment 3A'
+  });
+
+  const handleCancel = () => {
+    setShowDiscardModal(true);
+  };
+
+  const handleSave = () => {
+    navigation.goBack();
+  };
+
+  const confirmDiscard = () => {
+    setShowDiscardModal(false);
+    navigation.goBack();
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleCancel}>
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Personal information</Text>
+        <TouchableOpacity onPress={handleSave}>
+          <Text style={styles.saveText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Profile Photo */}
+        <View style={styles.photoSection}>
+          <Image source={{ uri: USER_IMG }} style={styles.avatar} />
+          <TouchableOpacity style={styles.deletePhotoBtn}>
+            <Trash2 color="#FF5252" size={18} />
+            <Text style={styles.deletePhotoText}>Delete photo</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Form */}
+        <View style={styles.form}>
+          <View style={[styles.inputGroup, { marginTop: 10 }]}>
+            <Text style={styles.label}>First name</Text>
+            <TextInput 
+              style={styles.input} 
+              value={formData.firstName}
+              onChangeText={(text) => setFormData({...formData, firstName: text})}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Last name</Text>
+            <TextInput 
+              style={styles.input} 
+              value={formData.lastName}
+              onChangeText={(text) => setFormData({...formData, lastName: text})}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Date of birth</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput 
+                style={styles.cleanInput} 
+                value={formData.dob}
+                editable={false}
+              />
+              <Calendar color="#717171" size={24} style={styles.inputIcon} />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Phone number</Text>
+            <View style={styles.inputWrapper}>
+              <View style={styles.countryPicker}>
+                <Image source={{ uri: 'https://flagcdn.com/w40/us.png' }} style={styles.flag} />
+                <Text style={styles.countryCode}>+1</Text>
+                <ChevronDown color="#717171" size={18} />
+              </View>
+              <View style={styles.divider} />
+              <TextInput 
+                style={styles.cleanInput} 
+                value={formData.phone}
+                keyboardType="phone-pad"
+                onChangeText={(text) => setFormData({...formData, phone: text})}
+              />
+              <TouchableOpacity onPress={() => setFormData({...formData, phone: ''})}>
+                <X color="#A0A0A0" size={20} style={styles.inputIcon} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>City</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput 
+                style={styles.cleanInput} 
+                value={formData.city}
+                editable={false}
+              />
+              <ChevronDown color="#717171" size={24} style={styles.inputIcon} />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput 
+              style={styles.input} 
+              value={formData.address}
+              multiline
+              onChangeText={(text) => setFormData({...formData, address: text})}
+            />
+          </View>
+        </View>
+
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+
+      {/* Discard Modal */}
+      <Modal
+        visible={showDiscardModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+           <View style={styles.modalContent}>
+              <View style={styles.modalIconBox}>
+                 <PencilLine color="#FBB03B" size={32} />
+              </View>
+              <Text style={styles.modalTitle}>Discard changes?</Text>
+              <Text style={styles.modalSubtitle}>Unsaved changes will be lost.</Text>
+              
+              <TouchableOpacity style={styles.discardBtn} onPress={confirmDiscard}>
+                 <Text style={styles.discardBtnText}>Yes, discard</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.keepBtn} onPress={() => setShowDiscardModal(false)}>
+                 <Text style={styles.keepBtnText}>No, keep</Text>
+              </TouchableOpacity>
+           </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F7FEFE',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  cancelText: {
+    fontSize: 17,
+    color: '#306F6F',
+  },
+  headerTitle: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  saveText: {
+    fontSize: 17,
+    color: '#306F6F',
+    fontWeight: '700',
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  photoSection: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 15,
+  },
+  deletePhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deletePhotoText: {
+    fontSize: 16,
+    color: '#FF5252',
+    fontWeight: '600',
+  },
+  form: {
+    marginTop: 20,
+  },
+  inputGroup: {
+    marginBottom: 25,
+  },
+  label: {
+    fontSize: 16,
+    color: '#333333',
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#FFFFFF',
+    height: 60,
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    color: '#333333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  cleanInput: {
+    flex: 1,
+    height: 60,
+    fontSize: 16,
+    color: '#333333',
+    paddingHorizontal: 0,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    height: 60,
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  inputIcon: {
+    marginLeft: 10,
+  },
+  countryPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  flag: {
+    width: 28,
+    height: 20,
+    borderRadius: 4,
+  },
+  countryCode: {
+    fontSize: 16,
+    color: '#333333',
+  },
+  divider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E0E8E8',
+    marginHorizontal: 15,
+  },
+  bottomSpacer: {
+    height: 100,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: width * 0.85,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 40,
+    padding: 30,
+    alignItems: 'center',
+  },
+  modalIconBox: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#FFF7E6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#333333',
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#717171',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  discardBtn: {
+    width: '100%',
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#306F6F',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  discardBtnText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  keepBtn: {
+    width: '100%',
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#306F6F',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  keepBtnText: {
+    color: '#306F6F',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+});
