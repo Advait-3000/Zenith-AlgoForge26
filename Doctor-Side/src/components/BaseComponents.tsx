@@ -33,6 +33,7 @@ export const Button: React.FC<ButtonProps> = ({
         'px-6 py-3 rounded-2xl font-semibold transition-all duration-250 active:scale-95 flex items-center justify-center gap-2 relative overflow-hidden ring-4',
         variants[variant],
         isLoading && 'text-transparent pointer-events-none',
+        props.disabled && 'opacity-50 cursor-not-allowed active:scale-100',
         className
       )}
       disabled={isLoading || props.disabled}

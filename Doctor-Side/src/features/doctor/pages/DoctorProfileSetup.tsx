@@ -11,7 +11,6 @@ import {
   ChevronRight, 
   Search,
   CheckCircle2,
-  Calendar,
   X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +24,27 @@ export const DoctorProfileSetup: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    specialization: SPECIALIZATIONS[0],
+    hospital: '',
+    experience: ''
+  });
+  
+  const [selectedDays, setSelectedDays] = useState<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const toggleDay = (day: string) => {
+    setSelectedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  };
+
+  const isStep1Valid = formData.name.trim() !== '' && formData.hospital.trim() !== '' && formData.experience.trim() !== '';
+  const isStep2Valid = selectedDays.length > 0;
+  const isStep3Valid = file !== null;
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
@@ -79,22 +99,47 @@ export const DoctorProfileSetup: React.FC = () => {
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <Input label="Professional Full Name" placeholder="Dr. Julian Ross" />
+                  <Input 
+                    label="Professional Full Name" 
+                    placeholder="Dr. Julian Ross" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                  />
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-cura-text-soft">Primary Specialization</label>
                     <div className="relative">
-                        <select className="w-full bg-white border border-cura-border rounded-2xl px-4 py-3.5 appearance-none focus:border-cura-primary focus:ring-4 focus:ring-cura-primary/5 transition-all text-cura-text-main font-medium cursor-pointer">
-                            {SPECIALIZATIONS.map(s => <option key={s}>{s}</option>)}
+                        <select 
+                            name="specialization"
+                            value={formData.specialization}
+                            onChange={handleInputChange}
+                            className="w-full bg-white border border-cura-border rounded-2xl px-4 py-3.5 appearance-none focus:border-cura-primary focus:ring-4 focus:ring-cura-primary/5 transition-all text-cura-text-main font-medium cursor-pointer"
+                        >
+                            {SPECIALIZATIONS.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <Search className="absolute right-4 top-4 text-cura-text-soft pointer-events-none" size={18} />
                     </div>
                   </div>
-                  <Input label="Hospital / Clinic Name" placeholder="St. Maria Medical Center" icon={<MapPin size={20} />} />
-                  <Input label="Years of Experience" placeholder="8" type="number" />
+                  <Input 
+                    label="Hospital / Clinic Name" 
+                    placeholder="St. Maria Medical Center" 
+                    icon={<MapPin size={20} />} 
+                    name="hospital"
+                    value={formData.hospital}
+                    onChange={handleInputChange}
+                  />
+                  <Input 
+                    label="Years of Experience" 
+                    placeholder="8" 
+                    type="number" 
+                    name="experience"
+                    value={formData.experience}
+                    onChange={handleInputChange}
+                  />
                 </div>
 
                 <div className="flex justify-end pt-8">
-                  <Button className="w-48 h-14" onClick={nextStep}>
+                  <Button className="w-48 h-14" onClick={nextStep} disabled={!isStep1Valid}>
                     Next Step <ChevronRight size={18} />
                   </Button>
                 </div>
@@ -115,20 +160,27 @@ export const DoctorProfileSetup: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                        <div key={d} className="p-4 rounded-3xl border border-cura-border bg-white hover:border-cura-primary hover:bg-cura-primary/5 transition-all cursor-pointer group flex flex-col items-center">
-                            <span className="text-sm font-bold text-slate-400 group-hover:text-cura-primary mb-2">{d}</span>
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => {
+                        const isSelected = selectedDays.includes(d);
+                        return (
+                        <div 
+                          key={d} 
+                          onClick={() => toggleDay(d)}
+                          className={`p-4 rounded-3xl border transition-all cursor-pointer group flex flex-col items-center ${isSelected ? 'border-cura-primary bg-cura-primary/5 shadow-sm ring-2 ring-cura-primary/20' : 'border-cura-border bg-white hover:border-cura-primary/50'}`}
+                        >
+                            <span className={`text-sm font-bold mb-2 transition-colors ${isSelected ? 'text-cura-primary' : 'text-slate-400 group-hover:text-cura-primary/70'}`}>{d}</span>
                             <div className="flex items-center gap-1 text-cura-text-main font-bold">
-                                <Clock size={16} className="text-cura-primary" />
+                                <Clock size={16} className={`transition-colors ${isSelected ? "text-cura-primary" : "text-slate-300"}`} />
                                 9:00 - 17:00
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 <div className="flex items-center justify-between pt-8">
                   <button onClick={prevStep} className="font-bold text-slate-500 hover:text-slate-800 transition-colors px-6">Go Back</button>
-                  <Button className="w-48 h-14" onClick={nextStep}>
+                  <Button className="w-48 h-14" onClick={nextStep} disabled={!isStep2Valid}>
                     Verification <ChevronRight size={18} />
                   </Button>
                 </div>
@@ -186,7 +238,7 @@ export const DoctorProfileSetup: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-8">
                   <button onClick={prevStep} className="font-bold text-slate-500 hover:text-slate-800 transition-colors px-6">Go Back</button>
-                  <Button className="w-48 h-14" onClick={handleFinish} isLoading={loading}>
+                  <Button className="w-48 h-14" onClick={handleFinish} isLoading={loading} disabled={!isStep3Valid}>
                     Complete Profile <Check size={18} />
                   </Button>
                 </div>
