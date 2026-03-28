@@ -65,7 +65,7 @@ export const NotificationSettingsScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notification settings</Text>
         <View style={styles.placeholder} />
@@ -143,3 +143,4 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+

@@ -40,7 +40,7 @@ export const ReviewFormScreen: React.FC = () => {
       >
         <View style={styles.header}>
            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-              <ArrowLeft color="#212121" size={24} />
+              <ArrowLeft stroke="#212121" size={24} />
            </TouchableOpacity>
            <Text style={styles.title}>Review form</Text>
            <View style={{ width: 44 }} />
@@ -59,8 +59,7 @@ export const ReviewFormScreen: React.FC = () => {
            <View style={styles.starRow}>
               {[1, 2, 3, 4, 5].map(star => (
                 <TouchableOpacity key={star} onPress={() => setRating(star)}>
-                  <Star 
-                    color="#306F6F" 
+                  <Star stroke="#306F6F" 
                     fill={rating >= star ? "#306F6F" : "transparent"} 
                     size={40} 
                     style={{ marginRight: 15 }}
@@ -94,7 +93,7 @@ export const ReviewFormScreen: React.FC = () => {
         <View style={styles.modalBg}>
            <View style={styles.modalContent}>
               <View style={styles.successCircle}>
-                 <CheckCircle2 color="#306F6F" size={50} />
+                 <CheckCircle2 stroke="#306F6F" size={50} />
               </View>
               <Text style={styles.modalTitle}>Review Submitted Successfully</Text>
               <Text style={styles.modalSubtitle}>Thank you! We appreciate your feedback.</Text>
@@ -227,3 +226,5 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+
+

@@ -9,12 +9,14 @@ import {
   Platform 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Eye, EyeOff, ScanFace } from 'lucide-react-native';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const LoginScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,35 +36,35 @@ export const LoginScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Log in</Text>
-          <Text style={styles.subtitle}>Nice to have you back!</Text>
+          <Text style={styles.title}>{t('auth.loginTitle')}</Text>
+          <Text style={styles.subtitle}>{t('auth.loginSubtitle')}</Text>
 
           <Input
-            label="Email"
-            placeholder="Enter your email"
+            label={t('auth.emailLabel')}
+            placeholder={t('auth.emailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
-            error={email.length > 0 && !isEmailValid ? 'Email must contain @' : undefined}
+            error={email.length > 0 && !isEmailValid ? t('auth.emailError') : undefined}
           />
 
           <View style={styles.passwordContainer}>
              <Input
-                label="Password"
-                placeholder="Enter your password"
+                label={t('auth.passwordLabel')}
+                placeholder={t('auth.passwordPlaceholder')}
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}
-                error={password.length > 0 && password.length < 8 ? 'Incorrect password. Please try again.' : undefined}
+                error={password.length > 0 && password.length < 8 ? t('auth.passwordError') : undefined}
                 icon={
                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff color="#A0A0A0" size={20} /> : <Eye color="#A0A0A0" size={20} />}
+                      {showPassword ? <EyeOff stroke="#A0A0A0" size={20} /> : <Eye stroke="#A0A0A0" size={20} />}
                     </TouchableOpacity>
                 }
               />
@@ -72,7 +74,7 @@ export const LoginScreen: React.FC = () => {
             style={styles.forgotContainer}
             onPress={() => navigation.navigate('ForgotPassword')}
           >
-            <Text style={styles.forgotText}>Forgot password?</Text>
+            <Text style={styles.forgotText}>{t('auth.forgotPassword')}</Text>
           </TouchableOpacity>
 {/* 
           <TouchableOpacity 
@@ -90,22 +92,22 @@ export const LoginScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <Button
-            title="Log in"
+            title={t('common.login')}
             disabled={!isFormValid}
             onPress={() => navigation.replace('Main')}
           />
           
           {/* <TouchableOpacity style={styles.faceIdContainer}>
              <View style={styles.faceIdIconBox}>
-                <ScanFace color="#A0A0A0" size={48} />
+                <ScanFace stroke="#A0A0A0" size={48} />
              </View>
              <Text style={styles.faceIdText}>Face ID</Text>
           </TouchableOpacity> */}
 
           <View style={styles.registerRow}>
-            <Text style={styles.registerText}>Are you new here? </Text>
+            <Text style={styles.registerText}>{t('auth.newHere')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('CreateAccount')}>
-              <Text style={styles.registerLink}>Create account</Text>
+              <Text style={styles.registerLink}>{t('auth.createAccount')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -213,3 +215,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+

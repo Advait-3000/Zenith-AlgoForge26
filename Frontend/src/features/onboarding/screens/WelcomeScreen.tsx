@@ -7,12 +7,14 @@ import {
   Dimensions, 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
 export const WelcomeScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   return (
@@ -26,17 +28,17 @@ export const WelcomeScreen: React.FC = () => {
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Welcome to CURA!</Text>
-        <Text style={styles.description}>Connect with doctors, manage appointments, access care whenever you need it.</Text>
+        <Text style={styles.title}>{t('welcome.title')}</Text>
+        <Text style={styles.description}>{t('welcome.description')}</Text>
         
         <View style={styles.buttonGroup}>
           <Button
-            title="Create an account"
+            title={t('welcome.createAccount')}
             onPress={() => navigation.navigate('CreateAccount')}
             variant="primary"
           />
           <Button
-            title="Log in"
+            title={t('welcome.login')}
             onPress={() => navigation.navigate('Login')}
             variant="outline"
           />

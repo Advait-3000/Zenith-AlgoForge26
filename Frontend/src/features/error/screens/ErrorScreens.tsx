@@ -22,16 +22,16 @@ const BottomNavMock = () => (
   <View style={styles.navWrapper}>
     <View style={styles.navContainer}>
        <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-          <Home color="#FFFFFF" size={24} />
+          <Home stroke="#FFFFFF" size={24} />
        </TouchableOpacity>
        <TouchableOpacity style={styles.navItem}>
-          <Briefcase color="#306F6F" size={24} />
+          <Briefcase stroke="#306F6F" size={24} />
        </TouchableOpacity>
        <TouchableOpacity style={styles.navItem}>
-          <MessageCircle color="#306F6F" size={28} />
+          <MessageCircle stroke="#306F6F" size={28} />
        </TouchableOpacity>
        <TouchableOpacity style={styles.navItem}>
-          <User color="#306F6F" size={24} />
+          <User stroke="#306F6F" size={24} />
        </TouchableOpacity>
     </View>
   </View>
@@ -42,7 +42,7 @@ export const NoInternetScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconBox}>
-           <WifiOff color="#306F6F" size={48} strokeWidth={1.5} />
+           <WifiOff stroke="#306F6F" size={48} strokeWidth={1.5} />
         </View>
         <Text style={styles.errorTitle}>No internet</Text>
         <Text style={styles.errorSubtitle}>
@@ -146,3 +146,5 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
 });
+
+

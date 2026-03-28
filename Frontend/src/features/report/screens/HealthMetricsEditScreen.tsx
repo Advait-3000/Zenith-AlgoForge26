@@ -14,11 +14,13 @@ import {
   Droplet
 } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { markSectionFilled } from './HealthMetricsScreen';
 
 const { width } = Dimensions.get('window');
 
 export const HealthMetricsEditScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { type } = route.params || { type: 'body' };
@@ -34,27 +36,27 @@ export const HealthMetricsEditScreen: React.FC = () => {
     <View style={styles.form}>
       <View style={styles.row}>
          <View style={styles.halfInput}>
-            <Text style={styles.inputLabel}>Your height (sm)</Text>
+            <Text style={styles.inputLabel}>{t('metrics.fields.height')}</Text>
             <TextInput style={styles.textInput} defaultValue="172" keyboardType="numeric" />
          </View>
          <View style={styles.halfInput}>
-            <Text style={styles.inputLabel}>Your weight (kg)</Text>
+            <Text style={styles.inputLabel}>{t('metrics.fields.weight')}</Text>
             <TextInput style={styles.textInput} defaultValue="85" keyboardType="numeric" />
          </View>
       </View>
 
       <View style={styles.fullInput}>
-         <Text style={styles.inputLabel}>Oxygen Saturation (%)</Text>
+         <Text style={styles.inputLabel}>{t('metrics.fields.oxygen')}</Text>
          <TextInput style={styles.textInput} defaultValue="97" keyboardType="numeric" />
       </View>
 
       <View style={styles.fullInput}>
-         <Text style={styles.inputLabel}>Heart rate (bpm)</Text>
+         <Text style={styles.inputLabel}>{t('metrics.fields.heartRate')}</Text>
          <TextInput style={styles.textInput} defaultValue="77" keyboardType="numeric" />
       </View>
 
       <View style={styles.fullInput}>
-         <Text style={styles.inputLabel}>Blood pressure (mmHg)</Text>
+         <Text style={styles.inputLabel}>{t('metrics.fields.pressure')}</Text>
          <View style={styles.pressureRow}>
            <TextInput style={[styles.textInput, { flex: 1 }]} defaultValue="120" keyboardType="numeric" />
            <Text style={styles.slash}>/</Text>
@@ -62,58 +64,58 @@ export const HealthMetricsEditScreen: React.FC = () => {
          </View>
       </View>
 
-      <Text style={styles.inputLabel}>Blood type</Text>
+      <Text style={styles.inputLabel}>{t('metrics.fields.bloodType')}</Text>
       <View style={styles.bloodTypeGrid}>
         {['O (I)', 'A (II)', 'B (III)', 'AB (IV)'].map(bt => (
            <TouchableOpacity key={bt} style={[styles.btBtn, bt.includes('B') && styles.btBtnActive]}>
-              <Droplet color={bt.includes('B') ? "#FFFFFF" : "#306F6F"} size={24} />
+              <Droplet stroke={bt.includes('B') ? "#FFFFFF" : "#306F6F"} size={24} />
               <Text style={[styles.btText, bt.includes('B') && styles.btTextActive]}>{bt}</Text>
            </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.rhRow}>
-        <TouchableOpacity style={[styles.rhBtn, styles.rhBtnActive]}><Text style={styles.rhTextActive}>Rh +</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.rhBtn}><Text style={styles.rhText}>Rh —</Text></TouchableOpacity>
+        <TouchableOpacity style={[styles.rhBtn, styles.rhBtnActive]}><Text style={styles.rhTextActive}>{t('metrics.edit.rhPositive')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.rhBtn}><Text style={styles.rhText}>{t('metrics.edit.rhNegative')}</Text></TouchableOpacity>
       </View>
     </View>
   );
 
   const renderLifestyleForm = () => (
     <View style={styles.form}>
-      <Text style={styles.inputLabel}>Sleep (h)</Text>
+      <Text style={styles.inputLabel}>{t('metrics.fields.sleep')}</Text>
       <View style={styles.pillGrid}>
         {['<7', '7-8', '>8'].map(p => (
            <TouchableOpacity key={p} style={[styles.pill, p === '7-8' && styles.pillActive]}><Text style={[styles.pillText, p === '7-8' && styles.pillTextActive]}>{p}</Text></TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.inputLabel}>Water intake (l)</Text>
+      <Text style={styles.inputLabel}>{t('metrics.fields.water')}</Text>
       <View style={styles.pillGrid}>
         {['<1', '1-1,5', '>1,5'].map(p => (
            <TouchableOpacity key={p} style={[styles.pill, p === '1-1,5' && styles.pillActive]}><Text style={[styles.pillText, p === '1-1,5' && styles.pillTextActive]}>{p}</Text></TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.inputLabel}>Smoking</Text>
+      <Text style={styles.inputLabel}>{t('metrics.fields.smoking')}</Text>
       <View style={styles.pillGrid}>
         {['Yes', 'No', 'Occasionally'].map(p => (
-           <TouchableOpacity key={p} style={[styles.pill, p === 'No' && styles.pillActive]}><Text style={[styles.pillText, p === 'No' && styles.pillTextActive]}>{p}</Text></TouchableOpacity>
+           <TouchableOpacity key={p} style={[styles.pill, p === 'No' && styles.pillActive]}><Text style={[styles.pillText, p === 'No' && styles.pillTextActive]}>{t(`metrics.edit.smokingValues.${p.toLowerCase()}`)}</Text></TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.inputLabel}>Alcohol</Text>
+      <Text style={styles.inputLabel}>{t('metrics.fields.alcohol')}</Text>
       <View style={styles.pillGrid}>
         {['Yes', 'No', 'Occasionally'].map(p => (
-           <TouchableOpacity key={p} style={[styles.pill, p === 'Occasionally' && styles.pillActive]}><Text style={[styles.pillText, p === 'Occasionally' && styles.pillTextActive]}>{p}</Text></TouchableOpacity>
+           <TouchableOpacity key={p} style={[styles.pill, p === 'Occasionally' && styles.pillActive]}><Text style={[styles.pillText, p === 'Occasionally' && styles.pillTextActive]}>{t(`metrics.edit.alcoholValues.${p.toLowerCase()}`)}</Text></TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.inputLabel}>Activity Level</Text>
+      <Text style={styles.inputLabel}>{t('metrics.fields.activity')}</Text>
       <View style={styles.activityGrid}>
-        <TouchableOpacity style={styles.activityBtn}><Text style={styles.activityText}>Light (sports 1-3 days a week)</Text></TouchableOpacity>
-        <TouchableOpacity style={[styles.activityBtn, styles.activityBtnActive]}><Text style={styles.activityTextActive}>Moderate (sports 3-5 days a week)</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.activityBtn}><Text style={styles.activityText}>Very Active (sports 6-7 days a week)</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.activityBtn}><Text style={styles.activityText}>{t('metrics.edit.activityLevels.light')}</Text></TouchableOpacity>
+        <TouchableOpacity style={[styles.activityBtn, styles.activityBtnActive]}><Text style={styles.activityTextActive}>{t('metrics.edit.activityLevels.moderate')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.activityBtn}><Text style={styles.activityText}>{t('metrics.edit.activityLevels.active')}</Text></TouchableOpacity>
       </View>
     </View>
   );
@@ -121,11 +123,11 @@ export const HealthMetricsEditScreen: React.FC = () => {
   const renderAnamnesisForm = () => (
     <View style={styles.form}>
       <View style={styles.fullInput}>
-         <Text style={styles.inputLabel}>Chronic conditions</Text>
+         <Text style={styles.inputLabel}>{t('metrics.fields.chronic')}</Text>
          <TextInput style={styles.textInput} defaultValue="Migraines" />
       </View>
       <View style={styles.fullInput}>
-         <Text style={styles.inputLabel}>Allergies</Text>
+         <Text style={styles.inputLabel}>{t('metrics.fields.allergies')}</Text>
          <TextInput style={styles.textInput} defaultValue="Peanuts" />
       </View>
     </View>
@@ -133,22 +135,22 @@ export const HealthMetricsEditScreen: React.FC = () => {
 
   const renderNotesForm = () => (
     <View style={styles.form}>
-      <Text style={styles.inputLabel}>Clinical Notes</Text>
+      <Text style={styles.inputLabel}>{t('metrics.edit.notes')}</Text>
       <TextInput 
         style={[styles.textInput, { height: 200, textAlignVertical: 'top', paddingTop: 15 }]} 
         multiline
-        placeholder="Enter your notes here..."
+        placeholder={t('metrics.edit.notesPlaceholder')}
       />
     </View>
   );
 
   const getTitle = () => {
     switch(type) {
-      case 'body': return 'Body parameters';
-      case 'lifestyle': return 'Lifestyle';
-      case 'anamnesis': return 'Anamnesis';
-      case 'notes': return 'Anamnesis'; // Based on requirements for a "similar screen"
-      default: return 'Health metrics';
+      case 'body': return t('metrics.sections.body');
+      case 'lifestyle': return t('metrics.sections.lifestyle');
+      case 'anamnesis': return t('metrics.sections.anamnesis');
+      case 'notes': return t('metrics.sections.notes'); 
+      default: return t('metrics.title');
     }
   };
 
@@ -156,11 +158,11 @@ export const HealthMetricsEditScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelText}>Cancel</Text>
+          <Text style={styles.cancelText}>{t('metrics.edit.cancel')}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{getTitle()}</Text>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveText}>Save</Text>
+          <Text style={styles.saveText}>{t('metrics.edit.save')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -376,3 +378,4 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+

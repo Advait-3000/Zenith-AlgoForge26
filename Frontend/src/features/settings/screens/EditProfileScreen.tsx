@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   View, 
   Text, 
@@ -25,6 +26,7 @@ const { width, height } = Dimensions.get('window');
 const USER_IMG = 'https://img.freepik.com/free-photo/portrait-successful-businessman-wearing-gray-suit-against-concrete-wall_23-2148127025.jpg';
 
 export const EditProfileScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,11 +56,11 @@ export const EditProfileScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleCancel}>
-          <Text style={styles.cancelText}>Cancel</Text>
+          <Text style={styles.cancelText}>{t('common.cancel')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Personal information</Text>
+        <Text style={styles.headerTitle}>{t('profile.personalInfo')}</Text>
         <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.saveText}>Save</Text>
+          <Text style={styles.saveText}>{t('common.save')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -67,15 +69,15 @@ export const EditProfileScreen: React.FC = () => {
         <View style={styles.photoSection}>
           <Image source={{ uri: USER_IMG }} style={styles.avatar} />
           <TouchableOpacity style={styles.deletePhotoBtn}>
-            <Trash2 color="#FF5252" size={18} />
-            <Text style={styles.deletePhotoText}>Delete photo</Text>
+            <Trash2 stroke="#FF5252" size={18} />
+            <Text style={styles.deletePhotoText}>{t('profile.deletePhoto')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Form */}
         <View style={styles.form}>
           <View style={[styles.inputGroup, { marginTop: 10 }]}>
-            <Text style={styles.label}>First name</Text>
+            <Text style={styles.label}>{t('profile.firstName')}</Text>
             <TextInput 
               style={styles.input} 
               value={formData.firstName}
@@ -84,7 +86,7 @@ export const EditProfileScreen: React.FC = () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Last name</Text>
+            <Text style={styles.label}>{t('profile.lastName')}</Text>
             <TextInput 
               style={styles.input} 
               value={formData.lastName}
@@ -93,24 +95,26 @@ export const EditProfileScreen: React.FC = () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Date of birth</Text>
+            <Text style={styles.label}>{t('profile.dob')}</Text>
             <View style={styles.inputWrapper}>
               <TextInput 
                 style={styles.cleanInput} 
                 value={formData.dob}
                 editable={false}
               />
-              <Calendar color="#717171" size={24} style={styles.inputIcon} />
+              <View style={styles.inputIcon}>
+                <Calendar stroke="#717171" size={24} />
+              </View>
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone number</Text>
+            <Text style={styles.label}>{t('profile.phone')}</Text>
             <View style={styles.inputWrapper}>
               <View style={styles.countryPicker}>
                 <Image source={{ uri: 'https://flagcdn.com/w40/us.png' }} style={styles.flag} />
                 <Text style={styles.countryCode}>+1</Text>
-                <ChevronDown color="#717171" size={18} />
+                <ChevronDown stroke="#717171" size={18} />
               </View>
               <View style={styles.divider} />
               <TextInput 
@@ -120,25 +124,29 @@ export const EditProfileScreen: React.FC = () => {
                 onChangeText={(text) => setFormData({...formData, phone: text})}
               />
               <TouchableOpacity onPress={() => setFormData({...formData, phone: ''})}>
-                <X color="#A0A0A0" size={20} style={styles.inputIcon} />
+                <View style={styles.inputIcon}>
+                  <X stroke="#A0A0A0" size={20} />
+                </View>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>City</Text>
+            <Text style={styles.label}>{t('profile.city')}</Text>
             <View style={styles.inputWrapper}>
               <TextInput 
                 style={styles.cleanInput} 
                 value={formData.city}
                 editable={false}
               />
-              <ChevronDown color="#717171" size={24} style={styles.inputIcon} />
+              <View style={styles.inputIcon}>
+                <ChevronDown stroke="#717171" size={24} />
+              </View>
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Address</Text>
+            <Text style={styles.label}>{t('profile.address')}</Text>
             <TextInput 
               style={styles.input} 
               value={formData.address}
@@ -160,10 +168,10 @@ export const EditProfileScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
            <View style={styles.modalContent}>
               <View style={styles.modalIconBox}>
-                 <PencilLine color="#FBB03B" size={32} />
+                 <PencilLine stroke="#FBB03B" size={32} />
               </View>
-              <Text style={styles.modalTitle}>Discard changes?</Text>
-              <Text style={styles.modalSubtitle}>Unsaved changes will be lost.</Text>
+              <Text style={styles.modalTitle}>{t('profile.discardChangesTitle')}</Text>
+              <Text style={styles.modalSubtitle}>{t('profile.discardChangesSub')}</Text>
               
               <TouchableOpacity style={styles.discardBtn} onPress={confirmDiscard}>
                  <Text style={styles.discardBtnText}>Yes, discard</Text>
@@ -364,3 +372,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+

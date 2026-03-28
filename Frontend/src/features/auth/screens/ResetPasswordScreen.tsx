@@ -30,7 +30,7 @@ export const ResetPasswordScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
         </View>
 
@@ -46,7 +46,7 @@ export const ResetPasswordScreen: React.FC = () => {
               onChangeText={setPassword}
               icon={
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff color="#A0A0A0" size={20} /> : <Eye color="#A0A0A0" size={20} />}
+                  {showPassword ? <EyeOff stroke="#A0A0A0" size={20} /> : <Eye stroke="#A0A0A0" size={20} />}
                 </TouchableOpacity>
               }
             />
@@ -60,7 +60,7 @@ export const ResetPasswordScreen: React.FC = () => {
             onChangeText={setRepeatPassword}
             icon={
               <TouchableOpacity onPress={() => setShowRepeatPassword(!showRepeatPassword)}>
-                {showRepeatPassword ? <EyeOff color="#A0A0A0" size={20} /> : <Eye color="#A0A0A0" size={20} />}
+                {showRepeatPassword ? <EyeOff stroke="#A0A0A0" size={20} /> : <Eye stroke="#A0A0A0" size={20} />}
               </TouchableOpacity>
             }
           />
@@ -110,3 +110,4 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
 });
+

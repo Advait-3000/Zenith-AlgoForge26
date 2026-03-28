@@ -23,10 +23,12 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 export const VisitSummariesScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [selectedDocs, setSelectedDocs] = useState<any[]>([]);
 
@@ -74,7 +76,7 @@ export const VisitSummariesScreen: React.FC = () => {
         simulateUpload(result.assets);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick documents.');
+      Alert.alert(t('visitSummaries.alerts.error'), t('visitSummaries.alerts.failedPick'));
     }
   };
 
@@ -82,7 +84,7 @@ export const VisitSummariesScreen: React.FC = () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need camera access to scan your reports.');
+        Alert.alert(t('visitSummaries.alerts.permissionDenied'), t('visitSummaries.alerts.cameraAccess'));
         return;
       }
 
@@ -96,7 +98,7 @@ export const VisitSummariesScreen: React.FC = () => {
         simulateUpload([result.assets[0]]);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to scan document.');
+      Alert.alert(t('visitSummaries.alerts.error'), t('visitSummaries.alerts.failedPick'));
     }
   };
 
@@ -108,7 +110,7 @@ export const VisitSummariesScreen: React.FC = () => {
 
   const handleStartAnalysis = () => {
     if (selectedDocs.length === 0) {
-      Alert.alert('No files', 'Please upload or scan at least one report.');
+      Alert.alert(t('visitSummaries.alerts.noFiles'), t('visitSummaries.alerts.pleaseUpload'));
       return;
     }
     // Navigate to a processing state/animation screen
@@ -119,63 +121,63 @@ export const VisitSummariesScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Visit summaries</Text>
+        <Text style={styles.headerTitle}>{t('visitSummaries.title')}</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.promoCard}>
            <View style={styles.promoIcon}>
-              <Sparkles color="#FFFFFF" size={28} />
+              <Sparkles stroke="#FFFFFF" size={28} />
            </View>
            <View style={styles.promoTextContainer}>
-              <Text style={styles.promoTitle}>AI-Powered Portfolio</Text>
-              <Text style={styles.promoDesc}>Our AI will analyze your medical history from PDFs or scans to generate a comprehensive medical portfolio.</Text>
+              <Text style={styles.promoTitle}>{t('visitSummaries.promo.title')}</Text>
+              <Text style={styles.promoDesc}>{t('visitSummaries.promo.desc')}</Text>
            </View>
         </View>
 
-        <Text style={styles.sectionLabel}>Select an option to start</Text>
+        <Text style={styles.sectionLabel}>{t('visitSummaries.selectOption')}</Text>
 
         <TouchableOpacity style={styles.optionCard} onPress={handlePickPDF}>
            <View style={[styles.iconBox, { backgroundColor: '#EAF9F9' }]}>
-              <FileUp color="#306F6F" size={30} />
+              <FileUp stroke="#306F6F" size={30} />
            </View>
            <View style={styles.optionInfo}>
-              <Text style={styles.optionTitle}>Upload PDF Reports</Text>
-              <Text style={styles.optionSub}>Directly upload digital laboratory or clinical summaries.</Text>
+              <Text style={styles.optionTitle}>{t('visitSummaries.options.uploadPdf')}</Text>
+              <Text style={styles.optionSub}>{t('visitSummaries.options.uploadPdfDesc')}</Text>
            </View>
-           <ChevronRight color="#E0E8E8" size={24} />
+           <ChevronRight stroke="#E0E8E8" size={24} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.optionCard} onPress={handleScanReport}>
            <View style={[styles.iconBox, { backgroundColor: '#FFF7E6' }]}>
-              <ScanLine color="#FBB03B" size={30} />
+              <ScanLine stroke="#FBB03B" size={30} />
            </View>
            <View style={styles.optionInfo}>
-              <Text style={styles.optionTitle}>Scan Hardcopy Reports</Text>
-              <Text style={styles.optionSub}>Scan physical documents using your device camera.</Text>
+              <Text style={styles.optionTitle}>{t('visitSummaries.options.scanImg')}</Text>
+              <Text style={styles.optionSub}>{t('visitSummaries.options.scanImgDesc')}</Text>
            </View>
-           <ChevronRight color="#E0E8E8" size={24} />
+           <ChevronRight stroke="#E0E8E8" size={24} />
         </TouchableOpacity>
 
         {selectedDocs.length > 0 && (
           <View style={styles.selectedContainer}>
-             <Text style={styles.selectedTitle}>Selected files ({selectedDocs.length})</Text>
+             <Text style={styles.selectedTitle}>{t('visitSummaries.uploading.selectedFiles')} ({selectedDocs.length})</Text>
              {selectedDocs.map((doc, index) => (
                <View key={index} style={styles.fileCard}>
                   <View style={styles.fileRow}>
-                    <FileText color="#306F6F" size={20} />
+                    <FileText stroke="#306F6F" size={20} />
                     <View style={{ flex: 1 }}>
                        <Text style={styles.fileName} numberOfLines={1}>{doc.name || `Scan_${index + 1}`}</Text>
-                       <Text style={styles.fileSize}>{doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : 'Image scan'}</Text>
+                       <Text style={styles.fileSize}>{doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : t('visitSummaries.uploading.imageScan')}</Text>
                     </View>
                     {doc.progress === 100 ? (
-                      <Check color="#306F6F" size={20} />
+                      <Check stroke="#306F6F" size={20} />
                     ) : (
                       <TouchableOpacity onPress={() => handleRemoveDoc(index)}>
-                        <X color="#FF5252" size={20} />
+                        <X stroke="#FF5252" size={20} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -186,7 +188,7 @@ export const VisitSummariesScreen: React.FC = () => {
                     </View>
                   )}
                   {doc.progress < 100 && (
-                    <Text style={styles.uploadingText}>Uploading... {Math.round(doc.progress)}%</Text>
+                    <Text style={styles.uploadingText}>{t('visitSummaries.uploading.uploadingText')} {Math.round(doc.progress)}%</Text>
                   )}
                </View>
              ))}
@@ -199,15 +201,15 @@ export const VisitSummariesScreen: React.FC = () => {
                 onPress={handleStartAnalysis}
                 disabled={selectedDocs.some(d => !d.isDone)}
              >
-                <Sparkles color="#FFFFFF" size={20} />
-                <Text style={styles.analyzeText}>Analyze all reports</Text>
+                <Sparkles stroke="#FFFFFF" size={20} />
+                <Text style={styles.analyzeText}>{t('visitSummaries.actions.analyze')}</Text>
              </TouchableOpacity>
           </View>
         )}
 
         <View style={styles.infoBox}>
-           <Info color="#306F6F" size={20} />
-           <Text style={styles.infoText}>Data processing is encrypted and handled by our HIPAA-compliant medical AI model.</Text>
+           <Info stroke="#306F6F" size={20} />
+           <Text style={styles.infoText}>{t('visitSummaries.info')}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -404,3 +406,5 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+
+

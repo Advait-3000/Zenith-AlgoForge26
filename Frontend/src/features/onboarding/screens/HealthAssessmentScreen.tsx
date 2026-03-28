@@ -47,7 +47,7 @@ export const HealthAssessmentScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
           <ProgressBar totalSteps={6} currentStep={3} />
           <TouchableOpacity onPress={() => navigation.navigate('LifestyleInfo')}>
@@ -69,7 +69,7 @@ export const HealthAssessmentScreen: React.FC = () => {
                   style={[styles.bloodTypeCard, isActive && styles.activeCard]}
                   onPress={() => setBloodType(type)}
                 >
-                  <Droplets color={isActive ? '#FFFFFF' : '#306F6F'} size={28} />
+                  <Droplets stroke={isActive ? '#FFFFFF' : '#306F6F'} size={28} />
                   <Text style={[styles.bloodTypeText, isActive && styles.activeCardText]}>{type}</Text>
                 </TouchableOpacity>
               );
@@ -273,3 +273,5 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
+
+

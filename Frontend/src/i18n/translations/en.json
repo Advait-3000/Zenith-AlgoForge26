@@ -1,0 +1,414 @@
+{
+  "common": {
+    "appName": "Cura AI",
+    "home": "Home",
+    "settings": "Settings",
+    "profile": "Profile",
+    "login": "Log in",
+    "signup": "Sign Up",
+    "welcome": "Welcome",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading..."
+  },
+  "profile": {
+    "title": "Profile",
+    "userName": "Alexander Johnson",
+    "userAge": "{{age}} y.o.",
+    "userBirthDate": "({{date}})",
+    "favoriteDoctors": "Favorite doctors",
+    "emergencyContact": "Emergency contact",
+    "insuranceInfo": "Insurance information",
+    "notificationSettings": "Notification settings",
+    "faq": "FAQ",
+    "paymentSettings": "Payment settings",
+    "changeEmail": "Change email",
+    "securitySettings": "Security settings",
+    "logout": "Log out",
+    "logoutConfirmTitle": "Log out?",
+    "logoutConfirmSub": "While logged out, you may miss critical notifications and reminders",
+    "keepLoggedIn": "Keep me logged in",
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal information",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "dob": "Date of birth",
+    "phone": "Phone number",
+    "city": "City",
+    "address": "Address",
+    "deletePhoto": "Delete photo",
+    "discardChangesTitle": "Discard changes?",
+    "discardChangesSub": "Are you sure you want to discard your changes?",
+    "keepEditing": "Keep editing",
+    "discard": "Discard"
+  },
+  "home": {
+    "greeting": "Hello, {{name}}!",
+    "searchPlaceholder": "Start typing",
+    "buildPortfolioTitle": "Build Medical Portfolio",
+    "buildPortfolioSub": "Analyze all your reports with AI",
+    "doctorsNearYou": "Doctors near you",
+    "seeAll": "See all",
+    "recoveryTrack": "Medical recovery track",
+    "popularSpecialisations": "Popular specialisations",
+    "services": "Services",
+    "specialisations": {
+      "dentist": "Dentist",
+      "pulmonologist": "Pulmonologist",
+      "gastroenterologist": "Gastroenterologist",
+      "cardiologist": "Cardiologist",
+      "neurologist": "Neurologist",
+      "radiologist": "Radiologist"
+    },
+    "history": {
+      "influenza": "Influenza",
+      "bronchitis": "Bronchitis",
+      "headache": "Headache",
+      "recovered": "Recovered",
+      "active": "Active",
+      "days": "{{count}} days"
+    },
+    "servicesList": {
+      "appointments": "Appointments",
+      "vaccination": "Vaccination calendar",
+      "faq": "FAQ",
+      "chat": "Support chat"
+    }
+  },
+  "chat": {
+    "placeholder": "Ask Cura AI...",
+    "aiAssistant": "Cura AI Assistant",
+    "statusOnline": "Always Online",
+    "today": "TODAY",
+    "welcomeMessage": "Hello! I am your Cura AI Health Assistant. 🦾\n\nHow can I help you today?",
+    "analyzing": "I'm analyzing your request against your medical history. One moment please...",
+    "userInitial1": "I want to ask about my recent blood test results.",
+    "aiInitial1": "Of course! I can help you analyze those. Please upload your report or tell me specific values you are concerned about."
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "loginSubtitle": "Nice to have you back!",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "newHere": "Are you new here? ",
+    "createAccount": "Create account",
+    "emailError": "Email must contain @",
+    "passwordError": "Incorrect password. Please try again."
+  },
+  "doctorProfile": {
+    "book": "Book",
+    "about": "About",
+    "reviews": "Reviews",
+    "price": "Price",
+    "consultation": "1 hour consultation",
+    "selectTime": "Select time",
+    "appointmentType": "Type of appointment",
+    "inPerson": "In-person",
+    "videoCall": "Video call",
+    "location": "Location",
+    "generalInfo": "General information",
+    "workingPlace": "Current working place",
+    "education": "Education",
+    "certification": "Certification",
+    "training": "Training",
+    "licensure": "Licensure",
+    "experience": "Experience",
+    "leaveReview": "Leave a review",
+    "bookAppointment": "Book appointment",
+    "reviewsCount": "{{count}} reviews"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "slide1Title": "Healthcare Made Easy",
+    "slide1Sub": "Choose from a wide range of specialists and book appointments with ease. Personalized care is just a click away.",
+    "slide2Title": "Here for You, Always",
+    "slide2Sub": "Save your test results, access prescriptions, get medication delivered, manage appointments — all in one place."
+  },
+  "search": {
+    "title": "Search results",
+    "placeholder": "Search",
+    "byLocation": "By location",
+    "noResults": "Sorry, no results found",
+    "noResultsSub": "Please try a different search term."
+  },
+  "welcome": {
+    "title": "Welcome to CURA!",
+    "description": "Connect with doctors, manage appointments, access care whenever you need it.",
+    "createAccount": "Create an account",
+    "login": "Log in"
+  },
+  "signup": {
+    "title": "Create an account",
+    "subtitle": "Excited to have you on board!",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Create password",
+    "minCharacters": "Min 8 characters length",
+    "minNumbers": "Min 2 numbers",
+    "minUppercase": "Min 1 uppercase letter",
+    "createAccount": "Create account",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+  "faq": {
+    "title": "FAQ",
+    "tabs": {
+      "appointments": "Appointments",
+      "payments": "Payments and Insurance",
+      "prescriptions": "Prescriptions",
+      "support": "Technical Support"
+    },
+    "questions": {
+      "appointments": [
+        {
+          "q": "How do I book an appointment?",
+          "a": "Browse through the list of available doctors, and select the one that best suits your needs. Choose a convenient time slot from their schedule, provide any necessary details, and confirm your booking to secure the appointment."
+        },
+        {
+          "q": "Can I cancel an appointment?",
+          "a": "Yes, you can cancel your appointment up to 24 hours before the scheduled time through the 'My Appointments' section."
+        }
+      ],
+      "prescriptions": [
+        {
+          "q": "How do I view my prescription?",
+          "a": "Once your doctor issues a prescription, you can find it under the 'Records' tab in the 'Prescriptions' section."
+        }
+      ]
+    }
+  },
+  "reports": {
+    "title": "Lab reports",
+    "byDate": "By date",
+    "noReports": "No lab reports found",
+    "noReportsSub": "Your test reports will appear here once they are available.",
+    "viewReport": "View report",
+    "download": "Download",
+    "filter": {
+      "title": "Filter",
+      "cancel": "Cancel",
+      "apply": "Apply",
+      "testType": "Test type",
+      "resultType": "Result type",
+      "showAll": "Show all",
+      "reset": "Reset filter",
+      "options": {
+        "hormonal": "Hormonal Tests",
+        "cbc": "Complete Blood Count",
+        "metabolic": "Metabolic and Nutritional Tests",
+        "lipid": "Lipid Panel",
+        "inflammatory": "Inflammatory Markers"
+      },
+      "results": {
+        "good": "Good",
+        "borderline": "Borderline",
+        "bad": "Bad"
+      }
+    },
+    "share": {
+      "title": "Share report",
+      "desc": "Share this file by copying the link or downloading it as a PDF.",
+      "copyLink": "Copy link",
+      "downloadPdf": "Download PDF"
+    },
+    "status": {
+      "pending": "Pending",
+      "normal": "Normal Results",
+      "attention": "Requires Attention",
+      "followUp": "Follow-Up Needed",
+      "pendingMsg": "Results will be {{date}}"
+    }
+  },
+  "records": {
+    "title": "Medical records",
+    "searchPlaceholder": "Search your records",
+    "categories": {
+      "prescriptions": "Prescriptions",
+      "labReports": "Lab reports",
+      "healthMetrics": "Health metrics",
+      "visitSummaries": "Visit summaries",
+      "viewAll": "View all"
+    },
+    "recent": {
+      "title": "Recent reports",
+      "seeAll": "See all"
+    },
+    "reportNames": {
+      "bloodTest": "General Blood Test",
+      "dental": "Dental Checkup"
+    },
+    "reportTypes": {
+      "lab": "Lab report",
+      "clinical": "Clinical summary"
+    }
+  },
+  "metrics": {
+    "title": "Health metrics",
+    "add": "Add",
+    "sections": {
+      "body": "Body parameters",
+      "lifestyle": "Lifestyle",
+      "anamnesis": "Anamnesis",
+      "notes": "Notes"
+    },
+    "fields": {
+      "height": "Your height (cm)",
+      "weight": "Your weight (kg)",
+      "bmi": "Body Mass Index",
+      "oxygen": "Oxygen Saturation (%)",
+      "pressure": "Blood pressure (mmHg)",
+      "heartRate": "Heart rate (bpm)",
+      "bloodType": "Blood type",
+      "sleep": "Sleep (h)",
+      "water": "Water intake (l)",
+      "smoking": "Smoking",
+      "alcohol": "Alcohol",
+      "activity": "Activity Level",
+      "chronic": "Chronic conditions",
+      "allergies": "Allergies"
+    },
+    "edit": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "notes": "Clinical Notes",
+      "notesPlaceholder": "Enter your notes here...",
+      "rhPositive": "Rh +",
+      "rhNegative": "Rh —",
+      "smokingValues": {
+        "yes": "Yes",
+        "no": "No",
+        "occasionally": "Occasionally"
+      },
+      "alcoholValues": {
+        "yes": "Yes",
+        "no": "No",
+        "occasionally": "Occasionally"
+      },
+      "activityLevels": {
+        "light": "Light (sports 1-3 days a week)",
+        "moderate": "Moderate (sports 3-5 days a week)",
+        "active": "Very Active (sports 6-7 days a week)"
+      }
+    }
+  },
+  "portfolio": {
+    "title": "Medical Portfolio",
+    "aiInsight": {
+      "title": "AI Portfolio Insight",
+      "text": "Patient shows history of respiratory distress correlated with seasonal laboratory findings. Cardiovascular risk is currently low."
+    },
+    "vitals": {
+      "heartRate": "Heart rate",
+      "bloodPressure": "Blood pressure",
+      "oxygen": "Oxygen",
+      "temp": "Temp"
+    },
+    "sections": {
+      "history": "Clinical History (Anamnesis)",
+      "historyText": "History of hypertension for 12 years, managed with medication. Diagnosed with type 2 diabetes 5 years ago. Family history includes recurring cardiovascular conditions.",
+      "symptoms": "Signs & Symptoms",
+      "diagnosis": "AI Deduced Diagnosis",
+      "diagnosisText": "Atrial Fibrillation (Paroxysmal)",
+      "timeline": "Examination & Results Timeline",
+      "management": "Management Plan",
+      "managementText": "Continue primary ACE inhibitor therapy. Recommend cardiovascular follow-up within 14 days based on symptoms.",
+      "prescriptions": "Prescriptions"
+    },
+    "symptomsList": {
+      "shortnessOfBreath": "Shortness of breath",
+      "blueLips": "Blue-tinged lips",
+      "backPain": "Pain in the back",
+      "chestPressure": "Pressure in the chest"
+    },
+    "actions": {
+      "viewReport": "View report",
+      "download": "Download"
+    }
+  },
+  "medicationDetails": {
+    "title": "Medication Details",
+    "fields": {
+      "name": "Name:",
+      "duration": "Duration:",
+      "dosage": "Dosage:",
+      "frequency": "Frequency:",
+      "prescribedBy": "Prescribed by:"
+    },
+    "sections": {
+      "specialInstructions": "Special Instructions:",
+      "storage": "Storage:",
+      "sideEffects": "Side Effects:",
+      "allergyWarning": "Allergy Warning:"
+    },
+    "actions": {
+      "downloadPdf": "Download Prescription PDF"
+    },
+    "modal": {
+      "title": "Successfully downloaded",
+      "desc": "Prescription PDF downloaded. Keep it handy for your records or pharmacy visits.",
+      "button": "Great!"
+    },
+    "mockData": {
+      "frequency": "Once, Every day",
+      "specialInstructions": [
+        "Take with food to avoid stomach upset.",
+        "Do not skip doses, even if symptoms improve."
+      ],
+      "storage": "Store at room temperature, away from moisture and sunlight.",
+      "sideEffects": "Possible nausea, diarrhea, or mild rash. Contact your doctor if severe.",
+      "allergyWarning": "Avoid if allergic to penicillin or similar antibiotics."
+    }
+  },
+  "prescriptionsList": {
+    "title": "Prescriptions",
+    "searchPlaceholder": "Search your medications",
+    "tabs": {
+      "actual": "Actual",
+      "history": "History"
+    },
+    "byDate": "By date",
+    "empty": {
+      "title": "No Prescriptions Found",
+      "desc": "Your medications will appear here once prescribed by a doctor."
+    }
+  },
+  "visitSummaries": {
+    "title": "Visit summaries",
+    "promo": {
+      "title": "AI-Powered Portfolio",
+      "desc": "Our AI will analyze your medical history from PDFs or scans to generate a comprehensive medical portfolio."
+    },
+    "selectOption": "Select an option to start",
+    "options": {
+      "uploadPdf": "Upload PDF Reports",
+      "uploadPdfDesc": "Directly upload digital laboratory or clinical summaries.",
+      "scanImg": "Scan Hardcopy Reports",
+      "scanImgDesc": "Scan physical documents using your device camera."
+    },
+    "uploading": {
+      "selectedFiles": "Selected files",
+      "imageScan": "Image scan",
+      "uploadingText": "Uploading..."
+    },
+    "actions": {
+      "analyze": "Analyze all reports"
+    },
+    "info": "Data processing is encrypted and handled by our HIPAA-compliant medical AI model.",
+    "alerts": {
+      "error": "Error",
+      "failedPick": "Failed to pick documents.",
+      "permissionDenied": "Permission Denied",
+      "cameraAccess": "We need camera access to scan your reports.",
+      "noFiles": "No files",
+      "pleaseUpload": "Please upload or scan at least one report."
+    }
+  }
+}

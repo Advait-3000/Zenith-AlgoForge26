@@ -191,7 +191,7 @@ export const PersonalDataScreen: React.FC = () => {
                 }}
               >
                 <Text style={styles.relOptionText}>{item.flag} {item.name} ({item.code})</Text>
-                {country.name === item.name && <Check color="#306F6F" size={20} />}
+                {country.name === item.name && <Check stroke="#306F6F" size={20} />}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -209,7 +209,7 @@ export const PersonalDataScreen: React.FC = () => {
       <SafeAreaView style={styles.fullModalContainer}>
         <View style={styles.modalHeader}>
           <TouchableOpacity onPress={() => setIsCitySearchVisible(false)}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
         </View>
 
@@ -217,7 +217,7 @@ export const PersonalDataScreen: React.FC = () => {
           <Text style={styles.cityHeaderLarge}>City</Text>
           
           <View style={styles.searchBox}>
-            <Search color="#A0A0A0" size={20} />
+            <Search stroke="#A0A0A0" size={20} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search"
@@ -228,7 +228,7 @@ export const PersonalDataScreen: React.FC = () => {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <X color="#A0A0A0" size={20} />
+                <X stroke="#A0A0A0" size={20} />
               </TouchableOpacity>
             )}
           </View>
@@ -237,7 +237,7 @@ export const PersonalDataScreen: React.FC = () => {
             style={styles.currentLocationRow} 
             onPress={() => handleCitySelect('Current Location, NY')}
           >
-            <MapPin color="#306F6F" size={20} />
+            <MapPin stroke="#306F6F" size={20} />
             <Text style={styles.currentLocationText}>Use current location</Text>
           </TouchableOpacity>
 
@@ -268,7 +268,7 @@ export const PersonalDataScreen: React.FC = () => {
             style={styles.backButton} 
             onPress={() => navigation.goBack()}
           >
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
           <ProgressBar totalSteps={6} currentStep={1} />
         </View>
@@ -302,7 +302,7 @@ export const PersonalDataScreen: React.FC = () => {
               value={formData.dob}
               editable={false}
               pointerEvents="none"
-              icon={<Calendar color="#A0A0A0" size={24} />}
+              icon={<Calendar stroke="#A0A0A0" size={24} />}
             />
           </TouchableOpacity>
 
@@ -316,7 +316,7 @@ export const PersonalDataScreen: React.FC = () => {
             >
               <Text style={styles.flag}>{country.flag}</Text>
               <Text style={styles.countryCode}>{country.code}</Text>
-              <ChevronDown color="#212121" size={16} />
+              <ChevronDown stroke="#212121" size={16} />
             </TouchableOpacity>
             <View style={styles.divider} />
             <TextInput
@@ -345,7 +345,7 @@ export const PersonalDataScreen: React.FC = () => {
               value={formData.city}
               editable={false}
               pointerEvents="none"
-              icon={<ChevronDown color="#A0A0A0" size={20} />}
+              icon={<ChevronDown stroke="#A0A0A0" size={20} />}
             />
           </TouchableOpacity>
 
@@ -609,3 +609,4 @@ const styles = StyleSheet.create({
     color: '#212121',
   },
 });
+

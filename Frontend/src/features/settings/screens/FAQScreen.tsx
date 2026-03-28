@@ -16,12 +16,18 @@ import {
   ChevronUp 
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const TABS = ["Appointments", "Payments and Insurance", "Prescriptions", "Technical Support"];
+const TABS = [
+  { key: 'appointments', labelKey: 'faq.tabs.appointments' },
+  { key: 'payments', labelKey: 'faq.tabs.payments' },
+  { key: 'prescriptions', labelKey: 'faq.tabs.prescriptions' },
+  { key: 'support', labelKey: 'faq.tabs.support' }
+];
 
 const FAQ_DATA = {
   "Appointments": [
@@ -67,8 +73,9 @@ const FAQ_DATA = {
 };
 
 export const FAQScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
-  const [activeTab, setActiveTab] = useState("Appointments");
+  const [activeTab, setActiveTab] = useState("appointments");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
   const toggleExpand = (index: number) => {
@@ -76,16 +83,17 @@ export const FAQScreen: React.FC = () => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  const currentFaqs = FAQ_DATA[activeTab as keyof typeof FAQ_DATA] || [];
+  const faqArray = t(`faq.questions.${activeTab}`, { returnObjects: true }) as any[];
+  const currentFaqs = Array.isArray(faqArray) ? faqArray : [];
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>FAQ</Text>
+        <Text style={styles.headerTitle}>{t('faq.title')}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -94,14 +102,14 @@ export const FAQScreen: React.FC = () => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
           {TABS.map((tab) => (
             <TouchableOpacity 
-              key={tab} 
-              style={[styles.tab, activeTab === tab && styles.activeTab]}
+              key={tab.key} 
+              style={[styles.tab, activeTab === tab.key && styles.activeTab]}
               onPress={() => {
-                setActiveTab(tab);
+                setActiveTab(tab.key);
                 setExpandedIndex(null);
               }}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+              <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>{t(tab.labelKey)}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -116,17 +124,17 @@ export const FAQScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <View style={styles.faqHeader}>
-              <Text style={styles.question}>{faq.question}</Text>
+              <Text style={styles.question}>{faq.q}</Text>
               <View style={styles.iconCircle}>
                 {expandedIndex === index ? (
-                  <ChevronUp color="#717171" size={20} />
+                  <ChevronUp stroke="#717171" size={20} />
                 ) : (
-                  <ChevronDown color="#717171" size={20} />
+                  <ChevronDown stroke="#717171" size={20} />
                 )}
               </View>
             </View>
             {expandedIndex === index && (
-              <Text style={styles.answer}>{faq.answer}</Text>
+              <Text style={styles.answer}>{faq.a}</Text>
             )}
           </TouchableOpacity>
         ))}
@@ -238,3 +246,4 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+

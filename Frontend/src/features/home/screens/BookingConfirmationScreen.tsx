@@ -63,7 +63,7 @@ export const BookingConfirmationScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#212121" size={24} />
+          <ArrowLeft stroke="#212121" size={24} />
         </TouchableOpacity>
         <Text style={styles.title}>Booking confirmation</Text>
         <View style={{ width: 44 }} />
@@ -83,28 +83,28 @@ export const BookingConfirmationScreen: React.FC = () => {
         <View style={styles.detailList}>
           <View style={styles.detailItem}>
             <View style={styles.detailLeft}>
-              <Calendar color="#306F6F" size={20} />
+              <Calendar stroke="#306F6F" size={20} />
               <Text style={styles.detailLabel}>Date:</Text>
             </View>
             <Text style={styles.detailValue}>11 February</Text>
           </View>
           <View style={styles.detailItem}>
             <View style={styles.detailLeft}>
-              <Clock color="#306F6F" size={20} />
+              <Clock stroke="#306F6F" size={20} />
               <Text style={styles.detailLabel}>Time:</Text>
             </View>
             <Text style={styles.detailValue}>10:30 - 11:00 PM</Text>
           </View>
           <View style={styles.detailItem}>
             <View style={styles.detailLeft}>
-              <Stethoscope color="#306F6F" size={20} />
+              <Stethoscope stroke="#306F6F" size={20} />
               <Text style={styles.detailLabel}>Type:</Text>
             </View>
             <Text style={styles.detailValue}>In-Person</Text>
           </View>
           <View style={styles.detailItem}>
             <View style={styles.detailLeft}>
-              <MapPin color="#306F6F" size={20} />
+              <MapPin stroke="#306F6F" size={20} />
               <Text style={styles.detailLabel}>Location:</Text>
             </View>
             <Text style={[styles.detailValue, { color: '#306F6F', fontWeight: '700' }]}>Mercy Heart Institute</Text>
@@ -120,7 +120,7 @@ export const BookingConfirmationScreen: React.FC = () => {
           <Text style={styles.inputLabel}>Policy expiry date</Text>
           <View style={styles.inputWrapper}>
             <TextInput style={styles.input} placeholder="Enter policy expiry date" placeholderTextColor="#A0A0A0" />
-            <Calendar color="#717171" size={20} />
+            <Calendar stroke="#717171" size={20} />
           </View>
         </View>
 
@@ -130,7 +130,7 @@ export const BookingConfirmationScreen: React.FC = () => {
              <View style={styles.countryPicker}>
                 <Text style={styles.flag}>🇺🇸</Text>
                 <Text style={styles.phoneCode}>+1</Text>
-                <ChevronDown color="#717171" size={16} />
+                <ChevronDown stroke="#717171" size={16} />
                 <View style={styles.phoneDivider} />
              </View>
              <TextInput style={styles.input} placeholder="000 000 0000" placeholderTextColor="#A0A0A0" keyboardType="phone-pad" />
@@ -158,7 +158,7 @@ export const BookingConfirmationScreen: React.FC = () => {
         {[
           { id: 'Apple Pay', name: 'Apple Pay', icon: '' },
           { id: 'Google Pay', name: 'Google Pay', icon: 'G' },
-          { id: 'Credit card', name: 'Credit card', icon: <CardIcon color="#717171" size={20} /> },
+          { id: 'Credit card', name: 'Credit card', icon: <CardIcon stroke="#717171" size={20} /> },
         ].map((method) => (
           <TouchableOpacity 
             key={method.id} 
@@ -197,7 +197,7 @@ export const BookingConfirmationScreen: React.FC = () => {
           onPress={() => setAgreeTerms(!agreeTerms)}
         >
           <View style={[styles.checkbox, agreeTerms && styles.checkboxChecked]}>
-             {agreeTerms && <CheckCircle2 color="#FFFFFF" size={14} />}
+             {agreeTerms && <CheckCircle2 stroke="#FFFFFF" size={14} />}
           </View>
           <Text style={styles.checkboxLabel}>I agree to the Terms and Conditions</Text>
         </TouchableOpacity>
@@ -220,7 +220,7 @@ export const BookingConfirmationScreen: React.FC = () => {
         <View style={styles.modalBg}>
            <View style={styles.modalContent}>
               <View style={styles.successCircle}>
-                 <CheckCircle2 color="#306F6F" size={50} />
+                 <CheckCircle2 stroke="#306F6F" size={50} />
               </View>
               <Text style={styles.modalTitle}>Your appointment is successfully booked</Text>
               <Text style={styles.modalSubtitle}>The updates will appear in your profile.</Text>
@@ -240,7 +240,7 @@ export const BookingConfirmationScreen: React.FC = () => {
         <View style={styles.modalBg}>
            <View style={styles.modalContent}>
               <View style={[styles.successCircle, { backgroundColor: '#FFECEC' }]}>
-                 <XCircle color="#FF5252" size={50} />
+                 <XCircle stroke="#FF5252" size={50} />
               </View>
               <Text style={styles.modalTitle}>Booking Failed</Text>
               <Text style={styles.modalSubtitle}>Something went wrong. Please reattempt your booking.</Text>
@@ -556,3 +556,5 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
+
+

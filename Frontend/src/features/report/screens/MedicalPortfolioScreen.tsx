@@ -30,20 +30,21 @@ import {
   Heart
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 const VITALS = [
-  { id: '1', title: 'Heart rate', value: '77 bpm', icon: Heart, color: '#FF5252' },
-  { id: '2', title: 'Blood pressure', value: '120/80', icon: Stethoscope, color: '#306F6F' },
-  { id: '3', title: 'Oxygen', value: '97%', icon: Wind, color: '#4A90E2' },
-  { id: '4', title: 'Temp', value: '98.6° F', icon: Thermometer, color: '#FBB03B' },
+  { id: '1', titleKey: 'portfolio.vitals.heartRate', value: '77 bpm', icon: Heart, color: '#FF5252' },
+  { id: '2', titleKey: 'portfolio.vitals.bloodPressure', value: '120/80', icon: Stethoscope, color: '#306F6F' },
+  { id: '3', titleKey: 'portfolio.vitals.oxygen', value: '97%', icon: Wind, color: '#4A90E2' },
+  { id: '4', titleKey: 'portfolio.vitals.temp', value: '98.6° F', icon: Thermometer, color: '#FBB03B' },
 ];
 
 const EXAMINATIONS = [
-  { id: '1', title: 'Complete Blood Count (CBC)', status: 'Normal Results', date: '02 Jan, 2024', color: '#306F6F' },
-  { id: '2', title: 'Lipid Panel (Cardiovascular)', status: 'Normal Results', date: '05 Jan, 2024', color: '#306F6F' },
-  { id: '3', title: 'Thyroid Function Test', status: 'Follow-Up Needed', date: '02 Jan, 2024', color: '#FF5252' },
+  { id: '1', titleKey: 'reports.filter.options.cbc', statusKey: 'reports.status.normal', date: '02 Jan, 2024', color: '#306F6F' },
+  { id: '2', titleKey: 'reports.filter.options.lipid', statusKey: 'reports.status.normal', date: '05 Jan, 2024', color: '#306F6F' },
+  { id: '3', titleKey: 'reports.options.thyroid', statusKey: 'reports.status.followUp', date: '02 Jan, 2024', color: '#FF5252' },
 ];
 
 const PRESCRIPTIONS = [
@@ -51,24 +52,30 @@ const PRESCRIPTIONS = [
   { id: '2', name: 'Lisinopril 10mg', desc: 'ACE inhibitors', dosage: '18 tablets', duration: '11 - 30 April, 2024' },
 ];
 
-const SYMPTOMS = ['Shortness of breath', 'Blue-tinged lips', 'Pain in the back', 'Pressure in the chest'];
+const SYMPTOMS = [
+  'portfolio.symptomsList.shortnessOfBreath', 
+  'portfolio.symptomsList.blueLips', 
+  'portfolio.symptomsList.backPain', 
+  'portfolio.symptomsList.chestPressure'
+];
 
 export const MedicalPortfolioScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Medical Portfolio</Text>
+        <Text style={styles.headerTitle}>{t('portfolio.title')}</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconBtn}>
-            <Download color="#717171" size={22} />
+            <Download stroke="#717171" size={22} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn}>
-            <Share2 color="#717171" size={22} />
+            <Share2 stroke="#717171" size={22} />
           </TouchableOpacity>
         </View>
       </View>
@@ -88,10 +95,10 @@ export const MedicalPortfolioScreen: React.FC = () => {
 
         {/* AI Insight Summary */}
         <View style={styles.aiBriefCard}>
-           <BriefcaseMedical color="#FFFFFF" size={24} />
+           <BriefcaseMedical stroke="#FFFFFF" size={24} />
            <View style={styles.aiBriefContent}>
-              <Text style={styles.aiBriefTitle}>AI Portfolio Insight</Text>
-              <Text style={styles.aiBriefText}>Patient shows history of respiratory distress correlated with seasonal laboratory findings. Cardiovascular risk is currently low.</Text>
+              <Text style={styles.aiBriefTitle}>{t('portfolio.aiInsight.title')}</Text>
+              <Text style={styles.aiBriefText}>{t('portfolio.aiInsight.text')}</Text>
            </View>
         </View>
 
@@ -100,87 +107,87 @@ export const MedicalPortfolioScreen: React.FC = () => {
            {VITALS.map(vital => (
              <View key={vital.id} style={styles.vitalCard}>
                 <View style={[styles.vitalIconBox, { backgroundColor: `${vital.color}10` }]}>
-                   <vital.icon color={vital.color} size={20} />
+                   <vital.icon stroke={vital.color} size={20} />
                 </View>
                 <Text style={styles.vitalValue}>{vital.value}</Text>
-                <Text style={styles.vitalTitle}>{vital.title}</Text>
+                <Text style={styles.vitalTitle}>{t(vital.titleKey)}</Text>
              </View>
            ))}
         </View>
 
         {/* Clinical History & Reason */}
-        <Text style={styles.sectionTitle}>Clinical History (Anamnesis)</Text>
+        <Text style={styles.sectionTitle}>{t('portfolio.sections.history')}</Text>
         <View style={styles.pointSection}>
-           <Text style={styles.pointText}>History of hypertension for 12 years, managed with medication. Diagnosed with type 2 diabetes 5 years ago. Family history includes recurring cardiovascular conditions.</Text>
+           <Text style={styles.pointText}>{t('portfolio.sections.historyText')}</Text>
         </View>
 
         {/* Symptoms & Signs */}
-        <Text style={styles.sectionTitle}>Signs & Symptoms</Text>
+        <Text style={styles.sectionTitle}>{t('portfolio.sections.symptoms')}</Text>
         <View style={styles.pointSection}>
            <View style={styles.symptomGrid}>
               {SYMPTOMS.map(s => (
                 <View key={s} style={styles.symptomBadge}>
-                   <Text style={styles.symptomText}>{s}</Text>
+                   <Text style={styles.symptomText}>{t(s)}</Text>
                 </View>
               ))}
            </View>
         </View>
 
         {/* AI Deduced Diagnosis */}
-        <Text style={styles.sectionTitle}>AI Deduced Diagnosis</Text>
+        <Text style={styles.sectionTitle}>{t('portfolio.sections.diagnosis')}</Text>
         <View style={[styles.pointSection, styles.diagnosisCard]}>
-           <Stethoscope color="#306F6F" size={24} />
-           <Text style={styles.diagnosisLarge}>Atrial Fibrillation (Paroxysmal)</Text>
+           <Stethoscope stroke="#306F6F" size={24} />
+           <Text style={styles.diagnosisLarge}>{t('portfolio.sections.diagnosisText')}</Text>
         </View>
 
         {/* Examination Timeline */}
-        <Text style={styles.sectionTitle}>Examination & Results Timeline</Text>
+        <Text style={styles.sectionTitle}>{t('portfolio.sections.timeline')}</Text>
         {EXAMINATIONS.map(exam => (
           <View key={exam.id} style={styles.examCard}>
              <View style={styles.examCardTop}>
                 <View style={styles.examInfo}>
-                   <Text style={styles.examTitle}>{exam.title}</Text>
+                   <Text style={styles.examTitle}>{t(exam.titleKey)}</Text>
                    <Text style={styles.examMeta}>
-                      {exam.date} • <Text style={{ color: exam.color }}>{exam.status}</Text>
+                      {exam.date} • <Text style={{ color: exam.color }}>{t(exam.statusKey)}</Text>
                    </Text>
                 </View>
                 <TouchableOpacity style={styles.moreBtn}>
-                   <MoreVertical color="#E0E8E8" size={20} />
+                   <MoreVertical stroke="#E0E8E8" size={20} />
                 </TouchableOpacity>
              </View>
              
              <View style={styles.examActions}>
                 <TouchableOpacity style={styles.viewBtn}>
-                   <Eye color="#FFFFFF" size={16} />
-                   <Text style={styles.btnText}>View report</Text>
+                   <Eye stroke="#FFFFFF" size={16} />
+                   <Text style={styles.btnText}>{t('portfolio.actions.viewReport')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.downBtn}>
-                   <Download color="#306F6F" size={16} />
-                   <Text style={[styles.btnText, { color: '#306F6F' }]}>Download</Text>
+                   <Download stroke="#306F6F" size={16} />
+                   <Text style={[styles.btnText, { color: '#306F6F' }]}>{t('portfolio.actions.download')}</Text>
                 </TouchableOpacity>
              </View>
           </View>
         ))}
 
         {/* Management Plan & Prescriptions */}
-        <Text style={[styles.sectionTitle, { marginTop: 30 }]}>Management Plan</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 30 }]}>{t('portfolio.sections.management')}</Text>
         <View style={styles.pointSection}>
-           <Text style={styles.pointText}>Continue primary ACE inhibitor therapy. Recommend cardiovascular follow-up within 14 days based on symptoms.</Text>
+           <Text style={styles.pointText}>{t('portfolio.sections.managementText')}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Prescriptions</Text>
+        <Text style={styles.sectionTitle}>{t('portfolio.sections.prescriptions')}</Text>
         {PRESCRIPTIONS.map(med => (
           <TouchableOpacity key={med.id} style={styles.medCard}>
              <View style={styles.medCardTop}>
                 <View style={[styles.medIconBox, { backgroundColor: '#EAF9F9' }]}>
-                   <HandHelping color="#306F6F" size={24} />
+                   <HandHelping stroke="#306F6F" size={24} />
                 </View>
                 <View style={styles.medInfo}>
                    <Text style={styles.medName}>{med.name}</Text>
                    <Text style={styles.medDesc}>{med.desc}</Text>
                 </View>
                 <TouchableOpacity style={styles.moreBtn}>
-                   <MoreVertical color="#E0E8E8" size={20} />
+                   <MoreVertical stroke="#E0E8E8" size={20} />
                 </TouchableOpacity>
              </View>
 
@@ -485,3 +492,6 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+
+
+

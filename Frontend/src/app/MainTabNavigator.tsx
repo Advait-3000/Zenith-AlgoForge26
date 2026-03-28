@@ -62,21 +62,21 @@ export const MainTabNavigator = () => {
         name="Home" 
         component={HomeScreen} 
         options={{
-          tabBarIcon: ({ color }: any) => <Home color={color} size={24} />,
+          tabBarIcon: ({ color }: any) => <Home stroke={color} size={24} />,
         }}
       />
       <Tab.Screen 
         name="Records" 
         component={MedicalRecordsScreen} 
         options={{
-          tabBarIcon: ({ color }: any) => <Folder color={color} size={24} />,
+          tabBarIcon: ({ color }: any) => <Folder stroke={color} size={24} />,
         }}
       />
       <Tab.Screen 
         name="ChatTab" 
         component={View} 
         options={{
-          tabBarIcon: ({ color }: any) => <MessageSquare color={color} size={24} />,
+          tabBarIcon: ({ color }: any) => <MessageSquare stroke={color} size={24} />,
         }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
@@ -89,7 +89,7 @@ export const MainTabNavigator = () => {
         name="Profile" 
         component={ProfileScreen} 
         options={{
-          tabBarIcon: ({ color }: any) => <User color={color} size={24} />,
+          tabBarIcon: ({ color }: any) => <User stroke={color} size={24} />,
         }}
       />
     </Tab.Navigator>
@@ -131,3 +131,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#306F6F',
   },
 });
+

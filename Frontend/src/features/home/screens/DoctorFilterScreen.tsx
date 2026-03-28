@@ -99,7 +99,7 @@ export const DoctorFilterScreen: React.FC = () => {
           </TouchableOpacity>
         ))}
         <TouchableOpacity style={styles.showAllBtn}>
-           <ChevronDown color="#306F6F" size={20} />
+           <ChevronDown stroke="#306F6F" size={20} />
            <Text style={styles.showAllText}>Show all</Text>
         </TouchableOpacity>
 
@@ -130,7 +130,7 @@ export const DoctorFilterScreen: React.FC = () => {
         {/* Urgent Switch */}
         <View style={styles.switchRow}>
            <View style={styles.switchLeft}>
-              <MapPin color="#717171" size={24} />
+              <MapPin stroke="#717171" size={24} />
               <Text style={styles.switchLabel}>Available for urgent consultation</Text>
            </View>
            <Switch
@@ -291,3 +291,4 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+

@@ -46,7 +46,7 @@ export const SummaryProcessingScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Sparkles color="#306F6F" size={64} strokeWidth={1.5} />
+          <Sparkles stroke="#306F6F" size={64} strokeWidth={1.5} />
         </View>
 
         <Text style={styles.title}>Analyzing your reports</Text>
@@ -61,12 +61,12 @@ export const SummaryProcessingScreen: React.FC = () => {
              return (
                <View key={step.id} style={styles.stepRow}>
                  <View style={[styles.stepIcon, isDone && styles.stepIconDone, isActive && styles.stepIconActive]}>
-                    <Icon color={isActive || isDone ? '#FFFFFF' : '#A0A0A0'} size={20} />
+                    <Icon stroke={isActive || isDone ? '#FFFFFF' : '#A0A0A0'} size={20} />
                  </View>
                  <Text style={[styles.stepText, isActive && styles.stepTextActive, isDone && styles.stepTextDone]}>
                     {step.title}
                  </Text>
-                 {isActive && <ActivityIndicator size="small" color="#306F6F" />}
+                 {isActive && <ActivityIndicator size="small" stroke="#306F6F" />}
                </View>
              );
           })}
@@ -160,3 +160,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+

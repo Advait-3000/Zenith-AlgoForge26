@@ -20,6 +20,7 @@ import {
   CheckCircle2
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../shared/components/Button';
 
 const { width } = Dimensions.get('window');
@@ -28,26 +29,16 @@ const MED_DETAILS = {
   name: 'Amoxicillin',
   duration: '14 May - 30 May, 2024',
   dosage: '1 capsule (250mg)',
-  frequency: 'Once, Every day',
   prescribedBy: 'Dr. Mia Miller',
-  specialInstructions: [
-    'Take with food to avoid stomach upset.',
-    'Do not skip doses, even if symptoms improve.',
-  ],
-  storage: [
-    'Store at room temperature, away from moisture and sunlight.'
-  ],
-  sideEffects: [
-    'Possible nausea, diarrhea, or mild rash. Contact your doctor if severe.'
-  ],
-  allergyWarning: [
-    'Avoid if allergic to penicillin or similar antibiotics.'
-  ]
 };
 
 export const MedicationDetailsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [downloaded, setDownloaded] = useState(false);
+
+  // Safely get robust array translations from i18n
+  const specialInstructions = t('medicationDetails.mockData.specialInstructions', { returnObjects: true }) as string[];
 
   const handleDownload = () => {
     // Simulated download logic
@@ -58,11 +49,11 @@ export const MedicationDetailsScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Medication Details</Text>
+        <Text style={styles.headerTitle}>{t('medicationDetails.title')}</Text>
         <TouchableOpacity style={styles.backBtn}>
-          <Share2 color="#717171" size={24} />
+          <Share2 stroke="#717171" size={24} />
         </TouchableOpacity>
       </View>
 
@@ -71,36 +62,36 @@ export const MedicationDetailsScreen: React.FC = () => {
         <View style={styles.mainCard}>
           <View style={styles.detailRow}>
              <View style={styles.labelContainer}>
-                <HandHelping color="#306F6F" size={22} />
-                <Text style={styles.label}>Name:</Text>
+                <HandHelping stroke="#306F6F" size={22} />
+                <Text style={styles.label}>{t('medicationDetails.fields.name')}</Text>
              </View>
              <Text style={styles.value}>{MED_DETAILS.name}</Text>
           </View>
           <View style={styles.detailRow}>
              <View style={styles.labelContainer}>
-                <Calendar color="#306F6F" size={22} />
-                <Text style={styles.label}>Duration:</Text>
+                <Calendar stroke="#306F6F" size={22} />
+                <Text style={styles.label}>{t('medicationDetails.fields.duration')}</Text>
              </View>
              <Text style={styles.value}>{MED_DETAILS.duration}</Text>
           </View>
           <View style={styles.detailRow}>
              <View style={styles.labelContainer}>
-                <Pill color="#306F6F" size={22} />
-                <Text style={styles.label}>Dosage:</Text>
+                <Pill stroke="#306F6F" size={22} />
+                <Text style={styles.label}>{t('medicationDetails.fields.dosage')}</Text>
              </View>
              <Text style={styles.value}>{MED_DETAILS.dosage}</Text>
           </View>
           <View style={styles.detailRow}>
              <View style={styles.labelContainer}>
-                <Activity color="#306F6F" size={22} />
-                <Text style={styles.label}>Frequency:</Text>
+                <Activity stroke="#306F6F" size={22} />
+                <Text style={styles.label}>{t('medicationDetails.fields.frequency')}</Text>
              </View>
-             <Text style={styles.value}>{MED_DETAILS.frequency}</Text>
+             <Text style={styles.value}>{t('medicationDetails.mockData.frequency')}</Text>
           </View>
           <View style={styles.detailRow}>
              <View style={styles.labelContainer}>
-                <User color="#306F6F" size={22} />
-                <Text style={styles.label}>Prescribed by:</Text>
+                <User stroke="#306F6F" size={22} />
+                <Text style={styles.label}>{t('medicationDetails.fields.prescribedBy')}</Text>
              </View>
              <TouchableOpacity onPress={() => navigation.navigate('DoctorProfile', { doctorId: '1' })}>
                 <Text style={[styles.value, styles.link]}>{MED_DETAILS.prescribedBy}</Text>
@@ -110,8 +101,8 @@ export const MedicationDetailsScreen: React.FC = () => {
 
         {/* Instructions Sections */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Special Instructions:</Text>
-          {MED_DETAILS.specialInstructions.map((text, i) => (
+          <Text style={styles.sectionTitle}>{t('medicationDetails.sections.specialInstructions')}</Text>
+          {Array.isArray(specialInstructions) && specialInstructions.map((text: string, i: number) => (
              <View key={i} style={styles.bulletRow}>
                 <View style={styles.bullet} />
                 <Text style={styles.instructionText}>{text}</Text>
@@ -120,26 +111,26 @@ export const MedicationDetailsScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Storage:</Text>
+          <Text style={styles.sectionTitle}>{t('medicationDetails.sections.storage')}</Text>
           <View style={styles.bulletRow}>
              <View style={styles.bullet} />
-             <Text style={styles.instructionText}>{MED_DETAILS.storage[0]}</Text>
+             <Text style={styles.instructionText}>{t('medicationDetails.mockData.storage')}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Side Effects:</Text>
+          <Text style={styles.sectionTitle}>{t('medicationDetails.sections.sideEffects')}</Text>
           <View style={styles.bulletRow}>
              <View style={styles.bullet} />
-             <Text style={styles.instructionText}>{MED_DETAILS.sideEffects[0]}</Text>
+             <Text style={styles.instructionText}>{t('medicationDetails.mockData.sideEffects')}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Allergy Warning:</Text>
+          <Text style={styles.sectionTitle}>{t('medicationDetails.sections.allergyWarning')}</Text>
           <View style={styles.bulletRow}>
              <View style={styles.bullet} />
-             <Text style={styles.instructionText}>{MED_DETAILS.allergyWarning[0]}</Text>
+             <Text style={styles.instructionText}>{t('medicationDetails.mockData.allergyWarning')}</Text>
           </View>
         </View>
 
@@ -149,7 +140,7 @@ export const MedicationDetailsScreen: React.FC = () => {
       {/* Persistent Button */}
       <View style={styles.footer}>
         <Button 
-          title="Download Prescription PDF" 
+          title={t('medicationDetails.actions.downloadPdf')} 
           onPress={handleDownload} 
         />
       </View>
@@ -159,12 +150,12 @@ export const MedicationDetailsScreen: React.FC = () => {
          <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
                <View style={styles.checkCircle}>
-                  <CheckCircle2 color="#306F6F" size={40} />
+                  <CheckCircle2 stroke="#306F6F" size={40} />
                </View>
-               <Text style={styles.modalTitle}>Successfully downloaded</Text>
-               <Text style={styles.modalDesc}>Prescription PDF downloaded. Keep it handy for your records or pharmacy visits.</Text>
+               <Text style={styles.modalTitle}>{t('medicationDetails.modal.title')}</Text>
+               <Text style={styles.modalDesc}>{t('medicationDetails.modal.desc')}</Text>
                <TouchableOpacity style={styles.closeBtn} onPress={() => setDownloaded(false)}>
-                  <Text style={styles.closeText}>Great!</Text>
+                  <Text style={styles.closeText}>{t('medicationDetails.modal.button')}</Text>
                </TouchableOpacity>
             </View>
          </View>
@@ -325,3 +316,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+

@@ -52,7 +52,7 @@ export const OtpResetScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
         </View>
 
@@ -170,3 +170,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
