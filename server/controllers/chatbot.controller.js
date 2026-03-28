@@ -1,64 +1,44 @@
-// controllers/chatbotController.js
+import PatientReport from "../models/reports.model.js";
+import ChatbotLog from "../models/chatbot.model.js";
+import { generatePatientFriendlyResponse } from "../services/gemini.service.js";
 
-const PatientReport = require("../models/PatientReport");
-const ChatbotLog = require("../models/Chatbot_Triage_Logs");
-const { generatePatientFriendlyResponse } = require("../services/geminiService");
-
-exports.askChatbot = async (req, res) => {
+export const askChatbot = async (req, res) => {
   try {
-    const { patientId, question } = req.body;
+    // SECURE: Extract from req.user (populated by verifyToken middleware)
+    const patientId = req.user.id; 
+    const  question  = req.body;
 
-    if (!patientId || !question) {
+    if (!question) {
       return res.status(400).json({
         success: false,
-        message: "Missing patientId or question",
+        message: "Question is required",
       });
     }
 
-    // Get latest report
+    // Get latest report for this specific user
     const report = await PatientReport.findOne({ patient_id: patientId })
       .sort({ createdAt: -1 });
 
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: "No report found",
+        message: "No medical reports found for your account.",
       });
     }
 
-    // Build context
-    const context = `
-Summary: ${report.ai_summary}
-
-Risk Level: ${report.risk_level}
-
-Abnormalities:
-${report.abnormalities
-  .map(a => `${a.name} (${a.severity}): ${a.description}`)
-  .join("\n")}
-`;
-
-    // AI response
+    const context = `Summary: ${report.ai_summary}\nRisk Level: ${report.risk_level}`;
     const answer = await generatePatientFriendlyResponse(context, question);
 
-    // OPTIONAL: Save triage log
     await ChatbotLog.create({
       patient_id: patientId,
       reported_symptoms: question,
-      ai_severity_rating: "Normal", // can upgrade later with AI classification
+      ai_severity_rating: "Normal",
       ai_action_taken: answer,
     });
 
-    res.json({
-      success: true,
-      answer,
-    });
+    res.json({ success: true, answer });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

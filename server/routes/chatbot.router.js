@@ -1,9 +1,9 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-const verifyToken = require("../middlewares/verifyToken");
-const { askChatbot } = require("../controllers/chatbot.controller");
+import { protect } from "../middlewares/auth.middleware.js";
+import { askChatbot } from "../controllers/chatbot.controller.js";
 
-router.post("/", verifyToken, askChatbot);
+router.post("/", protect , askChatbot);
 
-module.exports = router;
+export default router;

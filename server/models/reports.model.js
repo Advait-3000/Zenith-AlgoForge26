@@ -39,7 +39,7 @@ const medicalRecordSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Patient ID is required"],
-      index: true,
+    //   index: true,
     },
 
     uploaded_by: {
