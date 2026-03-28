@@ -28,6 +28,46 @@ const aiAnalysisSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+<<<<<<< HEAD
+=======
+    // ─── HIERARCHICAL CLINICAL ANALYSIS ─────────────────
+    primary_clinical_concerns: [{
+      category: String,
+      test_name: String,
+      result: String,
+      unit: String,
+      reference_range: String,
+      implication: String
+    }],
+    secondary_findings: [{
+      category: String,
+      test_name: String,
+      result: String,
+      unit: String,
+      reference_range: String
+    }],
+    stable_systems: [String],
+    
+    // ─── EXTRACTED CLINICAL DATA ─────────────────────────
+    patient_details: {
+      name: String,
+      age: String,
+      gender: String,
+      pid: String
+    },
+    lab_details: {
+      name: String,
+      location: String,
+      sample_date: Date
+    },
+    clinical_data: {
+      type: Map,
+      of: String // Store "Value Unit" (e.g., "12.5 g/dL")
+    },
+    summary_file_url: {
+      type: String // URL to the dedicated summary file on Cloudinary
+    }
+>>>>>>> origin/features
   },
   { _id: false }
 );
@@ -39,7 +79,11 @@ const medicalRecordSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Patient ID is required"],
+<<<<<<< HEAD
       index: true,
+=======
+    //   index: true,
+>>>>>>> origin/features
     },
 
     uploaded_by: {
@@ -98,9 +142,12 @@ const medicalRecordSchema = new mongoose.Schema(
 
 // ─── INDEXES ─────────────────────────────────────────────
 
+<<<<<<< HEAD
 // Fast patient record lookup
 medicalRecordSchema.index({ patient_id: 1 });
 
+=======
+>>>>>>> origin/features
 // Filter by document type
 medicalRecordSchema.index({ document_type: 1 });
 
