@@ -7,10 +7,10 @@ import {
   Image, 
   FlatList, 
   TouchableOpacity, 
-  SafeAreaView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from '../../../shared/components/Button';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 

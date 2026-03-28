@@ -5,10 +5,10 @@ import {
   StyleSheet, 
   Image, 
   Dimensions, 
-  SafeAreaView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from '../../../shared/components/Button';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,18 +32,12 @@ export const WelcomeScreen: React.FC = () => {
         <View style={styles.buttonGroup}>
           <Button
             title="Create an account"
-            onPress={() => {
-              // Navigate to registration when ready
-              console.log('Navigate to Registration');
-            }}
+            onPress={() => navigation.navigate('CreateAccount')}
             variant="primary"
           />
           <Button
             title="Log in"
-            onPress={() => {
-              // Navigate to login when ready
-              console.log('Navigate to Login');
-            }}
+            onPress={() => navigation.navigate('Login')}
             variant="outline"
           />
         </View>
