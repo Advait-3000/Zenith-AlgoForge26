@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema(
   {
@@ -87,4 +87,4 @@ appointmentSchema.index({ status: 1 });
 // Upcoming appointments optimization
 appointmentSchema.index({ appointment_date: 1 });
 
-module.exports = mongoose.model("Appointment", appointmentSchema);
+export default mongoose.model("Appointment", appointmentSchema);

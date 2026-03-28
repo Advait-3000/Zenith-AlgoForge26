@@ -1,15 +1,10 @@
-const express = require('express');
+import express from "express"
 const router = express.Router();
-const { registerUser, loginUser } = require('../controllers/authController');
-const authMiddleware = require('../middleware/authMiddleware');
 
-// Public Routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+import { register, login} from "../controllers/auth.controller.js"
 
-// Example of a Protected Route using the Middleware
-router.get('/dashboard', authMiddleware, (req, res) => {
-    res.json({ message: `Welcome User ID: ${req.user.id}, Role: ${req.user.role}` });
-});
+// Public routes
+router.post("/register", register);
+router.post("/login", login);
 
-module.exports = router;
+export default router

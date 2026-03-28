@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const digitalTwinSimulationSchema = new mongoose.Schema(
   {
@@ -25,4 +25,4 @@ const digitalTwinSimulationSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Digital_Twin_Simulations', digitalTwinSimulationSchema);
+export default mongoose.model('Digital_Twin_Simulations', digitalTwinSimulationSchema);

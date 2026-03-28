@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // ─── AI ANALYSIS SUB-SCHEMA ─────────────────────────────
 const aiAnalysisSchema = new mongoose.Schema(
@@ -110,7 +110,7 @@ medicalRecordSchema.index({ upload_date: -1 });
 // Optional: search inside OCR text (for future AI/search)
 medicalRecordSchema.index({ ocr_extracted_text: "text" });
 
-module.exports = mongoose.model(
+export default mongoose.model(
   "MedicalRecord",
   medicalRecordSchema
 );

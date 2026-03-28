@@ -1,55 +1,120 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const { hashPassword, verifyPassword } = require('../utils/cryptoUtils');
+import bcrypt from "bcryptjs";
 
-exports.registerUser = async (req, res) => {
-    try {
-        const { email, password, role, full_name } = req.body;
+import User from "../models/user.model.js";
+import generateToken from "../utilities/generateToken.js";
 
-        // Check if user exists
-        let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ message: 'User already exists' });
+// 🔐 REGISTER
+export const register = async (req, res) => {
+  try {
+    const { email, password, full_name, role } = req.body;
 
-        // Hash password using PBKDF2
-        const { salt, hash } = hashPassword(password);
-
-        // Create new user securely
-        user = new User({
-            email,
-            password_hash: hash,
-            password_salt: salt,
-            role,
-            full_name
-        });
-
-        await user.save();
-        res.status(201).json({ message: 'User registered successfully.' });
-
-    } catch (error) {
-        res.status(500).send('Server error');
+    if (!email || !password || !full_name || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
+
+    // Check existing user
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    // Create user
+    const user = await User.create({
+      email,
+      password_hash,
+      full_name,
+      role,
+      location_coordinates: {
+        type: "Point",
+        coordinates: [0, 0], // default (you can update later)
+      },
+    });
+
+    const token = generateToken(user);
+
+    res.status(201).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+      },
+    });
+
+  } catch (err) {
+    console.error("Register Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
-exports.loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
 
-        // Find user
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: 'Invalid Credentials' });
+// 🔐 LOGIN
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-        // Verify password using PBKDF2
-        const isMatch = verifyPassword(password, user.password_salt, user.password_hash);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid Credentials' });
-
-        // Generate JWT Token
-        const payload = { user: { id: user._id, role: user.role } };
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10h' }, (err, token) => {
-            if (err) throw err;
-            res.json({ token, role: user.role });
-        });
-
-    } catch (error) {
-        res.status(500).send('Server error');
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email & password required",
+      });
     }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = generateToken(user);
+
+    user.last_login = new Date();
+    await user.save();
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+      },
+    });
+
+  } catch (err) {
+    console.error("Login Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };

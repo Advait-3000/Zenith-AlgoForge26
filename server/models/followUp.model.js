@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const agenticFollowUpSchema = new mongoose.Schema(
   {
@@ -71,7 +71,7 @@ agenticFollowUpSchema.index({ final_agreed_date: 1 });
 // Filter pending actions
 agenticFollowUpSchema.index({ reminder_status: 1 });
 
-module.exports = mongoose.model(
+export default mongoose.model(
   "AgenticFollowUp",
   agenticFollowUpSchema
 );

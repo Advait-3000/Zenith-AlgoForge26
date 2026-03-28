@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const chatbotTriageLogSchema = new mongoose.Schema(
   {
@@ -26,4 +26,4 @@ const chatbotTriageLogSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Chatbot_Triage_Logs', chatbotTriageLogSchema);
+export default mongoose.model('Chatbot_Triage_Logs', chatbotTriageLogSchema);
