@@ -1,30 +1,29 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, 
+  Users,
   Calendar, 
   Settings, 
   LogOut, 
   Search, 
   Bell, 
-  Plus, 
   ClipboardList,
   User as UserIcon,
   History
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import appLogo from '../assets/applogo.png';
 
 const SIDEBAR_ITEMS = [
   { icon: ClipboardList, label: 'Dashboard', path: '/dashboard' },
-  { icon: Calendar, label: 'Appointments', path: '/appointments' },
-  { icon: Users, label: 'Patients', path: '/patients' },
-  { icon: History, label: 'Consultations', path: '/history' },
+  { icon: Users, label: 'Patient Profile', path: '/patients' },
   { icon: UserIcon, label: 'Profile', path: '/profile' },
-  { icon: Settings, label: 'Clinic Setup', path: '/settings' },
 ];
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,8 +36,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
         className="h-screen bg-white shadow-cura-soft border-r border-slate-100 flex flex-col relative z-30 transition-all duration-300"
       >
         <div className="p-6 flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 bg-cura-primary rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/20">
-            <Plus className="text-white w-6 h-6 rotate-45" />
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/10 p-1.5 border border-slate-100">
+            <img src={appLogo} alt="Cura Logo" className="w-full h-full object-contain" />
           </div>
           {isSidebarOpen && (
             <span className="text-xl font-black text-slate-800 tracking-tight whitespace-nowrap">Cura</span>
@@ -95,11 +94,48 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                 </div>
             </div>
 
-            <div className="flex items-center gap-6">
-                <button className="relative w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center hover:bg-slate-100 transition-colors group">
+            <div className="flex items-center gap-6 relative">
+                <button 
+                    onClick={() => { setShowNotifications(!showNotifications); setHasUnreadNotifications(false); }}
+                    className="relative w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center hover:bg-slate-100 transition-colors group"
+                >
                     <Bell className="text-cura-text-soft group-hover:text-cura-primary transition-colors" size={22} />
-                    <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white ring-2 ring-red-500/20" />
+                    {hasUnreadNotifications && (
+                        <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white ring-2 ring-red-500/20" />
+                    )}
                 </button>
+                
+                <AnimatePresence>
+                    {showNotifications && (
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="absolute top-16 right-56 w-80 bg-white rounded-[2rem] shadow-cura-float border border-slate-100 p-6 z-[100]"
+                        >
+                            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-50">
+                                <h4 className="font-black text-slate-800 tracking-tight">Updates</h4>
+                                {hasUnreadNotifications && <span className="text-[10px] font-bold bg-cura-primary/10 text-cura-primary px-2 py-1 rounded-full uppercase">2 New</span>}
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-2 h-2 mt-1.5 rounded-full bg-cura-primary shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-700">Dr. Smith requested a consult update.</p>
+                                        <p className="text-xs text-slate-400 font-medium mt-1">10 mins ago</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-2 h-2 mt-1.5 rounded-full bg-cura-primary shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-700">Lab results for Emma Watson are ready.</p>
+                                        <p className="text-xs text-slate-400 font-medium mt-1">1 hour ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
                 
                 <div className="flex items-center gap-4 pl-4 border-l border-slate-100">
                     <div className="text-right hidden sm:block">

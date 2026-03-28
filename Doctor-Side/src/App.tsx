@@ -6,6 +6,8 @@ import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { ConsultationPage } from './features/prescriptions/pages/ConsultationPage';
 import { ProfilePage } from './features/doctor/pages/ProfilePage';
 
+import { PatientsPage } from './features/patients/pages/PatientsPage';
+
 function App() {
   return (
     <Routes>
@@ -16,6 +18,7 @@ function App() {
       <Route path="/dashboard" element={<DashboardLayout children={<DashboardPage />} />} />
       <Route path="/consultation" element={<DashboardLayout children={<ConsultationPage />} />} />
       <Route path="/profile" element={<DashboardLayout children={<ProfilePage />} />} />
+      <Route path="/patients" element={<DashboardLayout children={<PatientsPage />} />} />
       
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import appLogo from '../../../assets/applogo.png';
 import { 
   Users, 
   Calendar, 
@@ -44,50 +45,24 @@ const WEEKLY_DATA = [
   { day: 'Thu', count: 22 }, { day: 'Fri', count: 14 }, { day: 'Sat', count: 8 },
 ];
 
+const MONTHLY_DATA = [
+  { day: 'Week 1', count: 45 }, { day: 'Week 2', count: 52 }, { day: 'Week 3', count: 38 },
+  { day: 'Week 4', count: 65 }
+];
+
 const RISK_DATA = [
   { name: 'Low', value: 65, color: '#10B981' },
   { name: 'Medium', value: 25, color: '#F59E0B' },
   { name: 'High', value: 10, color: '#EF4444' },
 ];
 
-const APPOINTMENTS = [
-  { 
-    id: 1, 
-    patientName: 'Sarah Jenkins', 
-    age: 28, 
-    gender: 'Female',
-    time: '10:30 AM', 
-    status: 'Confirmed', 
-    summary: 'Follow-up on recent lipid profile results. Patient reports mild fatigue.',
-    risk: 'Medium',
-    avatar: 'https://img.freepik.com/free-photo/young-beautiful-woman-pink-warm-sweater-natural-look-smiling-portrait-isolated-long-hair_285396-896.jpg'
-  },
-  { 
-    id: 2, 
-    patientName: 'Robert Vance', 
-    age: 54, 
-    gender: 'Male',
-    time: '11:15 AM', 
-    status: 'Arrived', 
-    summary: 'Hypertension screening. AI marked elevated systolic readings in last 3 weeks.',
-    risk: 'High',
-    avatar: 'https://img.freepik.com/free-photo/bearded-smiling-man-white-shirt-looking-confident_176420-18860.jpg'
-  },
-  { 
-    id: 3, 
-    patientName: 'Emma Watson', 
-    age: 22, 
-    gender: 'Female',
-    time: '12:00 PM', 
-    status: 'Pending', 
-    summary: 'Regular heart health checkup. Previous records show stable vitals.',
-    risk: 'Low',
-    avatar: 'https://img.freepik.com/free-photo/attractive-curly-woman-white-t-shirt-smiling-against-white-background_273609-20154.jpg'
-  },
-];
+import { APPOINTMENTS } from '../../../data/mockPatients';
 
 export const DashboardPage: React.FC = () => {
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
+    const [volumeView, setVolumeView] = useState<'Week' | 'Month'>('Week');
+    const [showRiskModal, setShowRiskModal] = useState<any>(null);
+    const [showFullSchedule, setShowFullSchedule] = useState(false);
 
     return (
         <div className="space-y-10 max-w-[1600px] mx-auto animate-in fade-in duration-700">
@@ -129,14 +104,14 @@ export const DashboardPage: React.FC = () => {
                             <p className="text-sm font-medium text-cura-text-soft">Weekly appointment analytics</p>
                         </div>
                         <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
-                            <button className="px-4 py-1.5 bg-white shadow-sm rounded-lg text-xs font-black text-cura-primary">Week</button>
-                            <button className="px-4 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-600">Month</button>
+                            <button onClick={() => setVolumeView('Week')} className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all ${volumeView === 'Week' ? 'bg-white shadow-sm text-cura-primary' : 'text-slate-400 hover:text-slate-600'}`}>Week</button>
+                            <button onClick={() => setVolumeView('Month')} className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all ${volumeView === 'Month' ? 'bg-white shadow-sm text-cura-primary' : 'text-slate-400 hover:text-slate-600'}`}>Month</button>
                         </div>
                     </div>
                     
                     <div className="h-72 w-full mt-auto">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={WEEKLY_DATA}>
+                            <LineChart data={volumeView === 'Week' ? WEEKLY_DATA : MONTHLY_DATA}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontWeight: 600, fontSize: 13}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontWeight: 600, fontSize: 13}} />
@@ -168,23 +143,33 @@ export const DashboardPage: React.FC = () => {
                         <p className="text-sm font-medium text-cura-text-soft">Current patient population health</p>
                     </div>
                     
-                    <div className="h-48 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={RISK_DATA}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={8}
-                                    dataKey="value"
-                                >
-                                    {RISK_DATA.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
+                    <div className="relative h-48 w-full">
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                            <div className="w-[72px] h-[72px] bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-slate-50/50 p-2">
+                                <img src={appLogo} alt="Cura Center Logo" className="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <div className="relative z-10 w-full h-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={RISK_DATA}
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={8}
+                                        dataKey="value"
+                                        onClick={(data, index) => setShowRiskModal(RISK_DATA[index])}
+                                        className="cursor-pointer hover:opacity-80 transition-opacity outline-none focus:outline-none"
+                                        stroke="none"
+                                    >
+                                        {RISK_DATA.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
 
                     <div className="w-full space-y-3 mt-6">
@@ -208,7 +193,7 @@ export const DashboardPage: React.FC = () => {
                         <h3 className="text-2xl font-black text-slate-800 tracking-tight">Today's Appointments</h3>
                         <p className="text-slate-500 font-semibold mt-1">Ready for consultation • 8 slots remaining</p>
                     </div>
-                    <Button variant="outline" className="h-12 px-5">View Full Schedule <ArrowRight size={18} /></Button>
+                    <Button variant="outline" className="h-12 px-5" onClick={() => setShowFullSchedule(true)}>View Full Schedule <ArrowRight size={18} /></Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -265,19 +250,140 @@ export const DashboardPage: React.FC = () => {
                     />
                 )}
             </AnimatePresence>
+
+            {/* Risk Detail Modal */}
+            <AnimatePresence>
+                {showRiskModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowRiskModal(null)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" 
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="w-full max-w-sm bg-white rounded-[2rem] shadow-2xl relative overflow-hidden z-[101] p-8"
+                        >
+                            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-4 h-4 rounded-full" style={{backgroundColor: showRiskModal.color}} />
+                                    <h3 className="font-black text-slate-800 text-xl tracking-tight">{showRiskModal.name} Risk</h3>
+                                </div>
+                                <button onClick={() => setShowRiskModal(null)} className="text-slate-400 hover:text-slate-600"><X /></button>
+                            </div>
+                            <p className="text-slate-500 font-medium text-sm leading-relaxed mb-6">
+                                Detailed breakdown of patients currently evaluating as {showRiskModal.name.toLowerCase()} criticality. Focus on proactive care routines.
+                            </p>
+                            <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl mb-4">
+                                <span className="font-bold text-slate-600 text-sm">Patient Population</span>
+                                <span className="font-black text-xl" style={{color: showRiskModal.color}}>{showRiskModal.value}%</span>
+                            </div>
+                            
+                            <div>
+                                <h4 className="font-bold text-slate-800 text-sm mb-3">Patients in Category</h4>
+                                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                    {APPOINTMENTS.filter(p => p.risk === showRiskModal.name).map(apt => (
+                                        <div 
+                                            key={apt.id} 
+                                            onClick={() => { setShowRiskModal(null); setSelectedPatient(apt); }} 
+                                            className="cursor-pointer flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 hover:bg-cura-primary/10 border border-slate-100 transition-colors"
+                                        >
+                                            <img src={apt.avatar} alt="Patient" className="w-10 h-10 rounded-xl object-cover shadow-sm" />
+                                            <div>
+                                                <h5 className="font-bold text-slate-800 text-xs">{apt.patientName}</h5>
+                                                <p className="text-[10px] text-slate-500 font-semibold">{apt.age} Yrs • {apt.time}</p>
+                                            </div>
+                                            <ChevronRight className="ml-auto text-slate-400" size={16} />
+                                        </div>
+                                    ))}
+                                    {APPOINTMENTS.filter(p => p.risk === showRiskModal.name).length === 0 && (
+                                        <div className="text-center font-bold text-xs text-slate-400 py-4">No patients detected in this category.</div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Full Schedule Modal */}
+            <AnimatePresence>
+                {showFullSchedule && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowFullSchedule(false)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" 
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="w-full max-w-5xl bg-white rounded-[3rem] shadow-2xl relative overflow-hidden z-[101] flex flex-col max-h-full"
+                        >
+                            <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Today's Total Schedule</h2>
+                                    <p className="text-sm font-semibold text-cura-text-soft mt-1">All upcoming and past appointments for today.</p>
+                                </div>
+                                <button onClick={() => setShowFullSchedule(false)} className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500">
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            <div className="p-10 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {APPOINTMENTS.map((apt) => (
+                                        <div 
+                                            key={apt.id} 
+                                            onClick={() => { setShowFullSchedule(false); setSelectedPatient(apt); }}
+                                            className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-cura-soft transition-all cursor-pointer group hover:border-cura-primary/20"
+                                        >
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm">
+                                                    <img src={apt.avatar} alt="Patient" className="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-lg font-black text-slate-800 group-hover:text-cura-primary transition-colors">{apt.patientName}</h4>
+                                                    <div className="flex items-center gap-1.5 text-cura-text-soft font-black text-xs">
+                                                        <Clock size={16} /> {apt.time}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                                                <div className={`px-4 py-1.5 rounded-full flex items-center gap-2 ${apt.risk === 'High' ? 'bg-red-50 text-red-600' : apt.risk === 'Medium' ? 'bg-orange-50 text-orange-600' : 'bg-green-50 text-green-600'}`}>
+                                                    <AlertCircle size={14} />
+                                                    <span className="text-[10px] font-black uppercase tracking-tight">{apt.risk} Risk</span>
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase text-slate-400">{apt.status}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
 
 // Patient Detail Modal Component
-const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ patient, onClose }) => {
+export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ patient, onClose }) => {
     const navigate = useNavigate();
     const [isRescheduling, setIsRescheduling] = useState(false);
+    const [rescheduleDate, setRescheduleDate] = useState('');
     const [newTimeSlot, setNewTimeSlot] = useState<string | null>(null);
 
     const handleReschedule = () => {
         // In a real app, make API call here.
-        alert(`Appointment rescheduled to ${newTimeSlot}`);
+        alert(`Appointment rescheduled to ${rescheduleDate} at ${newTimeSlot}`);
         setIsRescheduling(false);
         onClose();
     };
@@ -329,8 +435,14 @@ const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ p
                             <Button variant="outline" className="w-full h-12 text-sm" onClick={() => setIsRescheduling(true)}>Reschedule Slot</Button>
                         ) : (
                             <div className="space-y-3">
-                                <h5 className="text-xs font-black text-slate-800 uppercase tracking-widest text-center">Select New Time</h5>
-                                <div className="grid grid-cols-2 gap-2">
+                                <h5 className="text-[10px] font-black text-slate-800 uppercase tracking-widest text-center">Select New Date & Time</h5>
+                                <input 
+                                    type="date"
+                                    value={rescheduleDate}
+                                    onChange={(e) => setRescheduleDate(e.target.value)}
+                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 focus:border-cura-primary outline-none transition-colors"
+                                />
+                                <div className="grid grid-cols-2 gap-2 mt-2">
                                     {['09:00 AM', '01:30 PM', '04:00 PM', '05:15 PM'].map(t => (
                                         <button 
                                             key={t}
@@ -343,7 +455,7 @@ const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ p
                                 </div>
                                 <div className="flex gap-2 pt-2">
                                     <Button variant="outline" className="flex-1 h-10 text-xs" onClick={() => setIsRescheduling(false)}>Cancel</Button>
-                                    <Button className="flex-1 h-10 text-xs" onClick={handleReschedule} disabled={!newTimeSlot}>Confirm</Button>
+                                    <Button className="flex-1 h-10 text-xs" onClick={handleReschedule} disabled={!newTimeSlot || !rescheduleDate}>Confirm</Button>
                                 </div>
                             </div>
                         )}
@@ -383,22 +495,7 @@ const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ p
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 gap-6 mb-8">
-                        <div className="cura-card p-6 bg-white border border-slate-50 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-red-500/10 shadow-sm"><Heart size={24} /></div>
-                            <div>
-                                <p className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest">Avg Pulse</p>
-                                <h4 className="text-lg font-black text-slate-800">72 BPM</h4>
-                            </div>
-                        </div>
-                        <div className="cura-card p-6 bg-white border border-slate-50 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-sky-50 text-sky-500 rounded-2xl flex items-center justify-center shadow-sky-500/10 shadow-sm"><Droplets size={24} /></div>
-                            <div>
-                                <p className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest">BP Level</p>
-                                <h4 className="text-lg font-black text-slate-800">128/84</h4>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div className="space-y-6">
                         <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Pathology History</h4>
@@ -422,7 +519,7 @@ const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ p
                 
                     <div className="mt-10 pt-8 border-t border-slate-100 flex items-center gap-4">
                         <Button className="flex-1 h-14" onClick={() => navigate('/consultation')}>Start Consultation</Button>
-                        <Button variant="outline" className="flex-1 h-14">Request New Lab Lab</Button>
+                        <Button variant="outline" className="flex-1 h-14">Request New Lab Test</Button>
                     </div>
                 </div>
             </motion.div>
