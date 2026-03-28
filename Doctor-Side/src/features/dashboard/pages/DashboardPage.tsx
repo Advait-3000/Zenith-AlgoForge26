@@ -272,6 +272,16 @@ export const DashboardPage: React.FC = () => {
 // Patient Detail Modal Component
 const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ patient, onClose }) => {
     const navigate = useNavigate();
+    const [isRescheduling, setIsRescheduling] = useState(false);
+    const [newTimeSlot, setNewTimeSlot] = useState<string | null>(null);
+
+    const handleReschedule = () => {
+        // In a real app, make API call here.
+        alert(`Appointment rescheduled to ${newTimeSlot}`);
+        setIsRescheduling(false);
+        onClose();
+    };
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <motion.div 
@@ -315,7 +325,28 @@ const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ p
                     </div>
 
                     <div className="mt-auto pt-8">
-                        <Button variant="outline" className="w-full h-12 text-sm">Reschedule Slot</Button>
+                        {!isRescheduling ? (
+                            <Button variant="outline" className="w-full h-12 text-sm" onClick={() => setIsRescheduling(true)}>Reschedule Slot</Button>
+                        ) : (
+                            <div className="space-y-3">
+                                <h5 className="text-xs font-black text-slate-800 uppercase tracking-widest text-center">Select New Time</h5>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['09:00 AM', '01:30 PM', '04:00 PM', '05:15 PM'].map(t => (
+                                        <button 
+                                            key={t}
+                                            onClick={() => setNewTimeSlot(t)}
+                                            className={`py-2 text-xs font-bold rounded-xl border transition-all ${newTimeSlot === t ? 'bg-cura-primary text-white border-cura-primary' : 'bg-white text-slate-600 border-slate-200 hover:border-cura-primary/50'}`}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex gap-2 pt-2">
+                                    <Button variant="outline" className="flex-1 h-10 text-xs" onClick={() => setIsRescheduling(false)}>Cancel</Button>
+                                    <Button className="flex-1 h-10 text-xs" onClick={handleReschedule} disabled={!newTimeSlot}>Confirm</Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button, Input } from '@/components/BaseComponents';
-import { Mail, Lock, User, AtSign, ChevronRight, Stethoscope } from 'lucide-react';
+import { Mail, Lock, User, AtSign, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import appLogo from '../../../assets/applogo.png';
 
 const AuthPage: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -40,8 +41,8 @@ const AuthPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center mb-10"
         >
-          <div className="w-14 h-14 bg-white shadow-cura-card rounded-2xl flex items-center justify-center mb-3 ring-8 ring-cura-primary/5">
-            <Stethoscope className="text-cura-primary w-8 h-8" />
+          <div className="w-16 h-16 bg-white shadow-cura-card rounded-2xl flex items-center justify-center mb-3 ring-8 ring-cura-primary/5 p-2">
+            <img src={appLogo} alt="Cura Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
             Cura <span className="text-cura-primary">Portal</span>
@@ -50,15 +51,24 @@ const AuthPage: React.FC = () => {
         </motion.div>
 
         {/* 3D Flip Card Container */}
-        <div className="relative h-[530px] auth-perspective">
+        <motion.div 
+          className="relative auth-perspective w-full"
+          initial={false}
+          animate={{ height: isFlipped ? 620 : 540 }}
+          transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
+        >
           <motion.div
-            className="w-full h-full relative preserve-3d"
+            className="w-full h-full relative"
+            style={{ transformStyle: 'preserve-3d' }}
             initial={false}
             animate={{ rotateY: isFlipped ? 180 : 0 }}
             transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
           >
             {/* Front: Login */}
-            <div className="absolute inset-0 backface-hidden bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-cura-float border border-white/50 flex flex-col justify-between">
+            <div 
+              className="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-cura-float border border-white/50 flex flex-col justify-between"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-800 mb-1">Welcome back</h2>
@@ -94,16 +104,20 @@ const AuthPage: React.FC = () => {
               <div className="pt-6 border-t border-slate-100/50 flex flex-col items-center">
                 <p className="text-slate-500 font-medium text-sm mb-2">New to Cura?</p>
                 <button 
+                  type="button"
                   onClick={() => setIsFlipped(true)}
                   className="text-cura-primary font-bold hover:underline transition-all"
                 >
-                  Join the Network
+                  Create Account
                 </button>
               </div>
             </div>
 
             {/* Back: Signup */}
-            <div className="absolute inset-0 backface-hidden bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-cura-float border border-white/50 rotate-y-180 flex flex-col justify-between">
+            <div 
+              className="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-cura-float border border-white/50 flex flex-col justify-between"
+              style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+            >
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-800 mb-1">Join Cura</h2>
@@ -138,15 +152,16 @@ const AuthPage: React.FC = () => {
               <div className="pt-6 border-t border-slate-100/50 flex flex-col items-center">
                 <p className="text-slate-500 font-medium text-sm mb-2">Already Registered?</p>
                 <button 
+                  type="button"
                   onClick={() => setIsFlipped(false)}
                   className="text-cura-primary font-bold hover:underline transition-all"
                 >
-                  Return to Login
+                  Login
                 </button>
               </div>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
