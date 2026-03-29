@@ -123,8 +123,8 @@ export const login = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-console.log(1)
-    const { full_name, password, location_coordinates } = req.body;
+
+    const { full_name, password, contact_number, patient_details, location_coordinates } = req.body;
 
     const user = await User.findById(userId);
 
@@ -138,6 +138,9 @@ console.log(1)
     // Update name
     if (full_name) user.full_name = full_name;
 
+    // Update contact number
+    if (contact_number) user.contact_number = contact_number;
+
     // Update password (if provided)
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -149,6 +152,28 @@ console.log(1)
       user.location_coordinates = location_coordinates;
     }
 
+    // Update patient details (vitals, emergency contacts, disease history, etc.)
+    if (patient_details) {
+      if (!user.patient_details) user.patient_details = {};
+
+      if (patient_details.date_of_birth) user.patient_details.date_of_birth = patient_details.date_of_birth;
+      if (patient_details.gender) user.patient_details.gender = patient_details.gender;
+
+      if (patient_details.vitals) {
+        if (!user.patient_details.vitals) user.patient_details.vitals = {};
+        Object.assign(user.patient_details.vitals, patient_details.vitals);
+      }
+
+      if (patient_details.emergency_contacts) {
+        user.patient_details.emergency_contacts = patient_details.emergency_contacts;
+      }
+
+      if (patient_details.disease_history) {
+        user.patient_details.disease_history = patient_details.disease_history;
+      }
+    }
+
+    user.markModified("patient_details");
     await user.save();
 
     res.json({
@@ -159,6 +184,8 @@ console.log(1)
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        contact_number: user.contact_number,
+        patient_details: user.patient_details,
         location_coordinates: user.location_coordinates,
       },
     });
