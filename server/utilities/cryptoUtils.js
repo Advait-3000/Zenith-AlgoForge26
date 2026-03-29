@@ -1,13 +1,16 @@
-import crypto from 'crypto';
+import crypto from "crypto";
+import dotenv from "dotenv";
 
-// --- AES-256 DATA ENCRYPTION (For Medical Records) ---
-const ENCRYPTION_KEY = process.env.AES_SECRET_KEY; // Must be 32 bytes (256 bits)
-const IV_LENGTH = 16; 
+dotenv.config();
+
+const ENCRYPTION_KEY = process.env.AES_SECRET_KEY; // Must be 32 characters
+const IV_LENGTH = 16; // For AES, this is always 16
 
 export const encryptText = (text) => {
     if (!text) return "";
+    // Fail-safe for missing encryption key during development
     if (!ENCRYPTION_KEY) {
-        console.warn("⚠️ AES_SECRET_KEY is missing in .env! Storing data as plain text for now.");
+        console.warn("⚠️ [SECURITY] AES_SECRET_KEY missing. Returning plain text.");
         return text;
     }
     const iv = crypto.randomBytes(IV_LENGTH);

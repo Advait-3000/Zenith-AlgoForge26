@@ -1,5 +1,7 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dns from "dns";
@@ -10,13 +12,10 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 import connectDB from "./config/db.js";
 import routeMap from "./routeMap.js";
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
 
 // db
-connectDB();
+await connectDB();
 
 // Middleware
 app.use(cors());
