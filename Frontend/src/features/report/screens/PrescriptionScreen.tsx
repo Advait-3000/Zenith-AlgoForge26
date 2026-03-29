@@ -18,6 +18,7 @@ import {
   HandHelping
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -34,6 +35,7 @@ const HISTORY_PRESCRIPTIONS = [
 ];
 
 export const PrescriptionScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState('Actual');
 
@@ -43,19 +45,19 @@ export const PrescriptionScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Prescriptions</Text>
+        <Text style={styles.headerTitle}>{t('prescriptionsList.title')}</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Search */}
         <View style={styles.searchContainer}>
-          <Search color="#A0A0A0" size={20} />
+          <Search stroke="#A0A0A0" size={20} />
           <TextInput 
             style={styles.searchInput}
-            placeholder="Search your medications"
+            placeholder={t('prescriptionsList.searchPlaceholder')}
             placeholderTextColor="#A0A0A0"
           />
         </View>
@@ -68,7 +70,7 @@ export const PrescriptionScreen: React.FC = () => {
               style={[styles.tabItem, activeTab === tab && styles.activeTab]}
               onPress={() => setActiveTab(tab)}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{t(`prescriptionsList.tabs.${tab.toLowerCase()}`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -77,20 +79,20 @@ export const PrescriptionScreen: React.FC = () => {
         <View style={styles.controlsRow}>
           <View style={styles.sortBox}>
              <View style={styles.circularIcon}>
-               <ArrowUpDown color="#717171" size={24} />
+               <ArrowUpDown stroke="#717171" size={24} />
              </View>
-             <Text style={styles.controlText}>By date</Text>
+             <Text style={styles.controlText}>{t('prescriptionsList.byDate')}</Text>
           </View>
           <TouchableOpacity style={styles.circularIcon}>
-             <Settings2 color="#717171" size={24} />
+             <Settings2 stroke="#717171" size={24} />
           </TouchableOpacity>
         </View>
 
         {prescriptions.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <HandHelping color="#306F6F" size={60} strokeWidth={1} />
-            <Text style={styles.emptyTitle}>No Prescriptions Found</Text>
-            <Text style={styles.emptySub}>Your medications will appear here once prescribed by a doctor.</Text>
+            <HandHelping stroke="#306F6F" size={60} strokeWidth={1} />
+            <Text style={styles.emptyTitle}>{t('prescriptionsList.empty.title')}</Text>
+            <Text style={styles.emptySub}>{t('prescriptionsList.empty.desc')}</Text>
           </View>
         ) : (
           prescriptions.map(item => (
@@ -101,14 +103,14 @@ export const PrescriptionScreen: React.FC = () => {
             >
                <View style={styles.cardHeader}>
                   <View style={styles.iconBox}>
-                     <HandHelping color="#306F6F" size={22} />
+                     <HandHelping stroke="#306F6F" size={22} />
                   </View>
                   <View style={styles.mainInfo}>
                      <Text style={styles.medName}>{item.name}</Text>
                      <Text style={styles.medDesc}>{item.desc}</Text>
                   </View>
                   <TouchableOpacity style={styles.moreBtn}>
-                     <MoreVertical color="#E0E8E8" size={20} />
+                     <MoreVertical stroke="#E0E8E8" size={20} />
                   </TouchableOpacity>
                </View>
 
@@ -308,3 +310,5 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 });
+
+

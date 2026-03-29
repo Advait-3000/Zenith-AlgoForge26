@@ -9,6 +9,7 @@ import {
   TouchableOpacity, 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,19 +18,20 @@ const { width, height } = Dimensions.get('window');
 const onboardingData = [
   {
     id: '1',
-    title: 'Healthcare Made Easy',
-    description: 'Choose from a wide range of specialists and book appointments with ease. Personalized care is just a click away.',
-    image: require('../../../assets/images/onboarding1.png'), // Generated image
+    titleKey: 'onboarding.slide1Title',
+    descriptionKey: 'onboarding.slide1Sub',
+    image: require('../../../assets/images/onboarding1.png'),
   },
   {
     id: '2',
-    title: 'Here for You, Always',
-    description: 'Save your test results, access prescriptions, get medication delivered, manage appointments — all in one place.',
-    image: require('../../../assets/images/onboarding2.png'), // Generated image
+    titleKey: 'onboarding.slide2Title',
+    descriptionKey: 'onboarding.slide2Sub',
+    image: require('../../../assets/images/onboarding2.png'),
   },
 ];
 
 export const OnboardingScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const navigation = useNavigation<any>();
@@ -56,8 +58,8 @@ export const OnboardingScreen: React.FC = () => {
       />
       
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+        <Text style={styles.title}>{t(item.titleKey)}</Text>
+        <Text style={styles.description}>{t(item.descriptionKey)}</Text>
       </View>
     </View>
   );
@@ -68,7 +70,7 @@ export const OnboardingScreen: React.FC = () => {
         style={styles.skipButton} 
         onPress={handleSkip}
       >
-        <Text style={styles.skipText}>Skip</Text>
+        <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
       </TouchableOpacity>
 
       <FlatList
@@ -101,7 +103,7 @@ export const OnboardingScreen: React.FC = () => {
         </View>
 
         <Button
-          title="Next"
+          title={currentIndex === onboardingData.length - 1 ? t('onboarding.getStarted') : t('onboarding.next')}
           onPress={handleNext}
           style={styles.nextButton}
         />

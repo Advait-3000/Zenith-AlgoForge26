@@ -3,34 +3,36 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, TextI
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pill, Microscope, Activity, FileText, MoveUpRight, Search, ChevronRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 const CATEGORIES = [
-  { id: '1', title: 'Prescriptions', icon: Pill, color: '#FF7D52', bgColor: '#FFF2EE', route: 'Prescriptions' },
-  { id: '2', title: 'Lab reports', icon: Microscope, color: '#306F6F', bgColor: '#EAF9F9', route: 'LabReports' },
-  { id: '3', title: 'Health metrics', icon: Activity, color: '#4A90E2', bgColor: '#EBF4FF', route: 'HealthMetrics' },
-  { id: '4', title: 'Visit summaries', icon: FileText, color: '#FBB03B', bgColor: '#FFF7E6', route: 'VisitSummaries' },
+  { id: '1', titleKey: 'records.categories.prescriptions', icon: Pill, color: '#FF7D52', bgColor: '#FFF2EE', route: 'Prescriptions' },
+  { id: '2', titleKey: 'records.categories.labReports', icon: Microscope, color: '#306F6F', bgColor: '#EAF9F9', route: 'LabReports' },
+  { id: '3', titleKey: 'records.categories.healthMetrics', icon: Activity, color: '#4A90E2', bgColor: '#EBF4FF', route: 'HealthMetrics' },
+  { id: '4', titleKey: 'records.categories.visitSummaries', icon: FileText, color: '#FBB03B', bgColor: '#FFF7E6', route: 'VisitSummaries' },
 ];
 
 const RECENT_REPORTS = [
-  { id: '1', name: 'General Blood Test', date: 'Feb 24, 2024', type: 'Lab report' },
-  { id: '2', name: 'Dental Checkup', date: 'Jan 15, 2024', type: 'Clinical summary' },
+  { id: '1', nameKey: 'records.reportNames.bloodTest', date: 'Feb 24, 2024', typeKey: 'records.reportTypes.lab' },
+  { id: '2', nameKey: 'records.reportNames.dental', date: 'Jan 15, 2024', typeKey: 'records.reportTypes.clinical' },
 ];
 
 export const MedicalRecordsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Medical records</Text>
+        <Text style={styles.title}>{t('records.title')}</Text>
 
         <View style={styles.searchContainer}>
-          <Search color="#A0A0A0" size={20} />
+          <Search stroke="#A0A0A0" size={20} />
           <TextInput 
             style={styles.searchInput}
-            placeholder="Search your records"
+            placeholder={t('records.searchPlaceholder')}
             placeholderTextColor="#A0A0A0"
           />
         </View>
@@ -43,34 +45,34 @@ export const MedicalRecordsScreen: React.FC = () => {
               onPress={() => navigation.navigate(item.route)}
             >
               <View style={[styles.iconContainer, { backgroundColor: item.bgColor }]}>
-                 <item.icon color={item.color} size={32} />
+                 <item.icon stroke={item.color} size={32} />
               </View>
               <View style={styles.cardText}>
-                 <Text style={styles.cardTitle}>{item.title}</Text>
-                 <Text style={styles.cardSubtitle}>View all</Text>
+                 <Text style={styles.cardTitle}>{t(item.titleKey)}</Text>
+                 <Text style={styles.cardSubtitle}>{t('records.categories.viewAll')}</Text>
               </View>
               <View style={styles.arrowBtn}>
-                <MoveUpRight color="#FFFFFF" size={20} />
+                <MoveUpRight stroke="#FFFFFF" size={20} />
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.recentHeader}>
-           <Text style={styles.sectionTitle}>Recent reports</Text>
-           <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+           <Text style={styles.sectionTitle}>{t('records.recent.title')}</Text>
+           <TouchableOpacity><Text style={styles.seeAll}>{t('records.recent.seeAll')}</Text></TouchableOpacity>
         </View>
 
         {RECENT_REPORTS.map(report => (
           <TouchableOpacity key={report.id} style={styles.reportRow}>
              <View style={styles.reportIconBox}>
-                <FileText color="#306F6F" size={22} />
+                <FileText stroke="#306F6F" size={22} />
              </View>
              <View style={styles.reportInfo}>
-                <Text style={styles.reportName}>{report.name}</Text>
-                <Text style={styles.reportMeta}>{report.type} • {report.date}</Text>
+                <Text style={styles.reportName}>{t(report.nameKey)}</Text>
+                <Text style={styles.reportMeta}>{t(report.typeKey)} • {report.date}</Text>
              </View>
-             <ChevronRight color="#E0E8E8" size={20} />
+             <ChevronRight stroke="#E0E8E8" size={20} />
           </TouchableOpacity>
         ))}
 
@@ -223,3 +225,6 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+
+
+

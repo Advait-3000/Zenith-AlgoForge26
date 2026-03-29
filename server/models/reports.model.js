@@ -81,6 +81,7 @@ const medicalRecordSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Patient ID is required"],
+      index: true,
     //   index: true,
     },
 
@@ -139,6 +140,9 @@ const medicalRecordSchema = new mongoose.Schema(
 );
 
 // ─── INDEXES ─────────────────────────────────────────────
+
+// Fast patient record lookup
+medicalRecordSchema.index({ patient_id: 1 });
 
 // Filter by document type
 medicalRecordSchema.index({ document_type: 1 });

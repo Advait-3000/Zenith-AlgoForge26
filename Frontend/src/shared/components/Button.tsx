@@ -44,7 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? '#FFFFFF' : '#2A6F6F'} />
+        <ActivityIndicator stroke={isPrimary ? '#FFFFFF' : '#2A6F6F'} />
       ) : (
         <Text
           style={[
@@ -94,3 +94,4 @@ const styles = StyleSheet.create({
     color: '#306F6F',
   },
 });
+

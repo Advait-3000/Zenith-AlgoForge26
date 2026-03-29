@@ -63,7 +63,7 @@ export const LifestyleInfoScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#212121" size={24} />
+          <ArrowLeft stroke="#212121" size={24} />
         </TouchableOpacity>
         <ProgressBar totalSteps={6} currentStep={4} />
         <TouchableOpacity onPress={() => navigation.navigate('InsuranceInfo')}>
@@ -196,3 +196,4 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+

@@ -33,7 +33,7 @@ export const ChangeEmailScreen: React.FC = () => {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-              <ArrowLeft color="#717171" size={24} />
+              <ArrowLeft stroke="#717171" size={24} />
             </TouchableOpacity>
             <View style={styles.progressContainer}>
               <View style={[styles.progressBar, styles.activeProgress]} />
@@ -173,3 +173,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

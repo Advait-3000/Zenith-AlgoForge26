@@ -6,7 +6,7 @@ const chatbotTriageLogSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Patient ID is required'],
-    //   index: true,
+      index: true
     },
     reported_symptoms: {
       type: String,

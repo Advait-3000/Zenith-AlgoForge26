@@ -77,8 +77,8 @@
 //       <View style={styles.calendarHeader}>
 //         <Text style={styles.monthTitle}>October 2024</Text>
 //         <View style={styles.calendarArrows}>
-//            <TouchableOpacity><ChevronLeft color="#E0E8E8" size={24} /></TouchableOpacity>
-//            <TouchableOpacity style={{ marginLeft: 15 }}><ChevronRight color="#333333" size={24} /></TouchableOpacity>
+//            <TouchableOpacity><ChevronLeft stroke="#E0E8E8" size={24} /></TouchableOpacity>
+//            <TouchableOpacity style={{ marginLeft: 15 }}><ChevronRight stroke="#333333" size={24} /></TouchableOpacity>
 //         </View>
 //       </View>
 
@@ -169,7 +169,7 @@
 //       ].map((item, index) => (
 //         <View key={index} style={styles.aboutItem}>
 //           <View style={styles.aboutHeader}>
-//             <item.icon color="#306F6F" size={20} />
+//             <item.icon stroke="#306F6F" size={20} />
 //             <Text style={styles.aboutTitle}>{item.title}</Text>
 //           </View>
 //           <Text style={styles.aboutText}>{item.content}</Text>
@@ -186,7 +186,7 @@
 //           style={styles.leaveReviewLink}
 //           onPress={() => navigation.navigate('ReviewForm')}
 //         >
-//           <MessageSquare color="#306F6F" size={18} />
+//           <MessageSquare stroke="#306F6F" size={18} />
 //           <Text style={styles.leaveReviewText}>Leave a review</Text>
 //         </TouchableOpacity>
 //       </View>
@@ -202,7 +202,7 @@
 //                <Text style={styles.reviewDate}>{review.date}</Text>
 //             </View>
 //             <View style={styles.starRow}>
-//                {[1,2,3,4,5].map(s => <Star key={s} color="#FBB03B" fill="#FBB03B" size={14} />)}
+//                {[1,2,3,4,5].map(s => <Star key={s} stroke="#FBB03B" fill="#FBB03B" size={14} />)}
 //             </View>
 //           </View>
 //           <Text style={styles.reviewText}>{review.text}</Text>
@@ -219,17 +219,17 @@
 //           <SafeAreaView edges={['top']}>
 //             <View style={styles.topNav}>
 //               <TouchableOpacity style={styles.circularBtn} onPress={() => navigation.goBack()}>
-//                 <ArrowLeft color="#212121" size={22} />
+//                 <ArrowLeft stroke="#212121" size={22} />
 //               </TouchableOpacity>
 //               <View style={styles.topNavRight}>
 //                 <TouchableOpacity 
 //                   style={styles.circularBtn}
 //                   onPress={() => setIsFavorite(!isFavorite)}
 //                 >
-//                   <Heart color={isFavorite ? "#FF5252" : "#212121"} fill={isFavorite ? "#FF5252" : "transparent"} size={22} />
+//                   <Heart stroke={isFavorite ? "#FF5252" : "#212121"} fill={isFavorite ? "#FF5252" : "transparent"} size={22} />
 //                 </TouchableOpacity>
 //                 <TouchableOpacity style={[styles.circularBtn, { marginLeft: 15 }]}>
-//                   <Share2 color="#212121" size={22} />
+//                   <Share2 stroke="#212121" size={22} />
 //                 </TouchableOpacity>
 //               </View>
 //             </View>
@@ -242,7 +242,7 @@
               
 //               <View style={styles.badgeRow}>
 //                 <View style={[styles.badge, styles.ratingBadge]}>
-//                    <Star color="#306F6F" fill="#306F6F" size={14} />
+//                    <Star stroke="#306F6F" fill="#306F6F" size={14} />
 //                    <Text style={styles.badgeText}>4.9</Text>
 //                 </View>
 //                 <View style={[styles.badge, styles.idBadge]}>
@@ -681,6 +681,7 @@ import {
   MessageSquare,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../shared/components/Button';
 
 const { width } = Dimensions.get('window');
@@ -710,6 +711,7 @@ const TIMES = ['10:00', '11:00', '12:00', '13:00', '15:00', '16:00', '17:00', '1
 const TABS = ['Book', 'About', 'Reviews'];
 
 export const DoctorProfileScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState(0);
   const [selectedDate, setSelectedDate] = useState(17);
@@ -733,10 +735,10 @@ export const DoctorProfileScreen: React.FC = () => {
       contentContainerStyle={styles.tabScrollContent}
     >
       <View style={styles.priceRow}>
-        <Text style={styles.priceLabel}>Price</Text>
+        <Text style={styles.priceLabel}>{t('doctorProfile.price')}</Text>
       </View>
       <View style={styles.priceDetail}>
-        <Text style={styles.priceText}>1 hour consultation</Text>
+        <Text style={styles.priceText}>{t('doctorProfile.consultation')}</Text>
         <Text style={styles.priceAmount}>{DOCTOR_DATA.price}</Text>
       </View>
 
@@ -745,8 +747,8 @@ export const DoctorProfileScreen: React.FC = () => {
       <View style={styles.calendarHeader}>
         <Text style={styles.monthTitle}>October 2024</Text>
         <View style={styles.calendarArrows}>
-          <TouchableOpacity><ChevronLeft color="#E0E8E8" size={24} /></TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 15 }}><ChevronRight color="#333333" size={24} /></TouchableOpacity>
+          <TouchableOpacity><ChevronLeft stroke="#E0E8E8" size={24} /></TouchableOpacity>
+          <TouchableOpacity style={{ marginLeft: 15 }}><ChevronRight stroke="#333333" size={24} /></TouchableOpacity>
         </View>
       </View>
 
@@ -775,7 +777,7 @@ export const DoctorProfileScreen: React.FC = () => {
 
       <View style={styles.divider} />
 
-      <Text style={styles.sectionLabel}>Select time</Text>
+      <Text style={styles.sectionLabel}>{t('doctorProfile.selectTime')}</Text>
       <View style={styles.timeGrid}>
         {TIMES.map(time => (
           <TouchableOpacity
@@ -792,21 +794,21 @@ export const DoctorProfileScreen: React.FC = () => {
 
       <View style={styles.divider} />
 
-      <Text style={styles.sectionLabel}>Type of appointment</Text>
+      <Text style={styles.sectionLabel}>{t('doctorProfile.appointmentType')}</Text>
       <View style={styles.radioRow}>
         {['In-person', 'Video call'].map(type => (
           <TouchableOpacity key={type} style={styles.radioOption} onPress={() => setAppointmentType(type)}>
             <View style={styles.radioOuter}>
               {appointmentType === type && <View style={styles.radioInner} />}
             </View>
-            <Text style={styles.radioText}>{type}</Text>
+            <Text style={styles.radioText}>{type === 'In-person' ? t('doctorProfile.inPerson') : t('doctorProfile.videoCall')}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.divider} />
 
-      <Text style={styles.sectionLabel}>Location</Text>
+      <Text style={styles.sectionLabel}>{t('doctorProfile.location')}</Text>
       <Text style={styles.locationDetail}>{DOCTOR_DATA.workingPlace}</Text>
 
       <View style={{ height: 20 }} />
@@ -821,17 +823,17 @@ export const DoctorProfileScreen: React.FC = () => {
       contentContainerStyle={styles.tabScrollContent}
     >
       {[
-        { title: 'General information', icon: FileText, content: DOCTOR_DATA.about },
-        { title: 'Current working place', icon: Building2, content: DOCTOR_DATA.workingPlace },
-        { title: 'Education', icon: GraduationCap, content: DOCTOR_DATA.education },
-        { title: 'Certification', icon: Stethoscope, content: DOCTOR_DATA.certification },
-        { title: 'Training', icon: History, content: DOCTOR_DATA.training },
-        { title: 'Licensure', icon: Award, content: DOCTOR_DATA.licensure },
-        { title: 'Experience', icon: Stethoscope, content: DOCTOR_DATA.experience },
+        { title: t('doctorProfile.generalInfo'), icon: FileText, content: DOCTOR_DATA.about },
+        { title: t('doctorProfile.workingPlace'), icon: Building2, content: DOCTOR_DATA.workingPlace },
+        { title: t('doctorProfile.education'), icon: GraduationCap, content: DOCTOR_DATA.education },
+        { title: t('doctorProfile.certification'), icon: Stethoscope, content: DOCTOR_DATA.certification },
+        { title: t('doctorProfile.training'), icon: History, content: DOCTOR_DATA.training },
+        { title: t('doctorProfile.licensure'), icon: Award, content: DOCTOR_DATA.licensure },
+        { title: t('doctorProfile.experience'), icon: Stethoscope, content: DOCTOR_DATA.experience },
       ].map((item, index) => (
         <View key={index} style={styles.aboutItem}>
           <View style={styles.aboutHeader}>
-            <item.icon color="#306F6F" size={20} />
+            <item.icon stroke="#306F6F" size={20} />
             <Text style={styles.aboutTitle}>{item.title}</Text>
           </View>
           <Text style={styles.aboutText}>{item.content}</Text>
@@ -849,10 +851,10 @@ export const DoctorProfileScreen: React.FC = () => {
       contentContainerStyle={styles.tabScrollContent}
     >
       <View style={styles.reviewsMeta}>
-        <Text style={styles.reviewCount}>13 reviews</Text>
+        <Text style={styles.reviewCount}>{t('doctorProfile.reviewsCount', { count: 13 })}</Text>
         <TouchableOpacity style={styles.leaveReviewLink} onPress={() => navigation.navigate('ReviewForm')}>
-          <MessageSquare color="#306F6F" size={18} />
-          <Text style={styles.leaveReviewText}>Leave a review</Text>
+          <MessageSquare stroke="#306F6F" size={18} />
+          <Text style={styles.leaveReviewText}>{t('doctorProfile.leaveReview')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -867,7 +869,7 @@ export const DoctorProfileScreen: React.FC = () => {
               <Text style={styles.reviewDate}>{review.date}</Text>
             </View>
             <View style={styles.starRow}>
-              {[1, 2, 3, 4, 5].map(s => <Star key={s} color="#FBB03B" fill="#FBB03B" size={14} />)}
+              {[1, 2, 3, 4, 5].map(s => <Star key={s} stroke="#FBB03B" fill="#FBB03B" size={14} />)}
             </View>
           </View>
           <Text style={styles.reviewText}>{review.text}</Text>
@@ -886,14 +888,14 @@ export const DoctorProfileScreen: React.FC = () => {
         <SafeAreaView edges={['top']}>
           <View style={styles.topNav}>
             <TouchableOpacity style={styles.circularBtn} onPress={() => navigation.goBack()}>
-              <ArrowLeft color="#212121" size={22} />
+              <ArrowLeft stroke="#212121" size={22} />
             </TouchableOpacity>
             <View style={styles.topNavRight}>
               <TouchableOpacity style={styles.circularBtn} onPress={() => setIsFavorite(!isFavorite)}>
-                <Heart color={isFavorite ? "#FF5252" : "#212121"} fill={isFavorite ? "#FF5252" : "transparent"} size={22} />
+                <Heart stroke={isFavorite ? "#FF5252" : "#212121"} fill={isFavorite ? "#FF5252" : "transparent"} size={22} />
               </TouchableOpacity>
               <TouchableOpacity style={[styles.circularBtn, { marginLeft: 15 }]}>
-                <Share2 color="#212121" size={22} />
+                <Share2 stroke="#212121" size={22} />
               </TouchableOpacity>
             </View>
           </View>
@@ -902,10 +904,10 @@ export const DoctorProfileScreen: React.FC = () => {
         <View style={styles.headerInfo}>
           <View style={styles.textColumn}>
             <Text style={styles.docNameTitle}>Dr. Charlotte Elizabeth Montgomery</Text>
-            <Text style={styles.docSpecialtySub}>Cardiologist</Text>
+            <Text style={styles.docSpecialtySub}>{t('home.specialisations.cardiologist')}</Text>
             <View style={styles.badgeRow}>
               <View style={[styles.badge]}>
-                <Star color="#306F6F" fill="#306F6F" size={14} />
+                <Star stroke="#306F6F" fill="#306F6F" size={14} />
                 <Text style={styles.badgeText}>4.9</Text>
               </View>
               <View style={[styles.badge]}>
@@ -926,7 +928,7 @@ export const DoctorProfileScreen: React.FC = () => {
             style={[styles.tabBtn, activeTab === index && styles.activeTabBtn]}
           >
             <Text style={[styles.tabBtnText, activeTab === index && styles.activeTabBtnText]}>
-              {tab}
+              {index === 0 ? t('doctorProfile.book') : index === 1 ? t('doctorProfile.about') : t('doctorProfile.reviews')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -953,7 +955,7 @@ export const DoctorProfileScreen: React.FC = () => {
       {/* ── Persistent Footer Button ── */}
       <View style={styles.footer}>
         <Button
-          title="Book appointment"
+          title={t('doctorProfile.bookAppointment')}
           onPress={() => navigation.navigate('BookingConfirmation')}
         />
       </View>
@@ -1105,3 +1107,5 @@ const styles = StyleSheet.create({
   // ── Footer ──
   footer: { padding: 24, backgroundColor: '#F7FEFE', borderTopWidth: 1, borderTopColor: '#EAF9F9' },
 });
+
+

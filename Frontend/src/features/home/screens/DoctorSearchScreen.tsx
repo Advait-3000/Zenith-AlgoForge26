@@ -10,6 +10,7 @@ import {
   TextInput 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
   Search, 
@@ -25,14 +26,15 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 const { width } = Dimensions.get('window');
 
 const ALL_DOCTORS = [
-  { id: '1', name: 'Dr. Mia Miller', specialty: 'Gynecologist', rating: 5.0, image: 'https://img.freepik.com/free-photo/pleased-young-female-doctor-white-coat-with-stethoscope-neck-standing-with-folded-arms-isolated-white-background_637285-3396.jpg' },
-  { id: '2', name: 'Dr. Norah Still', specialty: 'Gynecologist', rating: 4.9, image: 'https://img.freepik.com/free-photo/front-view-young-female-doctor-medical-uniform-with-mask-due-covid-white-wall_140725-78482.jpg' },
-  { id: '3', name: 'Dr. Helena Fox', specialty: 'Gynecologist', rating: 4.9, image: 'https://img.freepik.com/free-photo/woman-doctor-wearing-lab-coat-with-stethoscope-isolated_1303-29791.jpg' },
-  { id: '4', name: 'Dr. Andrew Miller', specialty: 'Gynecologist', rating: 4.8, image: 'https://img.freepik.com/free-photo/handsome-young-male-doctor-with-stethoscope-standing-against-blue-background_23-2148127025.jpg' },
-  { id: '5', name: 'Dr. Sarah Wilson', specialty: 'Pulmonologist', rating: 4.7, image: 'https://img.freepik.com/free-photo/medical-concept-young-female-doctor-white-coat-isolated-white_186202-3932.jpg' },
+  { id: '1', name: 'Dr. Mia Miller', specialty: 'gynecologist', rating: 5.0, image: 'https://img.freepik.com/free-photo/pleased-young-female-doctor-white-coat-with-stethoscope-neck-standing-with-folded-arms-isolated-white-background_637285-3396.jpg' },
+  { id: '2', name: 'Dr. Norah Still', specialty: 'gynecologist', rating: 4.9, image: 'https://img.freepik.com/free-photo/front-view-young-female-doctor-medical-uniform-with-mask-due-covid-white-wall_140725-78482.jpg' },
+  { id: '3', name: 'Dr. Helena Fox', specialty: 'gynecologist', rating: 4.9, image: 'https://img.freepik.com/free-photo/woman-doctor-wearing-lab-coat-with-stethoscope-isolated_1303-29791.jpg' },
+  { id: '4', name: 'Dr. Andrew Miller', specialty: 'gynecologist', rating: 4.8, image: 'https://img.freepik.com/free-photo/handsome-young-male-doctor-with-stethoscope-standing-against-blue-background_23-2148127025.jpg' },
+  { id: '5', name: 'Dr. Sarah Wilson', specialty: 'pulmonologist', rating: 4.7, image: 'https://img.freepik.com/free-photo/medical-concept-young-female-doctor-white-coat-isolated-white_186202-3932.jpg' },
 ];
 
 export const DoctorSearchScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const initialQuery = route.params?.query || '';
@@ -60,10 +62,10 @@ export const DoctorSearchScreen: React.FC = () => {
   const renderNoResults = () => (
     <View style={styles.noResultsContainer}>
        <View style={styles.emptyCircle}>
-          <Search color="#306F6F" size={40} />
+          <Search stroke="#306F6F" size={40} />
        </View>
-       <Text style={styles.noResultsTitle}>Sorry, no results found</Text>
-       <Text style={styles.noResultsSubtitle}>Please try a different search term.</Text>
+       <Text style={styles.noResultsTitle}>{t('search.noResults')}</Text>
+       <Text style={styles.noResultsSubtitle}>{t('search.noResultsSub')}</Text>
     </View>
   );
 
@@ -72,25 +74,25 @@ export const DoctorSearchScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#212121" size={24} />
+          <ArrowLeft stroke="#212121" size={24} />
         </TouchableOpacity>
-        <Text style={styles.title}>Search results</Text>
+        <Text style={styles.title}>{t('search.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <View style={styles.searchRow}>
         <View style={styles.searchBox}>
-          <Search color="#A0A0A0" size={20} />
+          <Search stroke="#A0A0A0" size={20} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search"
+            placeholder={t('search.placeholder')}
             placeholderTextColor="#A0A0A0"
             value={searchQuery}
             onChangeText={handleSearch}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => handleSearch('')}>
-              <X color="#A0A0A0" size={20} />
+              <X stroke="#A0A0A0" size={20} />
             </TouchableOpacity>
           )}
         </View>
@@ -98,15 +100,15 @@ export const DoctorSearchScreen: React.FC = () => {
 
       <View style={styles.filterRow}>
          <TouchableOpacity style={styles.sortBtn}>
-            <ArrowUpDown color="#212121" size={20} />
+            <ArrowUpDown stroke="#212121" size={20} />
          </TouchableOpacity>
-         <Text style={styles.sortLabel}>By location</Text>
+         <Text style={styles.sortLabel}>{t('search.byLocation')}</Text>
          <View style={{ flex: 1 }} />
          <TouchableOpacity 
            style={styles.filterBtn}
            onPress={() => navigation.navigate('DoctorFilter')}
          >
-            <ListFilter color="#212121" size={24} />
+            <ListFilter stroke="#212121" size={24} />
             <View style={styles.filterBadge}>
                <Text style={styles.badgeText}>9</Text>
             </View>
@@ -128,14 +130,14 @@ export const DoctorSearchScreen: React.FC = () => {
                 <View style={styles.imageWrapper}>
                   <Image source={{ uri: doc.image }} style={styles.doctorImg} />
                   <View style={styles.ratingBadge}>
-                    <Star color="#FBB03B" fill="#FBB03B" size={12} />
+                    <Star stroke="#FBB03B" fill="#FBB03B" size={12} />
                     <Text style={styles.ratingText}>{doc.rating.toFixed(1)}</Text>
                   </View>
                 </View>
                 <Text style={styles.docName}>{doc.name}</Text>
-                <Text style={styles.docSpecialty}>{doc.specialty}</Text>
+                <Text style={styles.docSpecialty}>{t(`home.specialisations.${doc.specialty.toLowerCase()}`)}</Text>
                 <TouchableOpacity style={styles.docArrowBtn}>
-                  <MoveUpRight color="#FFFFFF" size={20} />
+                  <MoveUpRight stroke="#FFFFFF" size={20} />
                 </TouchableOpacity>
               </TouchableOpacity>
             ))}
@@ -357,3 +359,5 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+
+

@@ -25,26 +25,28 @@ import {
   FileDown
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../shared/components/Button';
 
 const { width, height } = Dimensions.get('window');
 
 const REPORTS = [
-  { id: '1', title: 'Complete Blood Count (CBC)', date: '02 Jan, 2024', status: 'Pending', message: 'Results will be 03 Jan, 2024', color: '#717171' },
-  { id: '2', title: 'Complete Blood Count (CBC)', date: '02 Jan, 2024', status: 'Normal Results', color: '#306F6F' },
-  { id: '3', title: 'Lipid Panel', date: '02 Jan, 2024', status: 'Requires Attention', color: '#FBB03B' },
-  { id: '4', title: 'Thyroid Function Test', date: '02 Jan, 2024', status: 'Follow-Up Needed', color: '#FF5252' },
+  { id: '1', titleKey: 'reports.options.cbc', date: '02 Jan, 2024', status: 'Pending', statusKey: 'reports.status.pending', messageDate: '03 Jan, 2024', color: '#717171' },
+  { id: '2', titleKey: 'reports.options.cbc', date: '02 Jan, 2024', status: 'Normal Results', statusKey: 'reports.status.normal', color: '#306F6F' },
+  { id: '3', titleKey: 'reports.options.lipid', date: '02 Jan, 2024', status: 'Requires Attention', statusKey: 'reports.status.attention', color: '#FBB03B' },
+  { id: '4', titleKey: 'reports.options.thyroid', date: '02 Jan, 2024', status: 'Follow-Up Needed', statusKey: 'reports.status.followUp', color: '#FF5252' },
 ];
 
 const FILTER_OPTIONS = [
-  { id: '1', name: 'Hormonal Tests' },
-  { id: '2', name: 'Complete Blood Count' },
-  { id: '3', name: 'Metabolic and Nutritional Tests' },
-  { id: '4', name: 'Lipid Panel' },
-  { id: '5', name: 'Inflammatory Markers' },
+  { id: '1', nameKey: 'reports.filter.options.hormonal' },
+  { id: '2', nameKey: 'reports.filter.options.cbc' },
+  { id: '3', nameKey: 'reports.filter.options.metabolic' },
+  { id: '4', nameKey: 'reports.filter.options.lipid' },
+  { id: '5', nameKey: 'reports.filter.options.inflammatory' },
 ];
 
 export const LabReportsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [filterVisible, setFilterVisible] = useState(false);
   const [shareVisible, setShareVisible] = useState(false);
@@ -69,24 +71,24 @@ export const LabReportsScreen: React.FC = () => {
       <View style={styles.modalOverlay}>
         <View style={styles.filterContainer}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setFilterVisible(false)}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
-            <Text style={styles.modalTitle}>Filter</Text>
-            <TouchableOpacity onPress={() => setFilterVisible(false)}><Text style={styles.applyText}>Apply</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setFilterVisible(false)}><Text style={styles.cancelText}>{t('reports.filter.cancel')}</Text></TouchableOpacity>
+            <Text style={styles.modalTitle}>{t('reports.filter.title')}</Text>
+            <TouchableOpacity onPress={() => setFilterVisible(false)}><Text style={styles.applyText}>{t('reports.filter.apply')}</Text></TouchableOpacity>
           </View>
           
           <ScrollView showsVerticalScrollIndicator={false} style={styles.filterScroll}>
-             <Text style={styles.filterSectionTitle}>Test type</Text>
+             <Text style={styles.filterSectionTitle}>{t('reports.filter.testType')}</Text>
              {FILTER_OPTIONS.map(opt => (
                <TouchableOpacity key={opt.id} style={styles.checkboxRow} onPress={() => toggleFilter(opt.id)}>
                   <View style={[styles.checkbox, selectedFilters.includes(opt.id) && styles.checkboxActive]}>
-                    {selectedFilters.includes(opt.id) && <CheckCircle2 color="#FFFFFF" size={16} />}
+                    {selectedFilters.includes(opt.id) && <CheckCircle2 stroke="#FFFFFF" size={16} />}
                   </View>
-                  <Text style={[styles.checkboxLabel, selectedFilters.includes(opt.id) && styles.checkboxLabelActive]}>{opt.name}</Text>
+                  <Text style={[styles.checkboxLabel, selectedFilters.includes(opt.id) && styles.checkboxLabelActive]}>{t(opt.nameKey)}</Text>
                </TouchableOpacity>
              ))}
-             <TouchableOpacity style={styles.showAll}><Text style={styles.showAllText}>Show all</Text></TouchableOpacity>
+             <TouchableOpacity style={styles.showAll}><Text style={styles.showAllText}>{t('reports.filter.showAll')}</Text></TouchableOpacity>
 
-             <Text style={[styles.filterSectionTitle, { marginTop: 30 }]}>Result type</Text>
+             <Text style={[styles.filterSectionTitle, { marginTop: 30 }]}>{t('reports.filter.resultType')}</Text>
              <View style={styles.pillRow}>
                {['Good', 'Borderline', 'Bad'].map(type => (
                  <TouchableOpacity 
@@ -94,14 +96,14 @@ export const LabReportsScreen: React.FC = () => {
                    style={[styles.pill, resultType === type && styles.pillActive]}
                    onPress={() => setResultType(type)}
                  >
-                   <Text style={[styles.pillText, resultType === type && styles.pillTextActive]}>{type}</Text>
+                   <Text style={[styles.pillText, resultType === type && styles.pillTextActive]}>{t(`reports.filter.results.${type.toLowerCase()}`)}</Text>
                  </TouchableOpacity>
                ))}
              </View>
           </ScrollView>
 
           <TouchableOpacity style={styles.resetBtn}>
-             <Text style={styles.resetText}>Reset filter</Text>
+            <Text style={styles.resetText}>{t('reports.filter.reset')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -117,15 +119,15 @@ export const LabReportsScreen: React.FC = () => {
     >
       <Pressable style={styles.modalOverlay} onPress={() => setShareVisible(false)}>
         <View style={styles.shareCard}>
-          <Text style={styles.shareTitle}>Share report</Text>
-          <Text style={styles.shareDesc}>Share this file by copying the link or downloading it as a PDF.</Text>
+          <Text style={styles.shareTitle}>{t('reports.share.title')}</Text>
+          <Text style={styles.shareDesc}>{t('reports.share.desc')}</Text>
           <TouchableOpacity style={styles.shareMainBtn} onPress={() => setShareVisible(false)}>
-             <Copy color="#FFFFFF" size={20} />
-             <Text style={styles.shareMainText}>Copy link</Text>
+             <Copy stroke="#FFFFFF" size={20} />
+             <Text style={styles.shareMainText}>{t('reports.share.copyLink')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.shareSecBtn} onPress={() => setShareVisible(false)}>
-             <FileDown color="#306F6F" size={20} />
-             <Text style={styles.shareSecText}>Download PDF</Text>
+             <FileDown stroke="#306F6F" size={20} />
+             <Text style={styles.shareSecText}>{t('reports.share.downloadPdf')}</Text>
           </TouchableOpacity>
         </View>
       </Pressable>
@@ -136,9 +138,9 @@ export const LabReportsScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Lab reports</Text>
+        <Text style={styles.headerTitle}>{t('reports.title')}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -147,45 +149,47 @@ export const LabReportsScreen: React.FC = () => {
         <View style={styles.controlsRow}>
           <View style={styles.sortBox}>
              <View style={styles.circularIcon}>
-               <ArrowUpDown color="#717171" size={24} />
+               <ArrowUpDown stroke="#717171" size={24} />
              </View>
-             <Text style={styles.controlText}>By date</Text>
+             <Text style={styles.controlText}>{t('reports.byDate')}</Text>
           </View>
           <TouchableOpacity style={styles.circularIcon} onPress={() => setFilterVisible(true)}>
-             <Settings2 color="#717171" size={24} />
+             <Settings2 stroke="#717171" size={24} />
           </TouchableOpacity>
         </View>
 
         {REPORTS.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Microscope color="#306F6F" size={60} strokeWidth={1} />
-            <Text style={styles.emptyTitle}>No lab reports found</Text>
-            <Text style={styles.emptySub}>Your test reports will appear here once they are available.</Text>
+            <Microscope stroke="#306F6F" size={60} strokeWidth={1} />
+            <Text style={styles.emptyTitle}>{t('reports.noReports')}</Text>
+            <Text style={styles.emptySub}>{t('reports.noReportsSub')}</Text>
           </View>
         ) : (
           REPORTS.map(report => (
             <View key={report.id} style={styles.reportCard}>
                <View style={styles.cardTop}>
                  <View style={styles.cardInfo}>
-                   <Text style={styles.reportTitle}>{report.title}</Text>
+                   <Text style={styles.reportTitle}>{t(report.titleKey)}</Text>
                    <Text style={styles.reportMeta}>
-                      {report.date} • <Text style={{ color: report.color }}>{report.message || report.status}</Text>
+                      {report.date} • <Text style={{ color: report.color }}>
+                        {report.status === 'Pending' ? t('reports.status.pendingMsg', { date: report.messageDate }) : t(report.statusKey)}
+                      </Text>
                    </Text>
                  </View>
                  <TouchableOpacity style={styles.moreBtn} onPress={() => setShareVisible(true)}>
-                   <MoreVertical color="#E0E8E8" size={20} />
+                   <MoreVertical stroke="#E0E8E8" size={20} />
                  </TouchableOpacity>
                </View>
                
                {report.status !== 'Pending' && (
                  <View style={styles.cardActions}>
                     <TouchableOpacity style={styles.viewBtn}>
-                       <Eye color="#FFFFFF" size={18} />
-                       <Text style={styles.viewText}>View report</Text>
+                       <Eye stroke="#FFFFFF" size={18} />
+                       <Text style={styles.viewText}>{t('reports.viewReport')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.downloadBtn}>
-                       <Download color="#306F6F" size={18} />
-                       <Text style={styles.downText}>Download</Text>
+                       <Download stroke="#306F6F" size={18} />
+                       <Text style={styles.downText}>{t('reports.download')}</Text>
                     </TouchableOpacity>
                  </View>
                )}
@@ -521,3 +525,5 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
+
+

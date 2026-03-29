@@ -16,6 +16,7 @@ import {
   Pencil
 } from 'lucide-react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -38,6 +39,7 @@ interface MetricSection {
 }
 
 export const HealthMetricsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   // Initial state is empty as requested
@@ -66,13 +68,13 @@ export const HealthMetricsScreen: React.FC = () => {
     if (!section.isFilled) {
       return (
         <View key={key} style={styles.sectionRow}>
-          <Text style={styles.sectionLabel}>{section.title}</Text>
+          <Text style={styles.sectionLabel}>{t(`metrics.sections.${key}`)}</Text>
           <TouchableOpacity 
             style={styles.addBtn}
             onPress={() => navigation.navigate('HealthMetricsEdit', { type: key })}
           >
-            <Plus color="#306F6F" size={20} />
-            <Text style={styles.addText}>Add</Text>
+            <Plus stroke="#306F6F" size={20} />
+            <Text style={styles.addText}>{t('metrics.add')}</Text>
           </TouchableOpacity>
         </View>
       );
@@ -82,38 +84,38 @@ export const HealthMetricsScreen: React.FC = () => {
     return (
       <View key={key} style={styles.filledSection}>
         <View style={styles.sectionHeader}>
-           <Text style={styles.sectionTitle}>{section.title}</Text>
+           <Text style={styles.sectionTitle}>{t(`metrics.sections.${key}`)}</Text>
            <TouchableOpacity onPress={() => navigation.navigate('HealthMetricsEdit', { type: key })}>
-              <Pencil color="#717171" size={20} />
+              <Pencil stroke="#717171" size={20} />
            </TouchableOpacity>
         </View>
 
         {key === 'body' && (
           <View style={styles.dataGrid}>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Your height (sm)</Text><Text style={styles.dataValue}>{section.data.height}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Your weight (kg)</Text><Text style={styles.dataValue}>{section.data.weight}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Body Mass Index</Text><Text style={styles.dataValue}>{section.data.bmi}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Oxygen Saturation (%)</Text><Text style={styles.dataValue}>{section.data.oxygen}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Blood pressure (mmHg)</Text><Text style={styles.dataValue}>{section.data.pressure}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Heart rate (bpm)</Text><Text style={styles.dataValue}>{section.data.heartRate}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Blood type</Text><Text style={styles.dataValue}>{section.data.bloodType}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.height')}</Text><Text style={styles.dataValue}>{section.data.height}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.weight')}</Text><Text style={styles.dataValue}>{section.data.weight}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.bmi')}</Text><Text style={styles.dataValue}>{section.data.bmi}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.oxygen')}</Text><Text style={styles.dataValue}>{section.data.oxygen}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.pressure')}</Text><Text style={styles.dataValue}>{section.data.pressure}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.heartRate')}</Text><Text style={styles.dataValue}>{section.data.heartRate}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.bloodType')}</Text><Text style={styles.dataValue}>{section.data.bloodType}</Text></View>
           </View>
         )}
 
         {key === 'lifestyle' && (
           <View style={styles.dataGrid}>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Sleep (h)</Text><Text style={styles.dataValue}>{section.data.sleep}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Water intake (l)</Text><Text style={styles.dataValue}>{section.data.water}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Smoking</Text><Text style={styles.dataValue}>{section.data.smoking}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Alcohol</Text><Text style={styles.dataValue}>{section.data.alcohol}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Activity Level</Text><Text style={styles.dataValue}>{section.data.activity}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.sleep')}</Text><Text style={styles.dataValue}>{section.data.sleep}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.water')}</Text><Text style={styles.dataValue}>{section.data.water}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.smoking')}</Text><Text style={styles.dataValue}>{section.data.smoking}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.alcohol')}</Text><Text style={styles.dataValue}>{section.data.alcohol}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.activity')}</Text><Text style={styles.dataValue}>{section.data.activity}</Text></View>
           </View>
         )}
 
         {key === 'anamnesis' && (
           <View style={styles.dataGrid}>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Chronic conditions</Text><Text style={styles.dataValue}>{section.data.chronic}</Text></View>
-             <View style={styles.dataRow}><Text style={styles.dataLabel}>Allergies</Text><Text style={styles.dataValue}>{section.data.allergies}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.chronic')}</Text><Text style={styles.dataValue}>{section.data.chronic}</Text></View>
+             <View style={styles.dataRow}><Text style={styles.dataLabel}>{t('metrics.fields.allergies')}</Text><Text style={styles.dataValue}>{section.data.allergies}</Text></View>
           </View>
         )}
 
@@ -128,11 +130,11 @@ export const HealthMetricsScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <ArrowLeft color="#717171" size={24} />
+          <ArrowLeft stroke="#717171" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Health metrics</Text>
+        <Text style={styles.headerTitle}>{t('metrics.title')}</Text>
         <TouchableOpacity style={styles.backBtn}>
-          <Share2 color="#717171" size={24} />
+          <Share2 stroke="#717171" size={24} />
         </TouchableOpacity>
       </View>
 
@@ -233,3 +235,5 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+
+

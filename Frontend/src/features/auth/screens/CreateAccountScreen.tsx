@@ -9,12 +9,14 @@ import {
   Platform 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Check, Eye, EyeOff } from 'lucide-react-native';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const CreateAccountScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,7 +33,7 @@ export const CreateAccountScreen: React.FC = () => {
   const renderRequirement = (text: string, isValid: boolean) => (
     <View style={styles.requirementRow}>
       {isValid ? (
-        <Check color="#306F6F" size={16} />
+        <Check stroke="#306F6F" size={16} />
       ) : (
         <View style={styles.requirementBullet} />
       )}
@@ -49,17 +51,17 @@ export const CreateAccountScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.title}>Create an account</Text>
-          <Text style={styles.subtitle}>Excited to have you on board!</Text>
+          <Text style={styles.title}>{t('signup.title')}</Text>
+          <Text style={styles.subtitle}>{t('signup.subtitle')}</Text>
 
           <Input
-            label="Email"
-            placeholder="Enter your email"
+            label={t('signup.emailLabel')}
+            placeholder={t('signup.emailPlaceholder')}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -68,8 +70,8 @@ export const CreateAccountScreen: React.FC = () => {
 
           <View style={styles.passwordContainer}>
               <Input
-  label="Password"
-  placeholder="Create password"
+  label={t('signup.passwordLabel')}
+  placeholder={t('signup.passwordPlaceholder')}
   secureTextEntry={!showPassword}
   value={password}
   onChangeText={setPassword}
@@ -83,17 +85,17 @@ export const CreateAccountScreen: React.FC = () => {
   icon={
     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
       {showPassword
-        ? <EyeOff color="#A0A0A0" size={20} />
-        : <Eye color="#A0A0A0" size={20} />}
+        ? <EyeOff stroke="#A0A0A0" size={20} />
+        : <Eye stroke="#A0A0A0" size={20} />}
     </TouchableOpacity>
   }
 />
           </View>
 
           <View style={styles.requirementsContainer}>
-            {renderRequirement('Min 8 characters length', isMinLength)}
-            {renderRequirement('Min 2 number', hasTwoNumbers)}
-            {renderRequirement('Min 1 uppercase letter', hasUppercase)}
+            {renderRequirement(t('signup.minCharacters'), isMinLength)}
+            {renderRequirement(t('signup.minNumbers'), hasTwoNumbers)}
+            {renderRequirement(t('signup.minUppercase'), hasUppercase)}
           </View>
 
           <View style={styles.footerSpacer} />
@@ -101,14 +103,14 @@ export const CreateAccountScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <Button
-            title="Create an account"
+            title={t('signup.createAccount')}
             disabled={!isFormValid}
             onPress={() => navigation.navigate('OtpVerification')}
           />
           <View style={styles.loginRow}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+            <Text style={styles.loginText}>{t('signup.alreadyHaveAccount')} </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>Log in</Text>
+              <Text style={styles.loginLink}>{t('common.login')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -208,3 +210,4 @@ validBorder: {
     fontWeight: '600',
   },
 });
+

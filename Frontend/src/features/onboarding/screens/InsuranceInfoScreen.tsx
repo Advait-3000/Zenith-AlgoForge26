@@ -157,7 +157,7 @@ export const InsuranceInfoScreen: React.FC = () => {
                 }}
               >
                 <Text style={styles.relOptionText}>{item.flag} {item.name} ({item.code})</Text>
-                {country.name === item.name && <Check color="#306F6F" size={20} />}
+                {country.name === item.name && <Check stroke="#306F6F" size={20} />}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -174,7 +174,7 @@ export const InsuranceInfoScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#212121" size={24} />
+            <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
           <ProgressBar totalSteps={6} currentStep={5} />
           <TouchableOpacity onPress={() => navigation.navigate('Main')}>
@@ -208,7 +208,7 @@ export const InsuranceInfoScreen: React.FC = () => {
               value={formData.policyExpiry}
               editable={false}
               pointerEvents="none"
-              icon={<Calendar color="#A0A0A0" size={24} />}
+              icon={<Calendar stroke="#A0A0A0" size={24} />}
             />
           </TouchableOpacity>
 
@@ -222,7 +222,7 @@ export const InsuranceInfoScreen: React.FC = () => {
             >
               <Text style={styles.flag}>{country.flag}</Text>
               <Text style={styles.countryCode}>{country.code}</Text>
-              <ChevronDown color="#212121" size={16} />
+              <ChevronDown stroke="#212121" size={16} />
             </TouchableOpacity>
             <View style={styles.divider} />
             <TextInput
@@ -430,3 +430,4 @@ const styles = StyleSheet.create({
     color: '#212121',
   },
 });
+

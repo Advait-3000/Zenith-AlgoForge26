@@ -93,7 +93,7 @@ export const NotificationsScreen: React.FC = () => {
         onPress={() => handleDelete(id)}
         activeOpacity={0.8}
       >
-        <Trash2 color="#FFFFFF" size={24} />
+        <Trash2 stroke="#FFFFFF" size={24} />
       </TouchableOpacity>
     );
   };
@@ -106,7 +106,7 @@ export const NotificationsScreen: React.FC = () => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#717171" size={24} />
+            <ArrowLeft stroke="#717171" size={24} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Notifications</Text>
           {!isEmpty ? (
@@ -121,7 +121,7 @@ export const NotificationsScreen: React.FC = () => {
         {isEmpty ? (
           <View style={styles.emptyContainer}>
             <View style={styles.bellIconCircle}>
-                <Bell color="#306F6F" size={48} strokeWidth={1} />
+                <Bell stroke="#306F6F" size={48} strokeWidth={1} />
             </View>
             <Text style={styles.emptyTitle}>No Notifications Yet</Text>
             <Text style={styles.emptySubtitle}>You'll be notified here once there's something new.</Text>
@@ -137,7 +137,7 @@ export const NotificationsScreen: React.FC = () => {
               >
                 <View style={styles.notificationItem}>
                   <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
-                    <item.icon color={item.iconColor} size={24} />
+                    <item.icon stroke={item.iconColor} size={24} />
                   </View>
                   <View style={styles.textContainer}>
                     <Text style={styles.notiTitle}>{item.title}</Text>
@@ -269,3 +269,5 @@ const styles = StyleSheet.create({
     height: 100,
   },
 });
+
+

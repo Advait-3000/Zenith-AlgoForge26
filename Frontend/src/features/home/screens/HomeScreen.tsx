@@ -18,45 +18,47 @@ import {
   Sparkles
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 // Mock data
 const DOCTORS = [
-  { id: '1', name: 'Dr. Mia Miller', specialty: 'Neurologist', rating: 5.0, image: 'https://img.freepik.com/free-photo/pleased-young-female-doctor-white-coat-with-stethoscope-neck-standing-with-folded-arms-isolated-white-background_637285-3396.jpg' },
-  { id: '2', name: 'Dr. Norah Still', specialty: 'Cardiologist', rating: 4.9, image: 'https://img.freepik.com/free-photo/front-view-young-female-doctor-medical-uniform-with-mask-due-covid-white-wall_140725-78482.jpg' },
-  { id: '3', name: 'Dr. Helena Fox', specialty: 'Radiologist', rating: 4.8, image: 'https://img.freepik.com/free-photo/woman-doctor-wearing-lab-coat-with-stethoscope-isolated_1303-29791.jpg' },
-  { id: '4', name: 'Dr. Andrew Miller', specialty: 'Neurologist', rating: 5.0, image: 'https://img.freepik.com/free-photo/handsome-young-male-doctor-with-stethoscope-standing-against-blue-background_23-2148127025.jpg' },
+  { id: '1', name: 'Dr. Mia Miller', specialtyKey: 'neurologist', rating: 5.0, image: 'https://img.freepik.com/free-photo/pleased-young-female-doctor-white-coat-with-stethoscope-neck-standing-with-folded-arms-isolated-white-background_637285-3396.jpg' },
+  { id: '2', name: 'Dr. Norah Still', specialtyKey: 'cardiologist', rating: 4.9, image: 'https://img.freepik.com/free-photo/front-view-young-female-doctor-medical-uniform-with-mask-due-covid-white-wall_140725-78482.jpg' },
+  { id: '3', name: 'Dr. Helena Fox', specialtyKey: 'radiologist', rating: 4.8, image: 'https://img.freepik.com/free-photo/woman-doctor-wearing-lab-coat-with-stethoscope-isolated_1303-29791.jpg' },
+  { id: '4', name: 'Dr. Andrew Miller', specialtyKey: 'neurologist', rating: 5.0, image: 'https://img.freepik.com/free-photo/handsome-young-male-doctor-with-stethoscope-standing-against-blue-background_23-2148127025.jpg' },
 ];
 
 const SPECIALISATIONS = [
-  { id: '1', name: 'Dentist', count: 21, icon: Stethoscope },
-  { id: '2', name: 'Pulmonologist', count: 19, icon: Wind },
-  { id: '3', name: 'Gastroenterologist', count: 8, icon: Waves },
-  { id: '4', name: 'Cardiologist', count: 15, icon: Heart },
+  { id: '1', nameKey: 'dentist', count: 21, icon: Stethoscope },
+  { id: '2', nameKey: 'pulmonologist', count: 19, icon: Wind },
+  { id: '3', nameKey: 'gastroenterologist', count: 8, icon: Waves },
+  { id: '4', nameKey: 'cardiologist', count: 15, icon: Heart },
 ];
 
 const MEDICAL_HISTORY = [
-  { id: '1', disease: 'Influenza', duration: '7 days', status: 'Recovered', date: 'Jan 2024', color: '#306F6F', secondary: '#EAF9F9' },
-  { id: '2', disease: 'Bronchitis', duration: '14 days', status: 'Recovered', date: 'Feb 2024', color: '#4A90E2', secondary: '#EBF4FF' },
-  { id: '3', disease: 'Headache', duration: '2 days', status: 'Active', date: 'Mar 2024', color: '#FBB03B', secondary: '#FFF7E6' },
+  { id: '1', diseaseKey: 'influenza', durationDays: 7, statusKey: 'recovered', date: 'Jan 2024', color: '#306F6F', secondary: '#EAF9F9' },
+  { id: '2', diseaseKey: 'bronchitis', durationDays: 14, statusKey: 'recovered', date: 'Feb 2024', color: '#4A90E2', secondary: '#EBF4FF' },
+  { id: '3', diseaseKey: 'headache', durationDays: 2, statusKey: 'active', date: 'Mar 2024', color: '#FBB03B', secondary: '#FFF7E6' },
 ];
 
 const SERVICES = [
-  { id: '1', name: 'Appointments' },
-  { id: '2', name: 'Vaccination calendar' },
-  { id: '3', name: 'FAQ' },
-  { id: '4', name: 'Support chat' },
+  { id: '1', nameKey: 'appointments' },
+  { id: '2', nameKey: 'vaccination' },
+  { id: '3', nameKey: 'faq' },
+  { id: '4', nameKey: 'chat' },
 ];
 
 export const HomeScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   const renderRecoveryTrack = () => (
     <View style={styles.recoveryContainer}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Medical recovery track</Text>
-        <TouchableOpacity style={styles.trendingBtn}><TrendingUp color="#306F6F" size={18} /></TouchableOpacity>
+        <Text style={styles.sectionTitle}>{t('home.recoveryTrack')}</Text>
+        <TouchableOpacity style={styles.trendingBtn}><TrendingUp stroke="#306F6F" size={18} /></TouchableOpacity>
       </View>
       <View style={styles.graphCard}>
         <View style={styles.timeline}>
@@ -70,18 +72,18 @@ export const HomeScreen: React.FC = () => {
               </View>
               <View style={styles.timelineContent}>
                 <View style={styles.timelineHeader}>
-                  <Text style={styles.diseaseName}>{item.disease}</Text>
+                  <Text style={styles.diseaseName}>{t(`home.history.${item.diseaseKey}`)}</Text>
                   <Text style={styles.timelineDate}>{item.date}</Text>
                 </View>
                 <View style={styles.progressSection}>
                   <View style={[styles.progressBarBg, { backgroundColor: item.secondary }]}>
                     <View style={[styles.progressBarFill, { 
-                      width: item.status === 'Recovered' ? '100%' : '40%', 
+                      width: item.statusKey === 'recovered' ? '100%' : '40%', 
                       backgroundColor: item.color 
                     }]} />
                   </View>
                   <View style={styles.recoveryBadge}>
-                     <Text style={[styles.recoveryTime, { color: item.color }]}>{item.duration}</Text>
+                     <Text style={[styles.recoveryTime, { color: item.color }]}>{t('home.history.days', { count: item.durationDays })}</Text>
                   </View>
                 </View>
               </View>
@@ -98,12 +100,12 @@ export const HomeScreen: React.FC = () => {
         
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.greeting}>Hello, Olivia!</Text>
+          <Text style={styles.greeting}>{t('home.greeting', { name: 'Olivia' })}</Text>
           <TouchableOpacity 
             style={styles.notificationBtn}
             onPress={() => navigation.navigate('Notifications')}
           >
-            <Bell color="#212121" size={24} />
+            <Bell stroke="#212121" size={24} />
             <View style={styles.dot} />
           </TouchableOpacity>
         </View>
@@ -114,8 +116,8 @@ export const HomeScreen: React.FC = () => {
           activeOpacity={0.9}
           onPress={() => navigation.navigate('DoctorSearch')}
         >
-          <Search color="#A0A0A0" size={20} />
-          <Text style={styles.searchPlaceholder}>Start typing</Text>
+          <Search stroke="#A0A0A0" size={20} />
+          <Text style={styles.searchPlaceholder}>{t('home.searchPlaceholder')}</Text>
         </TouchableOpacity>
 
         {/* Portfolio CTA */}
@@ -125,23 +127,23 @@ export const HomeScreen: React.FC = () => {
         >
           <View style={styles.ctaLeft}>
              <View style={styles.ctaIconBox}>
-                <Sparkles color="#FFFFFF" size={24} />
+                <Sparkles stroke="#FFFFFF" size={24} />
              </View>
-             <View style={styles.ctaTextContainer}>
-                <Text style={styles.ctaTitle}>Build Medical Portfolio</Text>
-                <Text style={styles.ctaSub}>Analyze all your reports with AI</Text>
-             </View>
+              <View style={styles.ctaTextContainer}>
+                <Text style={styles.ctaTitle}>{t('home.buildPortfolioTitle')}</Text>
+                <Text style={styles.ctaSub}>{t('home.buildPortfolioSub')}</Text>
+              </View>
           </View>
           <View style={styles.ctaArrow}>
-             <ChevronRight color="#306F6F" size={20} />
+             <ChevronRight stroke="#306F6F" size={20} />
           </View>
         </TouchableOpacity>
 
         {/* 1. Doctors Section (Moved to Top) */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Doctors near you</Text>
+          <Text style={styles.sectionTitle}>{t('home.doctorsNearYou')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('DoctorSearch')}>
-            <Text style={styles.seeAll}>See all</Text>
+            <Text style={styles.seeAll}>{t('home.seeAll')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -155,14 +157,14 @@ export const HomeScreen: React.FC = () => {
               <View style={styles.imageWrapper}>
                 <Image source={{ uri: doc.image }} style={styles.doctorImg} />
                 <View style={styles.ratingBadge}>
-                  <Star color="#FBB03B" fill="#FBB03B" size={12} />
+                  <Star stroke="#FBB03B" fill="#FBB03B" size={12} />
                   <Text style={styles.ratingText}>{doc.rating.toFixed(1)}</Text>
                 </View>
               </View>
               <Text style={styles.docName}>{doc.name}</Text>
-              <Text style={styles.docSpecialty}>{doc.specialty}</Text>
+              <Text style={styles.docSpecialty}>{t(`home.specialisations.${doc.specialtyKey}`)}</Text>
               <TouchableOpacity style={styles.docArrowBtn}>
-                <MoveUpRight color="#FFFFFF" size={20} />
+                <MoveUpRight stroke="#FFFFFF" size={20} />
               </TouchableOpacity>
             </TouchableOpacity>
           ))}
@@ -173,8 +175,8 @@ export const HomeScreen: React.FC = () => {
 
         {/* 3. Popular Specialisations */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Popular specialisations</Text>
-          <TouchableOpacity><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+          <Text style={styles.sectionTitle}>{t('home.popularSpecialisations')}</Text>
+          <TouchableOpacity><Text style={styles.seeAll}>{t('home.seeAll')}</Text></TouchableOpacity>
         </View>
 
         <View style={styles.specialisationList}>
@@ -182,13 +184,13 @@ export const HomeScreen: React.FC = () => {
             <TouchableOpacity 
               key={spec.id} 
               style={styles.specItem}
-              onPress={() => navigation.navigate('DoctorSearch', { query: spec.name })}
+              onPress={() => navigation.navigate('DoctorSearch', { query: t(`home.specialisations.${spec.nameKey}`) })}
             >
               <View style={styles.specLeft}>
                 <View style={styles.specIconBox}>
-                   <spec.icon color="#306F6F" size={22} />
+                   <spec.icon stroke="#306F6F" size={22} />
                 </View>
-                <Text style={styles.specName}>{spec.name}</Text>
+                <Text style={styles.specName}>{t(`home.specialisations.${spec.nameKey}`)}</Text>
               </View>
               <Text style={styles.specCount}>{spec.count} doctors</Text>
             </TouchableOpacity>
@@ -197,8 +199,8 @@ export const HomeScreen: React.FC = () => {
 
         {/* 4. Services */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <TouchableOpacity><LayoutGrid color="#306F6F" size={20} /></TouchableOpacity>
+          <Text style={styles.sectionTitle}>{t('home.services')}</Text>
+          <TouchableOpacity><LayoutGrid stroke="#306F6F" size={20} /></TouchableOpacity>
         </View>
 
         <View style={styles.serviceList}>
@@ -207,11 +209,11 @@ export const HomeScreen: React.FC = () => {
               key={service.id} 
               style={styles.serviceItem}
               onPress={() => {
-                if (service.name === 'FAQ') navigation.navigate('FAQ');
+                if (service.nameKey === 'faq') navigation.navigate('FAQ');
               }}
             >
-              <Text style={styles.serviceName}>{service.name}</Text>
-              <MoveUpRight color="#306F6F" size={20} />
+              <Text style={styles.serviceName}>{t(`home.servicesList.${service.nameKey}`)}</Text>
+              <MoveUpRight stroke="#306F6F" size={20} />
             </TouchableOpacity>
           ))}
         </View>
@@ -594,3 +596,5 @@ const styles = StyleSheet.create({
     height: 110,
   },
 });
+
+
