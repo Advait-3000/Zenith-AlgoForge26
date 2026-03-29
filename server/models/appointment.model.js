@@ -12,8 +12,17 @@ const appointmentSchema = new mongoose.Schema(
     doctor_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Doctor ID is required"],
-      index: true,
+      // Made optional for cases where user books a facility or clinic not in system
+    },
+
+    facility_name: {
+      type: String,
+      trim: true,
+    },
+
+    specialty: {
+      type: String,
+      trim: true,
     },
 
     // ─── SCHEDULING ──────────────────────────────────────
@@ -37,7 +46,27 @@ const appointmentSchema = new mongoose.Schema(
         "No_Show",
         "Rescheduled",
       ],
-      default: "Scheduled",
+      default: "Confirmed",
+    },
+
+    // 🌍 GEO LOCATION (For Map directions)
+    location_coordinates: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
+    },
+
+    // 🧠 AI CONCIERGE INSIGHTS ──────────────────────────────
+    ai_concierge: {
+      reminders: [String],
+      importance_note: String,
+      digital_consent_required: { type: Boolean, default: false },
     },
 
     // ─── TYPE (ONLINE / OFFLINE) ─────────────────────────
@@ -48,7 +77,7 @@ const appointmentSchema = new mongoose.Schema(
     },
 
     clinic_location: {
-      type: String, // for in-person
+      type: String, // for in-person address string
     },
 
     meeting_link: {

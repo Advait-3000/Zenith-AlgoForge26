@@ -158,7 +158,13 @@ export const getMe = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+<<<<<<< HEAD
     const { full_name, password, location_coordinates, phone_number ,patient_details } = req.body;
+=======
+console.log(1)
+    const { full_name, password, location_coordinates, patient_details,phone_number } = req.body;
+  
+>>>>>>> origin/features
 
     const user = await User.findById(userId);
 
@@ -202,6 +208,14 @@ export const updateProfile = async (req, res) => {
     }
 
     user.markModified("patient_details");
+    // 🧬 Update Patient Details (Emergency Contacts, Vitals, etc.)
+    if (patient_details) {
+      user.patient_details = {
+        ...user.patient_details.toObject(), // Keep existing fields
+        ...patient_details // Overwrite with new ones
+      };
+    }
+
     await user.save();
 
     res.json({
@@ -215,6 +229,7 @@ export const updateProfile = async (req, res) => {
         patient_details: user.patient_details,
         phone_number: user.phone_number,
         location_coordinates: user.location_coordinates,
+        patient_details: user.patient_details
       },
     });
 
@@ -261,12 +276,12 @@ export const forgotPassword = async (req, res) => {
 
     const otp = generateOTP();
 
-    user.otp_code = otp;
-    user.otp_expiry = Date.now() + 10 * 60 * 1000;
-    user.otp_attempts = 0;
-    user.otp_last_sent = Date.now();
-
-    await user.save();
+    await User.findByIdAndUpdate(user._id, {
+      otp_code: otp,
+      otp_expiry: Date.now() + 10 * 60 * 1000,
+      otp_attempts: 0,
+      otp_last_sent: Date.now(),
+    });
 
     if (email) {
       await sendOTPEmail(email, otp);

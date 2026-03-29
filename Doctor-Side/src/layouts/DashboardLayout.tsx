@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users,
-  Calendar, 
   LogOut, 
   Search, 
   Bell, 
   ClipboardList,
-  User as UserIcon
+  User as UserIcon,
+  X,
+  Menu
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import appLogo from '../assets/applogo.png';
 
 const SIDEBAR_ITEMS = [
@@ -19,7 +21,12 @@ const SIDEBAR_ITEMS = [
 ];
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Expose toggle for desktop refinement if needed
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  
   const [showNotifications, setShowNotifications] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const navigate = useNavigate();
@@ -34,16 +41,22 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
       {/* Premium Sidebar */}
       <motion.aside 
         initial={false}
-        animate={{ width: isSidebarOpen ? 280 : 80 }}
-        className="h-screen bg-white shadow-cura-soft border-r border-slate-100 flex flex-col relative z-30 transition-all duration-300"
+        animate={{ 
+            width: isSidebarOpen ? 280 : 80,
+            x: isMobileMenuOpen ? 0 : (window.innerWidth < 768 ? -280 : 0)
+        }}
+        className={`fixed h-screen bg-white shadow-cura-soft border-r border-slate-100 flex flex-col z-[100] transition-all duration-300 md:relative`}
       >
-        <div className="p-6 flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/10 p-1.5 border border-slate-100">
-            <img src={appLogo} alt="Cura Logo" className="w-full h-full object-contain" />
+        <div className="p-6 flex items-center justify-between overflow-hidden">
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/10 p-1.5 border border-slate-100">
+                <img src={appLogo} alt="Cura Logo" className="w-full h-full object-contain" />
+             </div>
+             {isSidebarOpen && (
+                <span className="text-xl font-black text-slate-800 tracking-tight whitespace-nowrap">Cura</span>
+             )}
           </div>
-          {isSidebarOpen && (
-            <span className="text-xl font-black text-slate-800 tracking-tight whitespace-nowrap">Cura</span>
-          )}
+          <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-slate-400 p-2"><X size={20}/></button>
         </div>
 
         <nav className="flex-1 px-4 py-8 space-y-2">
@@ -72,7 +85,10 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
 
         <div className="p-4 border-t border-slate-50">
             <button 
-                onClick={() => navigate('/')}
+                onClick={() => {
+                    localStorage.clear();
+                    navigate('/');
+                }}
                 className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-red-400 font-bold hover:bg-red-50 hover:text-red-500 transition-all group overflow-hidden"
             >
                 <LogOut className="shrink-0 transition-transform group-hover:-translate-x-1" size={22} />
@@ -81,11 +97,34 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
         </div>
       </motion.aside>
 
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] md:hidden"
+            />
+        )}
+      </AnimatePresence>
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Modern Navbar */}
-        <header className="h-24 bg-white/80 backdrop-blur-md border-b border-slate-50 flex items-center justify-between px-10 relative z-20">
-            <div className="flex-1 max-w-xl pr-10">
+        <header className="h-20 md:h-24 bg-white/80 backdrop-blur-md border-b border-slate-50 flex items-center justify-between px-6 md:px-10 relative z-20">
+            <div className="flex items-center gap-4 md:hidden">
+                 <button onClick={() => setIsMobileMenuOpen(true)} className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-600">
+                    <Menu size={20}/>
+                 </button>
+            </div>
+            <div className="hidden lg:block">
+                 <button onClick={toggleSidebar} className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 hover:text-cura-primary transition-colors">
+                    <Menu size={20}/>
+                 </button>
+            </div>
+            <div className="flex-1 max-w-xl pr-4 md:pr-10">
                 <div className="relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-cura-text-soft transition-colors group-focus-within:text-cura-primary" size={20} />
                     <input 
@@ -152,10 +191,18 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
         </header>
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto bg-cura-bg py-10 px-10">
+        <main className="flex-1 overflow-y-auto bg-cura-bg py-6 px-6 md:py-10 md:px-10">
             {children}
         </main>
       </div>
+
+      <Toaster 
+          position="top-center" 
+          toastOptions={{ 
+              className: 'font-bold text-sm text-slate-800 rounded-2xl shadow-cura-soft border border-slate-100', 
+              style: { padding: '16px 24px' } 
+          }} 
+      />
     </div>
   );
 };

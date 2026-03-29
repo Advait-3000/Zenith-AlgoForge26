@@ -14,7 +14,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button, Input } from '@/components/BaseComponents';
+import toast from 'react-hot-toast';
+import { Button, Input } from '../../../components/BaseComponents';
 
 interface Medicine {
   id: string;
@@ -52,6 +53,7 @@ export const ConsultationPage: React.FC = () => {
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
+            toast.success('Consultation finalized');
             setIsFollowUpModalOpen(true);
         }, 1500);
     };
@@ -194,7 +196,7 @@ export const ConsultationPage: React.FC = () => {
                             <Button className="h-14 flex-1 shadow-lg shadow-teal-500/20" isLoading={loading} onClick={handleComplete}>
                                 <Save size={20} /> Finish Consultation
                             </Button>
-                            <Button variant="outline" className="h-14 px-8">
+                            <Button variant="outline" className="h-14 px-8" onClick={() => toast.success('Prescription saved as draft')}>
                                 <Clipboard size={20} /> Save as Draft
                             </Button>
                         </div>

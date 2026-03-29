@@ -1,252 +1,323 @@
-import { encryptText } from "../utilities/cryptoutils.js";
-import { GoogleGenerativeAI } from "@google/generative-ai"; 
-import MedicalRecord from "../models/reports.model.js";
-import { v2 as cloudinary } from "cloudinary";
-import Redis from "ioredis";
-import sharp from "sharp";
-import crypto from "crypto";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
+import https from "https";
+import Groq from "groq-sdk";
 
-// Initialize Redis with a graceful fail-safe
-const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379", {
-  maxRetriesPerRequest: 1,
-  retryStrategy: (times) => null, // Don't retry indefinitely
-});
+dotenv.config();
 
-redis.on("error", (err) => {
-  console.warn("⚠️ Redis not available - results will not be cached.");
-});
-
-// Configure Cloudinary for manual uploads
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Initialize NLP model using your API Key
+// 🟢 INITIALIZE AI ENGINES
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Helper to convert remote URL to Part for Gemini with Inline Compression & PDF Support
-async function urlToGenerativePart(url) {
-  try {
-    if (!url) throw new Error("Document URL is required but received undefined.");
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch document: ${response.statusText}`);
+/**
+ * 📡 RAW REST API FALLBACK
+ */
+const rawGeminiRequest = (modelName, prompt, base64Data = null) => {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
     
-    // Detect MIME type from the response or URL extension
-    const contentType = response.headers.get("content-type") || (url.endsWith(".pdf") ? "application/pdf" : "image/jpeg");
-    console.log(`🔍 Detected Content-Type for ingestion: ${contentType}`);
-    
-    let arrayBuffer = await response.arrayBuffer();
-    
-    // 🔥 OPTIMIZATION: Only compress if it's an IMAGE. We don't compress PDFs locally.
-    if (contentType.startsWith("image/") && arrayBuffer.byteLength > 500 * 1024) {
-      console.log(`🖼️  Compressing large image (${(arrayBuffer.byteLength/1024).toFixed(1)} KB)...`);
-      const compressedBuffer = await sharp(Buffer.from(arrayBuffer))
-        .resize(1600, 1600, { fit: "inside" })
-        .jpeg({ quality: 80 }) 
-        .toBuffer();
-      arrayBuffer = compressedBuffer;
-      console.log(`✅ Compressed to ${(compressedBuffer.byteLength/1024).toFixed(1)} KB`);
+    const parts = [{ text: prompt }];
+    if (base64Data) {
+      parts.push({
+        inline_data: {
+          mime_type: "image/jpeg",
+          data: base64Data
+        }
+      });
     }
-    
-    return {
-      inlineData: {
-        data: Buffer.from(arrayBuffer).toString("base64"),
-        mimeType: contentType
-      },
-    };
-  } catch (error) {
-    console.error("❌ Document Fetch/Processing Error:", error.message);
-    throw error;
-  }
-}
 
-// Helper to upload a text summary to Cloudinary as a RAW file
-async function uploadSummaryToCloudinary(summaryText, patientName) {
-  try {
-    if (!summaryText) throw new Error("summaryText is missing for Cloudinary upload");
-    
-    const buffer = Buffer.from(summaryText, 'utf-8');
-    const base64Data = buffer.toString('base64');
-    const fileName = `summary_${(patientName || "Patient").replace(/\s+/g, "_")}_${Date.now()}.txt`;
-    
-    console.log(`📡 Uploading summary to Cloudinary: ${fileName} (${buffer.length} bytes)`);
-    
-    const result = await cloudinary.uploader.upload(`data:text/plain;base64,${base64Data}`, {
-      resource_type: "raw",
-      public_id: `medical_reports/summaries/${fileName}`,
+    const payload = JSON.stringify({
+      contents: [{ parts }]
     });
-    
-    console.log("✅ Summary uploaded successfully:", result.secure_url);
-    return result.secure_url;
-  } catch (error) {
-    console.error("❌ Cloudinary Upload Error:", error);
-    throw error;
-  }
-}
 
-export const analyzeMedicalImage = async (uploaderId, patientId, fileUrl) => {
-  const cacheKey = `scan_result:${crypto.createHash("md5").update(fileUrl).digest("hex")}`;
+    const options = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    };
+
+    const req = https.request(url, options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => data += chunk);
+      res.on("end", () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.candidates && json.candidates[0].content) {
+            resolve(json.candidates[0].content.parts[0].text);
+          } else {
+            console.warn(`⚠️ RAW [${modelName}] failed or empty.`, JSON.stringify(json));
+            reject(new Error(`Model ${modelName} failed.`));
+          }
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on("error", (e) => reject(e));
+    req.write(payload);
+    req.end();
+  });
+};
+
+/**
+ * 🛠️ RESILIENT MODEL SELECTOR (SDK -> REST -> GROQ)
+ */
+const getResilientModel = async (prompt, isMultimodal = false, base64Data = null) => {
+  // 1. Try Gemini RAW REST (More reliable than SDK URLs)
+  const geminis = isMultimodal ? ["gemini-1.5-flash", "gemini-1.5-pro"] : ["gemini-1.5-flash", "gemini-pro"];
   
-  // ⚡ REDIS CACHE CHECK
+  for (const modelName of geminis) {
+    try {
+      console.log(`📡 Trying Gemini REST: ${modelName}...`);
+      const result = await rawGeminiRequest(modelName, prompt, base64Data);
+      return { response: { text: () => result } };
+    } catch (e) { continue; }
+  }
+
+  // 2. Try GROQ (Vision Fallback if multimodal)
   try {
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      console.log("⚡ [CACHE HIT] Returning results from Redis...");
-      return JSON.parse(cachedData);
+    const model = isMultimodal ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
+    console.log(`🦾 Gemini failed. Deploying GROQ (${model})...`);
+    
+    const messages = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: prompt }
+        ]
+      }
+    ];
+
+    if (isMultimodal && base64Data) {
+      messages[0].content.push({
+        type: "image_url",
+        image_url: { url: `data:image/jpeg;base64,${base64Data}` }
+      });
     }
-  } catch (err) {
-    // Fail silently, proceed with AI scan
+
+    const completion = await groq.chat.completions.create({
+      messages,
+      model: model,
+    });
+    const result = completion.choices[0].message.content;
+    return { response: { text: () => result } };
+  } catch (error) {
+    console.error("❌ ALL AI CHANNELS FAILED (Gemini & Groq).", error.message);
+    throw new Error("SOS AI OFFLINE. System Triage Fallback engaged.");
   }
+};
 
-  let model;
+/**
+ * 🗃️ DOWNLOAD IMAGE Helper
+ * Downloads remote images and converts them to BASE64 for AI Multimodal input.
+ */
+const downloadImageToBase64 = (url) => {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      const chunks = [];
+      res.on("data", (chunk) => chunks.push(chunk));
+      res.on("end", () => {
+        const buffer = Buffer.concat(chunks);
+        resolve(buffer.toString("base64"));
+      });
+      res.on("error", (e) => reject(e));
+    });
+  });
+};
+
+/**
+ * 🧪 ANALYZE SCAN (UTILITY)
+ * Downloads from Cloudinary, converts to Base64, and runs analysis.
+ */
+export const analyzeMedicalImage = async (imageUrl) => {
   try {
-    // Diagnosed authorized model: gemini-2.5-flash
-    model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-  } catch (initError) {
-    console.error("⚠️ Gemini Initialization Warning:", initError.message);
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  }
+    if (!imageUrl) throw new Error("No image URL provided for analysis.");
 
-  try {
-    // 1. Prepare Multimodal Payload (Supports Image & PDF)
-    const documentPart = await urlToGenerativePart(fileUrl);
+    console.log(`🔄 Downloading & Rasterizing Scan for AI...`);
+    const base64Data = await downloadImageToBase64(imageUrl);
 
-    // 2. Prompt Engineering: Expert Clinical Data Parser Architecture
     const prompt = `
       ### ROLE
-      Expert Clinical Data Parser & Pathologist Assistant.
+      Expert Medical AI Diagnostic Assistant.
+      
+      ### TASK
+      Analyze the provided medical scan (MRI/X-Ray/CT).
+      Identify ANY abnormalities (fractures, tumors, inflammation).
+      
+      ### OUTPUT FORMAT
+      1. Finding: [Clear Description]
+      2. Severity: [Critical/Moderate/Low]
+      3. SOS Recommended: [Yes/No]
+      4. Next Step: [Clinical Action]
+    `;
+
+    // 🚀 Uses Resilient Multimodal Logic
+    const result = await getResilientModel(prompt, true, base64Data);
+    const responseText = result.response.text();
+
+    const isSOS = responseText.toLowerCase().includes("critical") || 
+                  responseText.toLowerCase().includes("sos: yes");
+
+    return {
+      success: true,
+      analysis: responseText,
+      threat_detected: isSOS
+    };
+  } catch (error) {
+    console.error("❌ Scan Analysis Error:", error.message);
+    return { 
+      success: false, 
+      message: "AI Analysis failed.", 
+      error: error.message 
+    };
+  }
+};
+
+/**
+ * 🤖 AI HEALTH CONCIERGE: Generate Pre-Visit Guide
+ */
+export const generatePreVisitGuide = async (specialty, facilityName) => {
+  try {
+    const prompt = `
+      ### ROLE
+      Health Concierge Agent.
+      
+      ### TASK
+      A patient has booked an appointment for [${specialty}] at [${facilityName}].
+      Generate a concise, helpful "Preparation Guide" for them.
+      
+      ### OUTPUT FORMAT (STRICT JSON)
+      {
+        "reminders": ["Reminder 1", "Reminder 2", "Reminder 3"],
+        "importance_note": "A single sentence explaining why this specialty visit is important.",
+        "digital_consent_required": true/false
+      }
+    `;
+
+    const result = await getResilientModel(prompt);
+    const responseText = result.response.text().trim();
+    
+    // Clean JSON if markdown is present
+    const cleanJson = responseText.replace(/^```[a-z]*\n?/, "").replace(/\n?```$/, "").trim();
+    
+    const parsed = JSON.parse(cleanJson);
+    return parsed;
+  } catch (error) {
+    console.error("❌ Concierge AI Error:", error.message);
+    return {
+      reminders: ["Bring ID", "Arrive early", "List medications"],
+      importance_note: "Standard health monitoring.",
+      digital_consent_required: false
+    };
+  }
+};
+
+/**
+ * 🚑 AI EMERGENCY COORDINATOR
+ */
+export const emergencyCoordinatorAI = async (lat, lng, specialty, nearbyFacilities) => {
+  try {
+    const prompt = `
+      ### ROLE
+      Real-Time Emergency Coordinator.
+      Track user at: ${lat}, ${lng}. Searching for: ${specialty}.
+      Nearby: ${JSON.stringify(nearbyFacilities)}
+      
+      ### TASK (ANTI-GRAVITY REAL-TIME)
+      Provide live ETA and prioritize closest facility within 5 mins.
+      
+      ### OUTPUT FORMAT (STRICT JSON)
+      {
+        "status": "Tracking Live",
+        "nearest_specialist": {
+          "name": "...",
+          "distance_km": "...",
+          "eta_mins": "..."
+        },
+        "action_note": "Redirecting your search as you move..."
+      }
+    `;
+
+    const result = await getResilientModel(prompt);
+    const responseText = result.response.text().trim();
+    const cleanJson = responseText.replace(/^```[a-z]*\n?/, "").replace(/\n?```$/, "").trim();
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("❌ Emergency AI Error:", error.message);
+    return {
+      status: "Tracking Live",
+      nearest_specialist: nearbyFacilities[0] || { name: "Searching...", distance_km: "N/A", eta_mins: "N/A" },
+      action_note: "Optimizing your route..."
+    };
+  }
+};
+
+/**
+ * 🚑 AI MEDICAL DISPATCHER (ANTI-GRAVITY ENGINE)
+ */
+export const classifyEmergencyThreat = async (userInput, patientName, contactName, lat, lng) => {
+  try {
+    const prompt = `
+      ### ROLE
+      Emergency Triage API Handler.
 
       ### OBJECTIVE
-      Analyze EVERY PAGE of the provided medical document (multi-page PDF or Image). 
-      You must process the entire context from start to finish. Identify every single result that is outside its biological reference range across ALL pages.
+      Analyze the patient's reported symptoms and extract structured data to trigger a Twilio Emergency Flow. 
+      You must decide if the situation is a "CRITICAL" emergency or a "ROUTINE" booking.
+      Patient Name: ${patientName}
+      Emergency Contact Name: ${contactName}
+      Location: ${lat}, ${lng}
 
-      ### EXTRACTION ARCHITECTURE (ANTI-GRAVITY RULES)
-      1. DATA ANCHORING: For every test, locate the "Result" and the "Biological Ref. Interval." If the Result is higher (H), lower (L), or flagged as "Present/Positive," it is a MANDATORY extraction.
-      2. NO-NOISE ZONE: Administrative text (lab addresses, page numbers, disclaimer footers) should be ignored FOR CONTEXT, but DO NOT let them obscure clinical results located near them.
-      3. TABULAR RECONSTRUCTION: If a table is broken across pages, mentally stitch the "Test Name" to its "Result" across the OCR break. Process the document as a continuous flow.
-      4. EXHAUSTIVE RISK DETECTION: Do not summarize or skip pages. Every abnormal finding must be listed in Primary Clinical Concerns.
+      ### EXTRACTION RULES (STRICT JSON ONLY)
+      1. THREAT ANALYSIS: If the user mentions "chest pain," "breathless," "bleeding," or "stroke," set status to "CRITICAL." 
+      2. SAFETY FIRST: If the user sounds confused or stops responding, default to "CRITICAL" urgency.
+      3. DATA ANCHORING:
+         - Extract the specific 'symptom' (e.g., "Severe Chest Pain").
+         - Use the provided 'patient_name' and 'contact_name'.
+      4. LOGISTICS: Generate a 'location_link' using the provided GPS coordinates: https://www.google.com/maps?q=${lat},${lng}
 
-      ### OUTPUT JSON STRUCTURE
-      You must return ONLY a JSON object with this exact structure:
+      ### OUTPUT FORMAT
+      You must output ONLY a valid JSON object. No conversational text.
       {
-        "primary_clinical_concerns": [
-          { "category": "Hematology", "test_name": "Hemoglobin", "result": "10.5", "unit": "g/dL", "reference_range": "12-16", "implication": "Moderate Anemia" }
-        ],
-        "secondary_findings": [
-          { "category": "Vitamins", "test_name": "Vitamin D", "result": "25", "unit": "ng/mL", "reference_range": "30-100" }
-        ],
-        "stable_systems": ["Renal", "Liver Function", "Electrolytes"],
-        "patient_details": { "name": "...", "age": "...", "gender": "...", "pid": "..." },
-        "lab_details": { "name": "...", "location": "...", "sample_date": "YYYY-MM-DDTHH:mm:ssZ" },
-        "clinical_data": { 
-           "Test Name": "Value Unit (Ref Range)"
+        "status": "CRITICAL" | "ROUTINE",
+        "payload": {
+          "contact_name": "string",
+          "patient_name": "string",
+          "symptom": "string",
+          "location_link": "string",
+          "specialty": "string (only if status is ROUTINE, recommend a medical specialty)"
         },
-        "ocr_raw_text": "Cleanly transcribed text...",
-        "concise_summary": "Simplified executive summary for the patient.",
-        "patient_translation": "Layman translation of findings.",
-        "calculated_health_score": "[DYNAMIC_SCORE_0_TO_100]",
-        "score_factors": ["List each clinical reason for this specific score"]
+        "instruction": "Brief life-saving advice to show in chat."
       }
-      
-      SCORING RUBRIC (PROHIBITED: DO NOT ALWAYS RETURN 75):
-      - Start at 100 points.
-      - Deduct 10-20 points for every "Primary Clinical Concern" (Severity dependent).
-      - Deduct 5 points for every "Secondary Finding."
-      - If ALL markers are in reference range, return 95-100.
-      
-      Return ONLY the raw JSON object. Do not include markdown code blocks.
     `;
 
-    // 3. Transform Data via Multimodal Gemini
-    console.log("🤖 Sending document to Gemini for Multimodal Analysis...");
-    const aiStart = Date.now();
-    const result = await model.generateContent([prompt, documentPart]);
-    console.log("✅ Gemini Multimodal responded in " + (Date.now() - aiStart) + "ms");
+    const result = await getResilientModel(prompt);
+    const responseText = result.response.text().trim();
     
-    const aiResponseString = result.response.text().trim();
-    console.log("📝 Raw Gemini Response (First 100 chars):", aiResponseString.substring(0, 100));
+    // 🧠 ROBUST PARSING: Extract first { ... } block to avoid conversational noise
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const cleanJson = jsonMatch ? jsonMatch[0] : responseText.replace(/^```[a-z]*\n?/, "").replace(/\n?```$/, "").trim();
     
-    // Robust Parsing: Strip markdown code blocks if the AI included them
-    const cleanJson = aiResponseString.replace(/^```[a-z]*\n?/, "").replace(/\n?```$/, "").trim();
-    
-    // Parse the unstructured LLM text back into a strict JS object
-    const structuredAnalysis = JSON.parse(cleanJson);
-    console.log("🧩 Parsed Analysis Keys:", Object.keys(structuredAnalysis));
-    
-    // Extract raw text for separate encryption field
-    const rawOcrText = structuredAnalysis.ocr_raw_text || "Text extraction produced no results.";
-    delete structuredAnalysis.ocr_raw_text; 
+    const parsed = JSON.parse(cleanJson);
 
-    // 4. Generate and Upload Summary File to Cloudinary
-    const patientName = structuredAnalysis.patient_details?.name || "Patient";
-    const summaryDocumentContent = `
-MEDICAL REPORT SUMMARY
-----------------------
-Patient: ${patientName}
-Age/Sex: ${structuredAnalysis.patient_details?.age || "N/A"} / ${structuredAnalysis.patient_details?.gender || "N/A"}
-Date: ${structuredAnalysis.lab_details?.sample_date || new Date().toLocaleDateString()}
+    // 🛡️ DATA INTEGRITY: Ensure the payload is never empty and matches Twilio expectations
+    if (!parsed.payload) parsed.payload = {};
+    parsed.payload.contact_name = parsed.payload.contact_name || contactName;
+    parsed.payload.patient_name = parsed.payload.patient_name || patientName;
+    parsed.payload.symptom = parsed.payload.symptom || userInput;
+    parsed.payload.location_link = parsed.payload.location_link || `https://www.google.com/maps?q=${lat},${lng}`;
 
-EXECUTIVE SUMMARY:
-${structuredAnalysis.concise_summary || "No summary provided."}
-
-KEY FINDINGS:
-${(structuredAnalysis.detected_abnormalities || []).map(a => "- " + a).join("\n") || "No specific abnormalities detected."}
-
-LAYMAN TRANSLATION:
-${structuredAnalysis.patient_translation || "N/A"}
-
-HEALTH SCORE: ${structuredAnalysis.calculated_health_score || "N/A"}/100
-FACTORS: ${(structuredAnalysis.score_factors || []).join(", ") || "N/A"}
-    `;
-
-    console.log("📄 Preparing Cloudinary Upload for:", patientName);
-    console.log("📦 Summary Length:", summaryDocumentContent.length);
-    console.log("👤 PatientID:", patientId, "UploaderID:", uploaderId);
-
-    const summaryFileUrl = await uploadSummaryToCloudinary(summaryDocumentContent, patientName);
-
-    structuredAnalysis.summary_file_url = summaryFileUrl;
-
-    // 5. PERSIST TO DATABASE (with independent error handling)
-    let newRecord = null;
-    try {
-      console.log("💾 Attempting to persist record to MongoDB...");
-      newRecord = await MedicalRecord.create({
-        patient_id: patientId,
-        uploaded_by: uploaderId,
-        document_type: "Scan",
-        s3_file_url: fileUrl,
-        ocr_extracted_text: encryptText(rawOcrText),
-        ai_analysis: structuredAnalysis
-      });
-      console.log("✅ Record persisted successfully with ID:", newRecord._id);
-    } catch (dbError) {
-      console.error("⚠️ Database Persistence Failed:", dbError.message);
-      // We don't throw here so we can still return the AI results to the user
-    }
-
-    const finalResult = {
-      success: true,
-      message: newRecord 
-        ? "Medical record analyzed and stored successfully." 
-        : "Medical record analyzed, but failed to save to database (Connectivity issue).",
-      record_id: newRecord?._id || null,
-      summary_url: summaryFileUrl,
-      analysis: structuredAnalysis
-    };
-
-    // ⚡ CACHE THE FINAL RESULT (Expire in 24 hours)
-    try {
-      await redis.set(cacheKey, JSON.stringify(finalResult), "EX", 86400);
-    } catch (err) {}
-
-    return finalResult;
-
+    return parsed;
   } catch (error) {
-    console.error("❌ Pipeline Error:", error.message);
-    // Return the actual error message so the user can debug in Postman
-    throw new Error(error.message || "Failed to process medical image through AI engine.");
+    console.error("❌ Dispatcher AI Error:", error.message);
+    return {
+      status: "CRITICAL", // Safe default
+      payload: {
+        contact_name: contactName,
+        patient_name: patientName,
+        symptom: userInput,
+        location_link: `https://www.google.com/maps?q=${lat},${lng}`,
+        specialty: "General Physician"
+      },
+      instruction: "Please stay calm. Help is being coordinated."
+    };
   }
 };
