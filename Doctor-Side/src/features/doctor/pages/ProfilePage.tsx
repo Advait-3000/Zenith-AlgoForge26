@@ -12,6 +12,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { Button } from '@/components/BaseComponents';
+import axios from 'axios';
 
 export const ProfilePage: React.FC = () => {
     const [isEditingSlots, setIsEditingSlots] = useState(false);
@@ -71,17 +72,14 @@ export const ProfilePage: React.FC = () => {
     const handleSaveBasicInfo = async () => {
         try {
             const token = localStorage.getItem('token');
-            await fetch('http://localhost:3000/auth/updateProfile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify({
-                    // Send basic info, adapting to common auth/updateProfile backend schema
-                    ...basicInfo
-                })
-            });
+            await axios.post('http://localhost:3000/auth/updateProfile', 
+                { ...basicInfo },
+                {
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    }
+                }
+            );
             setIsEditingBasic(false);
         } catch (error) {
             console.error("Failed to update profile", error);

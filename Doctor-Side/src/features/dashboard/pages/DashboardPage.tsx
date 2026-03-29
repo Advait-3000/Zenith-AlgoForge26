@@ -57,12 +57,44 @@ const RISK_DATA = [
 ];
 
 import { APPOINTMENTS } from '../../../data/mockPatients';
+import axios from 'axios';
 
 export const DashboardPage: React.FC = () => {
+    const [patients, setPatients] = useState<any[]>(APPOINTMENTS);
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
     const [volumeView, setVolumeView] = useState<'Week' | 'Month'>('Week');
     const [showRiskModal, setShowRiskModal] = useState<any>(null);
     const [showFullSchedule, setShowFullSchedule] = useState(false);
+
+    React.useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+                const res = await axios.get('http://localhost:3000/auth/patients', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = res.data;
+                if (data.success && data.patients && data.patients.length > 0) {
+                    const mapped = data.patients.map((p: any) => ({
+                        id: p._id,
+                        patientName: p.full_name || 'Unknown Patient',
+                        avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                        age: p.patient_details?.date_of_birth ? new Date().getFullYear() - new Date(p.patient_details.date_of_birth).getFullYear() : 35,
+                        gender: p.patient_details?.gender || 'Unspecified',
+                        summary: 'Registered via Cura Patient Portal.',
+                        risk: p.patient_details?.current_health_score < 50 ? 'High' : (p.patient_details?.current_health_score < 75 ? 'Medium' : 'Low'),
+                        time: 'Registered Patient',
+                        status: 'Scheduled'
+                    }));
+                    setPatients(mapped);
+                }
+            } catch (error) {
+                console.error("Failed to fetch patients", error);
+            }
+        };
+        fetchPatients();
+    }, []);
 
     return (
         <div className="space-y-10 max-w-[1600px] mx-auto animate-in fade-in duration-700">
@@ -197,7 +229,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {APPOINTMENTS.map((apt, i) => (
+                    {patients.map((apt: any, i: number) => (
                         <motion.div 
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -286,7 +318,7 @@ export const DashboardPage: React.FC = () => {
                             <div>
                                 <h4 className="font-bold text-slate-800 text-sm mb-3">Patients in Category</h4>
                                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                    {APPOINTMENTS.filter(p => p.risk === showRiskModal.name).map(apt => (
+                                    {patients.filter((p: any) => p.risk === showRiskModal.name).map((apt: any) => (
                                         <div 
                                             key={apt.id} 
                                             onClick={() => { setShowRiskModal(null); setSelectedPatient(apt); }} 
@@ -519,7 +551,6 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                 
                     <div className="mt-10 pt-8 border-t border-slate-100 flex items-center gap-4">
                         <Button className="flex-1 h-14" onClick={() => navigate('/consultation')}>Start Consultation</Button>
-                        <Button variant="outline" className="flex-1 h-14">Request New Lab Test</Button>
                     </div>
                 </div>
             </motion.div>
