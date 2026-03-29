@@ -11,6 +11,7 @@ import {
   Mail,
   MapPin
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/BaseComponents';
 import axios from 'axios';
 
@@ -40,6 +41,7 @@ export const ProfilePage: React.FC = () => {
                 icon: CheckCircle2
             }]);
             e.target.value = '';
+            toast.success('Credential uploaded successfully');
         }
     };
 
@@ -52,11 +54,11 @@ export const ProfilePage: React.FC = () => {
             name: savedUser?.full_name || 'Dr. Julian Ross',
             title: 'Chief Cardiologist',
             email: savedUser?.email || 'julian.ross@cura.com',
-            phone: '+1 (555) 0922 411',
-            location: 'New York, USA',
+            phone: '+91 989 0922 411',
+            location: 'New Delhi, India',
             hospital: 'St. Maria Medical Center',
-            license: 'NY-MD-90123-922',
-            fee: '$180 / Session',
+            license: 'DL-MD-90123-922',
+            fee: '₹1000 / Session',
             language: 'English (Native)'
         };
     });
@@ -105,6 +107,7 @@ export const ProfilePage: React.FC = () => {
                 }
             );
             setIsEditingBasic(false);
+            toast.success('Basic info updated successfully');
         } catch (error) {
             console.error("Failed to update profile", error);
             setIsEditingBasic(false);
@@ -274,11 +277,11 @@ export const ProfilePage: React.FC = () => {
                             ))}
                         </div>
                         <div className="mt-8 pt-8 border-t border-slate-100 flex items-center justify-between">
-                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Timezone: America/New_York (EST)</p>
+                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Timezone: Asia/Kolkata (IST)</p>
                             {isEditingSlots ? (
                                 <div className="flex items-center gap-2">
                                     <Button variant="outline" className="h-10 text-xs px-4" onClick={() => setIsEditingSlots(false)}>Cancel</Button>
-                                    <Button className="h-10 text-xs px-4" onClick={() => setIsEditingSlots(false)}>Save Changes</Button>
+                                    <Button className="h-10 text-xs px-4" onClick={() => { setIsEditingSlots(false); toast.success('Practice slots updated successfully'); }}>Save Changes</Button>
                                 </div>
                             ) : (
                                 <Button variant="outline" className="h-10 text-xs px-4" onClick={() => setIsEditingSlots(true)}>Update Slots</Button>

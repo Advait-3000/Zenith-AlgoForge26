@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { 
   Users, 
   Calendar, 
@@ -14,6 +15,7 @@ import {
   X,
   ChevronRight
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { 
   LineChart, 
@@ -56,16 +58,20 @@ const RISK_DATA = [
 import axios from 'axios';
 
 export const DashboardPage: React.FC = () => {
-    const [patients, setPatients] = useState<any[]>([]);
+    const [patients, setPatients] = useState<any[]>(() => {
+        const cached = sessionStorage.getItem('cura_patients_cache');
+        return cached ? JSON.parse(cached) : [];
+    });
     const [stats, setStats] = useState(STATS_INIT);
     const [riskData, setRiskData] = useState(RISK_DATA);
     const [weeklyData, setWeeklyData] = useState(WEEKLY_DATA);
     const [monthlyData, setMonthlyData] = useState(MONTHLY_DATA);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!sessionStorage.getItem('cura_patients_cache'));
     const [volumeView, setVolumeView] = useState('Week');
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
     const [showRiskModal, setShowRiskModal] = useState<any>(null);
     const [showFullSchedule, setShowFullSchedule] = useState(false);
+    const [criticalityFilter, setCriticalityFilter] = useState('All');
 
     React.useEffect(() => {
         const fetchDashboardData = async () => {
@@ -74,10 +80,12 @@ export const DashboardPage: React.FC = () => {
                 const token = localStorage.getItem('token');
                 if (!token) return;
 
-                // 1. Fetch Patients
-                const patientsRes = await axios.get('http://localhost:3000/auth/patients', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // 1. Fetch Patients and Stats Concurrently
+                const [patientsRes, statsRes] = await Promise.all([
+                    axios.get('http://localhost:3000/auth/patients', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    axios.get('http://localhost:3000/auth/stats', { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+                
                 if (patientsRes.data.success) {
                     const mapped = patientsRes.data.patients.map((p: any) => ({
                         id: p._id,
@@ -96,12 +104,10 @@ export const DashboardPage: React.FC = () => {
                         phone: p.phone_number || p.contact_number || 'N/A'
                     }));
                     setPatients(mapped);
+                    sessionStorage.setItem('cura_patients_cache', JSON.stringify(mapped));
                 }
 
-                // 2. Fetch Stats
-                const statsRes = await axios.get('http://localhost:3000/auth/stats', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // 2. Process Stats
                 if (statsRes.data.success) {
                     const s = statsRes.data.stats || {};
                     setStats([
@@ -133,14 +139,14 @@ export const DashboardPage: React.FC = () => {
     return (
         <div className="space-y-10 max-w-[1600px] mx-auto animate-in fade-in duration-700">
             {/* Upper Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {stats.map((stat, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                         key={stat.label} 
-                        className="cura-card p-8 group hover:bg-white"
+                        className="cura-card p-6 md:p-8 group hover:bg-white"
                     >
                         <div className="flex items-start justify-between">
                             <div className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
@@ -251,17 +257,32 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             {/* Bottom Row - Appointments */}
-            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-                <div className="flex items-center justify-between">
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                     <div>
                         <h3 className="text-2xl font-black text-slate-800 tracking-tight">Today's Appointments</h3>
-                        <p className="text-slate-500 font-semibold mt-1">Ready for consultation • 8 slots remaining</p>
+                        <p className="text-slate-500 font-semibold mt-1">Ready for consultation • {patients.filter(p => criticalityFilter === 'All' || p.risk === criticalityFilter).length} slots filtered</p>
                     </div>
-                    <Button variant="outline" className="h-12 px-5" onClick={() => setShowFullSchedule(true)}>View Full Schedule <ArrowRight size={18} /></Button>
+
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm overflow-x-auto no-scrollbar flex-1 md:flex-none">
+                            {['All', 'High', 'Medium', 'Low'].map((cat) => (
+                                <button 
+                                    key={cat}
+                                    onClick={() => setCriticalityFilter(cat)}
+                                    className={`px-4 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all ${criticalityFilter === cat ? 'bg-cura-primary text-white shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                        <Button variant="outline" className="h-12 px-5 hidden sm:flex shrink-0" onClick={() => setShowFullSchedule(true)}>Schedule <ArrowRight size={18} /></Button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {patients.length > 0 ? patients.map((apt: any, i: number) => (
+                    {patients.filter(p => criticalityFilter === 'All' || p.risk === criticalityFilter).length > 0 ? 
+                     patients.filter(p => criticalityFilter === 'All' || p.risk === criticalityFilter).map((apt: any, i: number) => (
                         <motion.div 
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -306,8 +327,8 @@ export const DashboardPage: React.FC = () => {
                             </div>
                         </motion.div>
                     )) : (
-                        <div className="col-span-full py-20 text-center cura-card bg-slate-50/50">
-                            <p className="text-slate-400 font-bold">No registered patients found.</p>
+                        <div className="col-span-full py-20 text-center cura-card bg-slate-50/50 border-dashed">
+                            <p className="text-slate-400 font-bold">No patients found in {criticalityFilter} category.</p>
                         </div>
                     )}
                 </div>
@@ -450,7 +471,8 @@ export const DashboardPage: React.FC = () => {
 export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }> = ({ patient, onClose }) => {
     const navigate = useNavigate();
     const [isRescheduling, setIsRescheduling] = useState(false);
-    const [rescheduleDate, setRescheduleDate] = useState('');
+    const [rescheduleDate, setRescheduleDate] = useState<Date>(new Date());
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
     const [newTimeSlot, setNewTimeSlot] = useState<string | null>(null);
     const [aiSummary, setAiSummary] = useState<any>(null);
     const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -509,10 +531,17 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
     }, [patient.id, patient.score]);
 
     const handleReschedule = () => {
-        alert(`Appointment rescheduled to ${rescheduleDate} at ${newTimeSlot}`);
+        toast.success(`Appointment rescheduled to ${format(rescheduleDate, 'MMM dd, yyyy')} at ${newTimeSlot}`);
         setIsRescheduling(false);
         onClose();
     };
+
+    // Calendar Helper Logic
+    const today = startOfDay(new Date());
+    const daysInMonth = eachDayOfInterval({
+        start: startOfMonth(currentMonth),
+        end: endOfMonth(currentMonth)
+    });
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -528,35 +557,35 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                className="w-full max-w-4xl bg-white rounded-[3rem] shadow-2xl relative overflow-hidden z-[101] flex flex-col md:flex-row max-h-[90vh]"
+                className="w-full max-w-4xl bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden z-[101] flex flex-col md:flex-row max-h-[95vh] md:max-h-[90vh]"
             >
                 {/* Left Personal Context Panel */}
-                <div className="w-full md:w-80 bg-slate-50 border-r border-slate-100 p-8 flex flex-col">
-                    <div className="w-32 h-32 rounded-[2rem] overflow-hidden shadow-cura-float border-4 border-white mx-auto mb-6">
+                <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-100 p-6 md:p-8 flex flex-col shrink-0 overflow-y-auto custom-scrollbar">
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-[2rem] overflow-hidden shadow-cura-float border-4 border-white mx-auto mb-4 md:mb-6 shrink-0">
                         <img src={patient.avatar} alt="Patient" className="w-full h-full object-cover" />
                     </div>
                     
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-black text-slate-800 mb-1">{patient.patientName}</h2>
-                        <div className="flex items-center justify-center gap-3 text-sm font-bold text-cura-text-soft uppercase tracking-wider">
+                    <div className="text-center mb-6 md:mb-8">
+                        <h2 className="text-xl md:text-2xl font-black text-slate-800 mb-1">{patient.patientName}</h2>
+                        <div className="flex items-center justify-center gap-3 text-xs md:text-sm font-bold text-cura-text-soft uppercase tracking-wider">
                             <span>{patient.age} Yrs</span>
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                             <span>{patient.gender}</span>
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-center">
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:space-y-4">
+                        <div className="p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-center col-span-2 md:col-span-1">
                             <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-1">Health Score</h5>
-                            <div className="text-3xl font-black text-cura-primary">{patient.score || '--'}</div>
+                            <div className="text-2xl md:text-3xl font-black text-cura-primary">{patient.score || '--'}</div>
                         </div>
-                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-2">Blood Group</h5>
-                            <p className="text-sm font-bold text-slate-700">{patient.vitals?.blood_group || 'Not Recorded'}</p>
+                        <div className="p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-1 md:mb-2">Blood</h5>
+                            <p className="text-xs md:text-sm font-bold text-slate-700">{patient.vitals?.blood_group || 'N/A'}</p>
                         </div>
-                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-2">Contact</h5>
-                            <p className="text-sm font-bold text-slate-700">{patient.phone || 'N/A'}</p>
+                        <div className="p-3 md:p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-1 md:mb-2">Contact</h5>
+                            <p className="text-[10px] md:text-sm font-bold text-slate-700 truncate">{patient.phone || 'N/A'}</p>
                         </div>
                     </div>
 
@@ -566,12 +595,43 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                         ) : (
                             <div className="space-y-3">
                                 <h5 className="text-[10px] font-black text-slate-800 uppercase tracking-widest text-center">Select New Date & Time</h5>
-                                <input 
-                                    type="date"
-                                    value={rescheduleDate}
-                                    onChange={(e) => setRescheduleDate(e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 focus:border-cura-primary outline-none transition-colors"
-                                />
+                                
+                                <div className="bg-white border border-slate-100 rounded-3xl p-4 shadow-sm mb-4">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <button onClick={() => setCurrentMonth(addDays(currentMonth, -30))} className="p-1 hover:bg-slate-50 text-slate-400 rounded-lg transition-colors"><ChevronRight className="rotate-180" size={18} /></button>
+                                        <div className="font-black text-sm text-slate-800">{format(currentMonth, 'MMMM, yyyy')}</div>
+                                        <button onClick={() => setCurrentMonth(addDays(currentMonth, 30))} className="p-1 hover:bg-slate-50 text-slate-400 rounded-lg transition-colors"><ChevronRight size={18} /></button>
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-1 mb-2">
+                                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+                                            <div key={d} className="text-center text-[10px] font-black text-slate-400 py-1">{d}</div>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-1">
+                                        {Array.from({ length: startOfMonth(currentMonth).getDay() }).map((_, i) => (
+                                            <div key={`empty-${i}`} className="p-2" />
+                                        ))}
+                                        {daysInMonth.map(date => {
+                                            const isPast = isBefore(startOfDay(date), today);
+                                            const isSelected = isSameDay(date, rescheduleDate);
+                                            return (
+                                                <button
+                                                    key={date.toISOString()}
+                                                    disabled={isPast}
+                                                    onClick={() => setRescheduleDate(date)}
+                                                    className={`
+                                                        p-2 text-xs font-bold rounded-lg flex items-center justify-center transition-all
+                                                        ${isPast ? 'text-slate-300 cursor-not-allowed hidden md:flex' : 'hover:bg-cura-primary/10 text-slate-700'}
+                                                        ${isSelected ? 'bg-cura-primary text-white hover:bg-cura-primary shadow-md shadow-teal-500/20' : ''}
+                                                    `}
+                                                >
+                                                    {format(date, 'd')}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-2 mt-2">
                                     {['09:00 AM', '01:30 PM', '04:00 PM', '05:15 PM'].map(t => (
                                         <button 
@@ -593,7 +653,7 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                 </div>
 
                 {/* Right Clinical Insights Panel */}
-                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar relative">
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar relative">
                     {selectedReport ? (
                         <div className="absolute inset-0 bg-white z-10 flex flex-col p-10 animate-in fade-in zoom-in-95 duration-300">
                              <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
@@ -656,9 +716,22 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                                   )}
 
                                   <div>
-                                      <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs mb-3">Logs & Extracted Raw Text (OCR)</h4>
-                                      <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm">
-                                          <p className="text-[13px] font-mono text-slate-700 whitespace-pre-wrap leading-[1.8] tracking-tight">{selectedReport.ocrText}</p>
+                                      <h4 className="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-3">Logs & Extracted Raw Text (OCR)</h4>
+                                      <div className="bg-[#fcfdfd] border-2 border-dashed border-slate-100 p-10 rounded-[2.5rem] shadow-inner relative overflow-hidden group">
+                                          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                              <FileText size={80} />
+                                          </div>
+                                          <div className="relative z-10">
+                                              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100/50">
+                                                  <div className="w-2 h-2 rounded-full bg-slate-300" />
+                                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Verified Clinical Transcript</span>
+                                              </div>
+                                              <p className="text-[13px] font-mono text-slate-600 whitespace-pre-wrap leading-[1.8] tracking-tight selection:bg-cura-primary/10">
+                                                  {selectedReport.ocrText || "No raw text extracted for this record."}
+                                              </p>
+                                          </div>
+                                          {/* Subtle paper decorative line */}
+                                          <div className="absolute left-6 top-0 bottom-0 w-px bg-slate-100/50" />
                                       </div>
                                   </div>
 
