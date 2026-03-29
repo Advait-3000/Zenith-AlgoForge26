@@ -455,6 +455,7 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
     const [aiSummary, setAiSummary] = useState<any>(null);
     const [isLoadingAI, setIsLoadingAI] = useState(false);
     const [historyRecords, setHistoryRecords] = useState<any[]>([]);
+    const [selectedReport, setSelectedReport] = useState<any>(null);
 
     React.useEffect(() => {
         const fetchAIInsights = async () => {
@@ -482,7 +483,12 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                         date: new Date(r.upload_date || r.createdAt || Date.now() - (res.data.records.length - i)*86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
                         score: r.ai_analysis?.calculated_health_score || r.calculated_health_score || patient.score,
                         title: r.document_type || "Clinical Report",
-                        id: r._id || i
+                        id: r._id || i,
+                        ocrText: r.ocr_extracted_text || "No raw OCR text successfully extracted.",
+                        summary: r.ai_analysis?.concise_summary || "No AI summary generated for this document.",
+                        fileUrl: r.s3_file_url || null,
+                        findings: r.ai_analysis?.detected_abnormalities || r.ai_analysis?.findings || [],
+                        fullAnalysis: r.ai_analysis || null
                     }));
                     setHistoryRecords(records);
                 } else {
@@ -587,8 +593,87 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                 </div>
 
                 {/* Right Clinical Insights Panel */}
-                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar relative">
+                    {selectedReport ? (
+                        <div className="absolute inset-0 bg-white z-10 flex flex-col p-10 animate-in fade-in zoom-in-95 duration-300">
+                             <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">{selectedReport.title}</h3>
+                                    <p className="text-sm font-semibold text-cura-text-soft">{selectedReport.date} • Insight Score: {selectedReport.score}</p>
+                                </div>
+                                <button onClick={() => setSelectedReport(null)} className="w-10 h-10 rounded-full hover:bg-slate-100 transition-colors flex items-center justify-center text-slate-400"><X /></button>
+                             </div>
+                             
+                             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                                  <div className="bg-cura-primary/5 rounded-2xl p-6 border border-cura-primary/10">
+                                      <h4 className="font-black text-cura-primary uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1.5"><TrendingUp size={14}/> Synthesized Context</h4>
+                                      <p className="text-sm font-medium text-slate-700 leading-relaxed mb-4">{selectedReport.summary}</p>
+                                      {selectedReport.findings?.length > 0 && (
+                                          <div className="flex flex-wrap gap-2">
+                                              {selectedReport.findings.map((f: string, idx: number) => (
+                                                  <span key={idx} className="px-3 py-1 bg-white/60 border border-cura-primary/10 rounded-lg text-[11px] font-bold text-cura-primary">{f}</span>
+                                              ))}
+                                          </div>
+                                      )}
+                                  </div>
+                                  {selectedReport.fullAnalysis?.primary_clinical_concerns?.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className="font-black text-rose-500 uppercase tracking-widest text-[10px] mb-2">Priority Clinical Concerns</h4>
+                                        <div className="grid gap-3">
+                                            {selectedReport.fullAnalysis.primary_clinical_concerns.map((c: any, i: number) => (
+                                                <div key={i} className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex flex-col">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <h5 className="font-bold text-slate-800 text-sm">{c.test_name}</h5>
+                                                        <span className="bg-white px-2 py-0.5 rounded text-xs font-black text-rose-600 shadow-sm border border-rose-100">{c.result} {c.unit}</span>
+                                                    </div>
+                                                    <p className="text-[11px] font-medium text-rose-600 mb-1">Ref: {c.reference_range}</p>
+                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{c.implication}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                  )}
+
+                                  {selectedReport.fullAnalysis?.keyMetrics && Object.keys(selectedReport.fullAnalysis.keyMetrics).length > 0 && (
+                                      <div>
+                                          <h4 className="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-3">Key Extracted Metrics</h4>
+                                          <div className="grid grid-cols-3 gap-3">
+                                              {Object.entries(selectedReport.fullAnalysis.keyMetrics).map(([k, v]) => (
+                                                  <div key={k} className="p-3 bg-white border border-slate-200 rounded-xl shadow-sm text-center flex flex-col justify-center">
+                                                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">{k}</span>
+                                                      <span className="text-sm font-black text-slate-800">{v as React.ReactNode}</span>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  )}
+                                  
+                                  {selectedReport.fullAnalysis?.patient_translation && (
+                                      <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                                          <h4 className="font-black text-emerald-600 uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1.5">For The Patient</h4>
+                                          <p className="text-sm font-medium text-emerald-900 leading-relaxed">{selectedReport.fullAnalysis.patient_translation}</p>
+                                      </div>
+                                  )}
+
+                                  <div>
+                                      <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs mb-3">Logs & Extracted Raw Text (OCR)</h4>
+                                      <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm">
+                                          <p className="text-[13px] font-mono text-slate-700 whitespace-pre-wrap leading-[1.8] tracking-tight">{selectedReport.ocrText}</p>
+                                      </div>
+                                  </div>
+
+                                  {selectedReport.fileUrl && (
+                                      <div className="pt-4">
+                                          <a href={selectedReport.fileUrl} target="_blank" rel="noreferrer">
+                                              <Button variant="outline" className="w-full text-xs h-12">Open Original Document Location</Button>
+                                          </a>
+                                      </div>
+                                  )}
+                             </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-cura-primary/10 rounded-xl flex items-center justify-center">
                                 <FileText className="text-cura-primary" size={22} />
@@ -682,7 +767,7 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                                             <p className="text-[11px] font-semibold text-cura-text-soft">{r.date} • Health Score: {r.score}</p>
                                         </div>
                                     </div>
-                                    <button className="text-[10px] font-black text-cura-primary h-7 px-3 rounded-lg border border-cura-primary/20 hover:bg-cura-primary hover:text-white transition-all">VIEW</button>
+                                    <button onClick={() => setSelectedReport(r)} className="text-[10px] font-black text-cura-primary h-7 px-3 rounded-lg border border-cura-primary/20 hover:bg-cura-primary hover:text-white transition-all">VIEW</button>
                                 </div>
                             )) : (
                                 <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl">
@@ -695,6 +780,8 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                     <div className="mt-10 pt-8 border-t border-slate-100 flex items-center gap-4">
                         <Button className="flex-1 h-14" onClick={() => navigate('/consultation', { state: { patient } })}>Start Consultation</Button>
                     </div>
+                    </>
+                    )}
                 </div>
             </motion.div>
         </div>
