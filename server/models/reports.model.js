@@ -28,6 +28,11 @@ const aiAnalysisSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    keyMetrics: {
+      sugarLevel: Number,
+      cholesterol: Number,
+      bp: String
+    },
     // ─── HIERARCHICAL CLINICAL ANALYSIS ─────────────────
     primary_clinical_concerns: [{
       category: String,
