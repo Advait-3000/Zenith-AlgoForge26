@@ -3,10 +3,14 @@ import { ROLES } from "../AccessManagement/constants.js";
 // ─── GENERIC ROLE GUARD ───────────────────────────────────────────────────────
 export const requireRole = (...allowedRoles) => {
     return (req, res, next) => {
-        if (!req.user) {
+        if (!req.user || !req.user.role) {
             return res.status(401).json({ success: false, message: "Unauthorized. Please log in first." });
         }
-        if (!allowedRoles.includes(req.user.role)) {
+
+        const userRole = req.user.role.toLowerCase();
+        const isAllowed = allowedRoles.some(role => role.toLowerCase() === userRole);
+
+        if (!isAllowed) {
             return res.status(403).json({
                 success: false,
                 message: `Access denied. Required Role: ${allowedRoles.join(" or ")}.`,

@@ -124,7 +124,7 @@ export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
 console.log(1)
-    const { full_name, password, location_coordinates } = req.body;
+    const { full_name, password, location_coordinates, patient_details } = req.body;
 
     const user = await User.findById(userId);
 
@@ -149,6 +149,14 @@ console.log(1)
       user.location_coordinates = location_coordinates;
     }
 
+    // 🧬 Update Patient Details (Emergency Contacts, Vitals, etc.)
+    if (patient_details) {
+      user.patient_details = {
+        ...user.patient_details.toObject(), // Keep existing fields
+        ...patient_details // Overwrite with new ones
+      };
+    }
+
     await user.save();
 
     res.json({
@@ -160,6 +168,7 @@ console.log(1)
         full_name: user.full_name,
         role: user.role,
         location_coordinates: user.location_coordinates,
+        patient_details: user.patient_details
       },
     });
 

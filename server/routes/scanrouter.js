@@ -36,7 +36,7 @@ router.post(
       const patientId = req.body.patientId || req.user.id;
       const uploaderId = req.user.id;
 
-      const aiResult = await analyzeMedicalImage(uploaderId, patientId, visionCompatibleUrl);
+      const aiResult = await analyzeMedicalImage(visionCompatibleUrl);
 
       return res.status(200).json(aiResult);
 
