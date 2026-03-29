@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   View, 
@@ -9,7 +9,9 @@ import {
   Image, 
   TextInput, 
   Modal, 
-  Dimensions 
+  Dimensions,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
@@ -20,6 +22,7 @@ import {
   PencilLine
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getUserData, updateUserProfile } from '../../../shared/services/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,21 +32,61 @@ export const EditProfileScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: 'Alexander',
-    lastName: 'Johnson',
-    dob: '05/07/1989',
-    phone: '869 846 534',
-    city: 'Boston, MA',
-    address: 'Boylston St, Building 45, Apartment 3A'
+    firstName: '',
+    lastName: '',
+    dob: '',
+    phone: '',
+    city: '',
+    address: ''
   });
+
+  // Load real user data on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await getUserData();
+        if (user) {
+          const nameParts = (user.full_name || '').split(' ');
+          setFormData({
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            dob: user.patient_details?.date_of_birth || '',
+            phone: user.contact_number || '',
+            city: '',
+            address: '',
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to load user:', err);
+      }
+    };
+    loadUser();
+  }, []);
 
   const handleCancel = () => {
     setShowDiscardModal(true);
   };
 
-  const handleSave = () => {
-    navigation.goBack();
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      await updateUserProfile({
+        full_name: fullName,
+        contact_number: formData.phone,
+        patient_details: {
+          date_of_birth: formData.dob,
+        },
+      });
+      Alert.alert('Success', 'Profile updated successfully!');
+      navigation.goBack();
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const confirmDiscard = () => {

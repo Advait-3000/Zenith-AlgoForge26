@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
@@ -19,6 +19,8 @@ import {
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
+import { getLatestScanResult, getUserData } from '../../../shared/services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +55,90 @@ const SERVICES = [
 export const HomeScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const [healthData, setHealthData] = useState<any>(null);
+  const [userName, setUserName] = useState('User');
+
+  // Load health data and user info on focus (so it refreshes after scanning)
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        try {
+          const [scanResult, userData] = await Promise.all([
+            getLatestScanResult(),
+            getUserData(),
+          ]);
+          if (scanResult?.analysis) {
+            setHealthData(scanResult.analysis);
+          }
+          if (userData?.full_name) {
+            setUserName(userData.full_name.split(' ')[0]);
+          }
+        } catch (err) {
+          console.warn('Failed to load health data:', err);
+        }
+      };
+      loadData();
+    }, [])
+  );
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return '#4ADE80';
+    if (score >= 60) return '#FBB03B';
+    return '#FF5252';
+  };
+
+  const renderHealthScore = () => {
+    if (!healthData) return null;
+
+    const score = parseInt(healthData.calculated_health_score) || 0;
+    const scoreColor = getScoreColor(score);
+    const concerns = healthData.primary_clinical_concerns || [];
+    const stableSystems = healthData.stable_systems || [];
+
+    return (
+      <View style={styles.healthScoreContainer}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Health Score</Text>
+          <TouchableOpacity 
+            style={styles.trendingBtn}
+            onPress={() => navigation.navigate('HealthMetrics')}
+          >
+            <TrendingUp stroke="#306F6F" size={18} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.healthScoreCard}>
+          <View style={styles.scoreCircle}>
+            <View style={[styles.scoreRing, { borderColor: scoreColor }]}>
+              <Text style={[styles.scoreNumber, { color: scoreColor }]}>{score}</Text>
+              <Text style={styles.scoreLabel}>/ 100</Text>
+            </View>
+          </View>
+          <View style={styles.scoreDetails}>
+            <Text style={styles.scoreSummary}>
+              {healthData.concise_summary?.substring(0, 120) || 'No summary available'}...
+            </Text>
+            {concerns.length > 0 && (
+              <View style={styles.concernsList}>
+                <Text style={styles.concernsTitle}>Key Concerns:</Text>
+                {concerns.slice(0, 3).map((c: any, i: number) => (
+                  <View key={i} style={styles.concernItem}>
+                    <View style={[styles.concernDot, { backgroundColor: '#FF5252' }]} />
+                    <Text style={styles.concernText}>{c.test_name}: {c.implication}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            {stableSystems.length > 0 && (
+              <View style={styles.stableRow}>
+                <View style={[styles.concernDot, { backgroundColor: '#4ADE80' }]} />
+                <Text style={styles.stableText}>{stableSystems.slice(0, 3).join(', ')} — Normal</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   const renderRecoveryTrack = () => (
     <View style={styles.recoveryContainer}>
@@ -100,7 +186,7 @@ export const HomeScreen: React.FC = () => {
         
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.greeting}>{t('home.greeting', { name: 'Olivia' })}</Text>
+          <Text style={styles.greeting}>{t('home.greeting', { name: userName })}</Text>
           <TouchableOpacity 
             style={styles.notificationBtn}
             onPress={() => navigation.navigate('Notifications')}
@@ -119,6 +205,9 @@ export const HomeScreen: React.FC = () => {
           <Search stroke="#A0A0A0" size={20} />
           <Text style={styles.searchPlaceholder}>{t('home.searchPlaceholder')}</Text>
         </TouchableOpacity>
+
+        {/* Health Score from latest scan */}
+        {renderHealthScore()}
 
         {/* Portfolio CTA */}
         <TouchableOpacity 
@@ -591,6 +680,84 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333333',
+  },
+  // Health Score Card styles
+  healthScoreContainer: {
+    marginBottom: 25,
+  },
+  healthScoreCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
+    padding: 24,
+    shadowColor: '#306F6F',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  scoreCircle: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  scoreRing: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F7FEFE',
+  },
+  scoreNumber: {
+    fontSize: 36,
+    fontWeight: '800',
+  },
+  scoreLabel: {
+    fontSize: 14,
+    color: '#A0A0A0',
+    fontWeight: '600',
+  },
+  scoreDetails: {},
+  scoreSummary: {
+    fontSize: 14,
+    color: '#717171',
+    lineHeight: 20,
+    marginBottom: 15,
+  },
+  concernsList: {
+    marginBottom: 10,
+  },
+  concernsTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#333333',
+    marginBottom: 8,
+  },
+  concernItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  concernDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 10,
+  },
+  concernText: {
+    fontSize: 13,
+    color: '#717171',
+    flex: 1,
+  },
+  stableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  stableText: {
+    fontSize: 13,
+    color: '#717171',
+    flex: 1,
   },
   bottomSpacer: {
     height: 110,

@@ -8,7 +8,9 @@ import {
   Modal, 
   TextInput,
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, ChevronDown, Check, Search, MapPin, X } from 'lucide-react-native';
@@ -16,6 +18,7 @@ import { ProgressBar } from '../../../shared/components/ProgressBar';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { updateUserProfile } from '../../../shared/services/api';
 
 const RELATIONSHIPS = ['Spouse', 'Parent', 'Child', 'Friend', 'Other'];
 const COUNTRIES = [
@@ -33,6 +36,7 @@ const CITIES = [
 
 export const EmergencyContactScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -285,11 +289,40 @@ export const EmergencyContactScreen: React.FC = () => {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button
-            title="Next"
-            disabled={!isFormValid}
-            onPress={() => navigation.navigate('HealthAssessment')}
-          />
+          <View>
+            <Button
+              title={isLoading ? '' : "Next"}
+              disabled={!isFormValid || isLoading}
+              onPress={async () => {
+                setIsLoading(true);
+                try {
+                  const contactName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+                  const contactPhone = `${country.code} ${formData.phoneNumber.trim()}`;
+                  await updateUserProfile({
+                    patient_details: {
+                      emergency_contacts: [{
+                        name: contactName,
+                        relation: formData.relationship,
+                        phone: contactPhone,
+                      }],
+                    },
+                  });
+                  navigation.navigate('HealthAssessment');
+                } catch (error: any) {
+                  Alert.alert('Update Failed', error.message || 'Could not save. Please try again.');
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+            />
+            {isLoading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
+                style={{ position: 'absolute', alignSelf: 'center', top: 18 }}
+              />
+            )}
+          </View>
         </View>
       </KeyboardAvoidingView>
 

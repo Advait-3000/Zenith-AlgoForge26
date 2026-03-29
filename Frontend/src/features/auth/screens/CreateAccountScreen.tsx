@@ -6,7 +6,9 @@ import {
   ScrollView, 
   TouchableOpacity, 
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -14,13 +16,16 @@ import { ArrowLeft, Check, Eye, EyeOff } from 'lucide-react-native';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { registerUser } from '../../../shared/services/api';
 
 export const CreateAccountScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Validation logic
   const isMinLength = password.length >= 8;
@@ -28,7 +33,34 @@ export const CreateAccountScreen: React.FC = () => {
   const hasUppercase = /[A-Z]/.test(password);
 
   const isPasswordValid = isMinLength && hasTwoNumbers && hasUppercase;
-  const isFormValid = email.includes('@') && isPasswordValid;
+  const isFormValid = fullName.trim().length > 0 && email.includes('@') && isPasswordValid;
+
+  const handleCreateAccount = async () => {
+    if (!isFormValid || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const result = await registerUser({
+        email: email.trim().toLowerCase(),
+        password,
+        full_name: fullName.trim(),
+        role: 'Patient',
+      });
+
+      if (result.success) {
+        // Navigate to OTP verification or directly to onboarding
+        navigation.navigate('VerifiedSuccess');
+      }
+    } catch (error: any) {
+      Alert.alert(
+        'Registration Failed',
+        error.message || 'Something went wrong. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderRequirement = (text: string, isValid: boolean) => (
     <View style={styles.requirementRow}>
@@ -60,6 +92,14 @@ export const CreateAccountScreen: React.FC = () => {
           <Text style={styles.subtitle}>{t('signup.subtitle')}</Text>
 
           <Input
+            label="Full Name"
+            placeholder="Enter your full name"
+            autoCapitalize="words"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+
+          <Input
             label={t('signup.emailLabel')}
             placeholder={t('signup.emailPlaceholder')}
             keyboardType="email-address"
@@ -77,10 +117,10 @@ export const CreateAccountScreen: React.FC = () => {
   onChangeText={setPassword}
   inputContainerStyle={
     password.length === 0
-      ? undefined                              // untouched — no border
+      ? undefined
       : isPasswordValid
-      ? styles.validBorder                     // all rules met — green
-      : styles.errorBorder                     // rules failing — red
+      ? styles.validBorder
+      : styles.errorBorder
   }
   icon={
     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -103,10 +143,17 @@ export const CreateAccountScreen: React.FC = () => {
 
         <View style={styles.footer}>
           <Button
-            title={t('signup.createAccount')}
-            disabled={!isFormValid}
-            onPress={() => navigation.navigate('OtpVerification')}
+            title={isLoading ? '' : t('signup.createAccount')}
+            disabled={!isFormValid || isLoading}
+            onPress={handleCreateAccount}
           />
+          {isLoading && (
+            <ActivityIndicator
+              size="small"
+              color="#306F6F"
+              style={{ position: 'absolute', alignSelf: 'center', top: 18 }}
+            />
+          )}
           <View style={styles.loginRow}>
             <Text style={styles.loginText}>{t('signup.alreadyHaveAccount')} </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>

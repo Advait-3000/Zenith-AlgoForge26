@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
@@ -15,9 +15,10 @@ import {
   HelpCircle,
   Globe
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../../../shared/components/LanguageSwitcher';
+import { getUserData, clearAllAuth, getLatestScanResult } from '../../../shared/services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,31 @@ export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLangModal, setShowLangModal] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [healthScore, setHealthScore] = useState<number | null>(null);
+
+  // Load user data on focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        try {
+          const user = await getUserData();
+          if (user) {
+            setUserName(user.full_name || 'User');
+            setUserEmail(user.email || '');
+          }
+          const scan = await getLatestScanResult();
+          if (scan?.analysis?.calculated_health_score) {
+            setHealthScore(parseInt(scan.analysis.calculated_health_score));
+          }
+        } catch (err) {
+          console.warn('Failed to load profile data:', err);
+        }
+      };
+      loadData();
+    }, [])
+  );
 
   const PROFILE_ITEMS = [
     { id: '1', title: t('profile.favoriteDoctors', 'Favorite doctors'), icon: Heart, route: null },
@@ -40,7 +66,8 @@ export const ProfileScreen: React.FC = () => {
     { id: '8', title: t('profile.securitySettings', 'Security settings'), icon: Lock, route: null },
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await clearAllAuth();
     setShowLogoutModal(false);
     navigation.replace('Login');
   };
@@ -62,10 +89,14 @@ export const ProfileScreen: React.FC = () => {
 
         {/* User Card */}
         <TouchableOpacity style={styles.userCard} onPress={() => navigation.navigate('EditProfile')}>
-          <Image source={{ uri: USER_IMG }} style={styles.userImg} />
+          <View style={[styles.userImg, { backgroundColor: '#EAF9F9', justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: '#306F6F' }}>{userName ? userName[0].toUpperCase() : 'U'}</Text>
+          </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{t('profile.userName')}</Text>
-            <Text style={styles.userBirth}>{t('profile.userAge', { age: 56 })} {t('profile.userBirthDate', { date: '05 Jul 1989' })}</Text>
+            <Text style={styles.userName}>{userName || 'User'}</Text>
+            <Text style={styles.userBirth}>
+              {userEmail}{healthScore ? ` • Score: ${healthScore}/100` : ''}
+            </Text>
           </View>
           <ChevronRight stroke="#717171" size={24} />
         </TouchableOpacity>

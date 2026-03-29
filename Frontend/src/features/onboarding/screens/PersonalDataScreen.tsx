@@ -3,7 +3,6 @@ import {
   View, 
   Text, 
   StyleSheet,
-  // Using native ScrollView/TouchableOpacity as requested
   ScrollView, 
   TouchableOpacity, 
   Modal, 
@@ -11,7 +10,9 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  FlatList
+  FlatList,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { 
@@ -27,8 +28,11 @@ import { ProgressBar } from '../../../shared/components/ProgressBar';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { updateUserProfile } from '../../../shared/services/api';
 
 const { width } = Dimensions.get('window');
+
+const GENDERS = ['Male', 'Female', 'Other'];
 
 const CITIES = [
   'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 
@@ -53,24 +57,27 @@ export const PersonalDataScreen: React.FC = () => {
     firstName: '',
     lastName: '',
     dob: '',
+    gender: '',
     phoneNumber: '',
     email: '',
     city: '',
     address: '',
   });
 
-  const [country, setCountry] = useState(COUNTRIES[0]);
+  const [country, setCountry] = useState(COUNTRIES[2]); // Default India
+  const [isLoading, setIsLoading] = useState(false);
 
   // State for modals
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [isCitySearchVisible, setIsCitySearchVisible] = useState(false);
   const [isCountryPickerVisible, setIsCountryPickerVisible] = useState(false);
+  const [isGenderModalVisible, setIsGenderModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Date Picker Wheels State
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState('January');
-  const [selectedYear, setSelectedYear] = useState(1990);
+  const [selectedYear, setSelectedYear] = useState(2000);
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -80,6 +87,7 @@ export const PersonalDataScreen: React.FC = () => {
     formData.firstName && 
     formData.lastName && 
     formData.dob && 
+    formData.gender &&
     formData.phoneNumber && 
     formData.email && 
     formData.city && 
@@ -107,6 +115,47 @@ export const PersonalDataScreen: React.FC = () => {
     if (type === 'day') setSelectedDay(days[index] || 1);
     if (type === 'month') setSelectedMonth(months[index] || 'January');
     if (type === 'year') setSelectedYear(years[index] || 2024);
+  };
+
+  // Convert month name to number for API
+  const getMonthNumber = (monthName: string) => {
+    return months.indexOf(monthName) + 1;
+  };
+
+  // Handle Next → call updateProfile API
+  const handleNext = async () => {
+    if (!isFormValid || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      // Build the date in ISO format for the API
+      const monthNum = getMonthNumber(selectedMonth);
+      const dobISO = `${selectedYear}-${String(monthNum).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+      const contactNumber = `${country.code} ${formData.phoneNumber.trim()}`;
+
+      const result = await updateUserProfile({
+        full_name: fullName,
+        contact_number: contactNumber,
+        patient_details: {
+          date_of_birth: dobISO,
+          gender: formData.gender,
+        },
+      });
+
+      if (result.success) {
+        navigation.replace('Main');
+      }
+    } catch (error: any) {
+      Alert.alert(
+        'Update Failed',
+        error.message || 'Could not save your data. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ---------------- Render Helpers ----------------
@@ -169,7 +218,7 @@ export const PersonalDataScreen: React.FC = () => {
     </Modal>
   );
 
-  // Simplified Country Picker to match emergency screen
+  // Country Picker
   const renderCountryModal = () => (
     <Modal
       visible={isCountryPickerVisible}
@@ -192,6 +241,37 @@ export const PersonalDataScreen: React.FC = () => {
               >
                 <Text style={styles.relOptionText}>{item.flag} {item.name} ({item.code})</Text>
                 {country.name === item.name && <Check stroke="#306F6F" size={20} />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Gender Picker
+  const renderGenderModal = () => (
+    <Modal
+      visible={isGenderModalVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setIsGenderModalVisible(false)}
+    >
+      <View style={styles.modalOverlayBottom}>
+        <View style={styles.bottomSheet}>
+          <Text style={styles.modalTitleSmall}>Select gender</Text>
+          <ScrollView>
+            {GENDERS.map((g) => (
+              <TouchableOpacity 
+                key={g} 
+                style={styles.relOption}
+                onPress={() => {
+                  handleInputChange('gender', g);
+                  setIsGenderModalVisible(false);
+                }}
+              >
+                <Text style={styles.relOptionText}>{g}</Text>
+                {formData.gender === g && <Check stroke="#306F6F" size={20} />}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -270,7 +350,7 @@ export const PersonalDataScreen: React.FC = () => {
           >
             <ArrowLeft stroke="#212121" size={24} />
           </TouchableOpacity>
-          <ProgressBar totalSteps={6} currentStep={1} />
+          {/* Progress bar removed */}
         </View>
 
         <ScrollView 
@@ -303,6 +383,17 @@ export const PersonalDataScreen: React.FC = () => {
               editable={false}
               pointerEvents="none"
               icon={<Calendar stroke="#A0A0A0" size={24} />}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setIsGenderModalVisible(true)}>
+            <Input
+              label="Gender"
+              placeholder="Select your gender"
+              value={formData.gender}
+              editable={false}
+              pointerEvents="none"
+              icon={<ChevronDown stroke="#A0A0A0" size={20} />}
             />
           </TouchableOpacity>
 
@@ -360,17 +451,27 @@ export const PersonalDataScreen: React.FC = () => {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button
-            title="Next"
-            disabled={!isFormValid}
-            onPress={() => navigation.navigate('EmergencyContact')}
-          />
+          <View>
+            <Button
+              title={isLoading ? '' : "Next"}
+              disabled={!isFormValid || isLoading}
+              onPress={handleNext}
+            />
+            {isLoading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
+                style={{ position: 'absolute', alignSelf: 'center', top: 18 }}
+              />
+            )}
+          </View>
         </View>
       </KeyboardAvoidingView>
 
       {renderBirthdayModal()}
       {renderCityModal()}
       {renderCountryModal()}
+      {renderGenderModal()}
     </SafeAreaView>
   );
 };

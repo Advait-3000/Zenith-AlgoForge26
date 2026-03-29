@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getToken } from '../../../shared/services/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,12 +26,22 @@ export const SplashScreen: React.FC = () => {
       useNativeDriver: true,
     }).start();
 
-    // Navigate to Onboarding after animation
-    const timer = setTimeout(() => {
-      navigation.replace('Onboarding');
-    }, 3500);
+    const checkAuthAndNavigate = async () => {
+      try {
+        const token = await getToken();
+        setTimeout(() => {
+          if (token) {
+            navigation.replace('Main');
+          } else {
+            navigation.replace('Onboarding');
+          }
+        }, 3500);
+      } catch (e) {
+        setTimeout(() => navigation.replace('Onboarding'), 3500);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    checkAuthAndNavigate();
   }, [fadeAnim, navigation]);
 
   return (

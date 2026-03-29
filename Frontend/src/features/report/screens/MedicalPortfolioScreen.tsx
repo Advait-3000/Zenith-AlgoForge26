@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -29,8 +29,11 @@ import {
   Wind,
   Heart
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { getLatestScanResult, getUserData } from '../../../shared/services/api';
+import { generatePDF, PDFTemplateData } from '../../../shared/utils/pdfGenerator';
+import { Button } from '../../../shared/components/Button';
 
 const { width } = Dimensions.get('window');
 
@@ -62,6 +65,78 @@ const SYMPTOMS = [
 export const MedicalPortfolioScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const [scanData, setScanData] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Use scan result from navigation params or load from storage
+        if (route.params?.scanResult) {
+          setScanData(route.params.scanResult);
+        } else {
+          const stored = await getLatestScanResult();
+          if (stored) setScanData(stored);
+        }
+        const user = await getUserData();
+        if (user) setUserData(user);
+      } catch (err) {
+        console.warn('Failed to load scan data:', err);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Extract dynamic data from scan result
+  const analysis = scanData?.analysis || {};
+  const patientDetails = analysis.patient_details || {};
+  const labDetails = analysis.lab_details || {};
+  const primaryConcerns = analysis.primary_clinical_concerns || [];
+  const secondaryFindings = analysis.secondary_findings || [];
+  const stableSystems = analysis.stable_systems || [];
+  const healthScore = parseInt(analysis.calculated_health_score) || 0;
+  const scoreFactors = analysis.score_factors || [];
+  const summary = analysis.concise_summary || t('portfolio.aiInsight.text');
+  const patientTranslation = analysis.patient_translation || '';
+
+  const displayName = patientDetails.name || userData?.full_name || 'Patient';
+  const displayAge = patientDetails.age || 'N/A';
+  const displayGender = patientDetails.gender || 'N/A';
+
+  const handleDownloadReport = async () => {
+    if (!analysis) return;
+    
+    // Map findings by combining concerns and secondary findings
+    const mappedFindings = [];
+    if (primaryConcerns.length > 0) {
+      mappedFindings.push(...primaryConcerns.map((c: any) => `${c.test_name}: ${c.result} ${c.unit || ''} (Ref: ${c.reference_range || 'N/A'}) - ${c.implication}`));
+    }
+    if (secondaryFindings.length > 0) {
+      mappedFindings.push(...secondaryFindings.map((c: any) => `${c.test_name}: ${c.result} ${c.unit || ''} - ${c.implication}`));
+    }
+
+    // Determine risk based on health score
+    let riskStatus: "Low" | "Medium" | "High" = "Medium";
+    if (healthScore >= 80) riskStatus = "Low";
+    else if (healthScore < 60) riskStatus = "High";
+
+    const pdfData: PDFTemplateData = {
+      patient: {
+        name: displayName,
+        age: displayAge,
+        gender: displayGender
+      },
+      summary: summary,
+      findings: mappedFindings,
+      explanation: patientTranslation,
+      risk: riskStatus,
+      healthScore: healthScore.toString(),
+      recommendations: scoreFactors
+    };
+
+    await generatePDF(pdfData);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,7 +146,7 @@ export const MedicalPortfolioScreen: React.FC = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('portfolio.title')}</Text>
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleDownloadReport}>
             <Download stroke="#717171" size={22} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn}>
@@ -83,22 +158,23 @@ export const MedicalPortfolioScreen: React.FC = () => {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Patient Introduction */}
         <View style={styles.doctorBlock}>
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1559839734-2b71f1536783?auto=format&fit=crop&q=80&w=200' }} 
-            style={styles.doctorAvatar}
-          />
+          <View style={[styles.doctorAvatar, { backgroundColor: '#EAF9F9', justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={{ fontSize: 24, fontWeight: '700', color: '#306F6F' }}>{displayName[0]}</Text>
+          </View>
           <View style={styles.doctorInfo}>
-            <Text style={styles.doctorName}>John Doe</Text>
-            <Text style={styles.doctorSpec}>34 Years • Male • B+ Blood Group</Text>
+            <Text style={styles.doctorName}>{displayName}</Text>
+            <Text style={styles.doctorSpec}>
+              {displayAge} • {displayGender} {labDetails.name ? `• ${labDetails.name}` : ''}
+            </Text>
           </View>
         </View>
 
-        {/* AI Insight Summary */}
+        {/* AI Insight Summary — Dynamic */}
         <View style={styles.aiBriefCard}>
            <BriefcaseMedical stroke="#FFFFFF" size={24} />
            <View style={styles.aiBriefContent}>
-              <Text style={styles.aiBriefTitle}>{t('portfolio.aiInsight.title')}</Text>
-              <Text style={styles.aiBriefText}>{t('portfolio.aiInsight.text')}</Text>
+              <Text style={styles.aiBriefTitle}>AI Health Score: {healthScore}/100</Text>
+              <Text style={styles.aiBriefText}>{summary}</Text>
            </View>
         </View>
 
@@ -115,7 +191,93 @@ export const MedicalPortfolioScreen: React.FC = () => {
            ))}
         </View>
 
-        {/* Clinical History & Reason */}
+        {/* Clinical Concerns — Dynamic */}
+        {primaryConcerns.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Primary Clinical Concerns</Text>
+            {primaryConcerns.map((concern: any, i: number) => (
+              <View key={i} style={styles.examCard}>
+                <View style={styles.examCardTop}>
+                  <View style={styles.examInfo}>
+                    <Text style={styles.examTitle}>{concern.test_name}</Text>
+                    <Text style={styles.examMeta}>
+                      {concern.result} {concern.unit} (Ref: {concern.reference_range})
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.pointText, { marginTop: 10, color: '#FF5252' }]}>
+                  ⚠ {concern.implication}
+                </Text>
+              </View>
+            ))}
+          </>
+        )}
+
+        {secondaryFindings.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Secondary Findings</Text>
+            {secondaryFindings.map((finding: any, i: number) => (
+              <View key={i} style={styles.examCard}>
+                <View style={styles.examCardTop}>
+                  <View style={styles.examInfo}>
+                    <Text style={styles.examTitle}>{finding.test_name}</Text>
+                    <Text style={styles.examMeta}>
+                      {finding.result} {finding.unit} (Ref: {finding.reference_range})
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
+
+        {/* Stable Systems */}
+        {stableSystems.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Stable Systems ✅</Text>
+            <View style={styles.pointSection}>
+              <View style={styles.symptomGrid}>
+                {stableSystems.map((system: string, i: number) => (
+                  <View key={i} style={styles.symptomBadge}>
+                    <Text style={styles.symptomText}>{system}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+
+        <View style={{ marginTop: 20, marginBottom: 50 }}>
+          <Button 
+            title="Download Report" 
+            onPress={handleDownloadReport} 
+            variant="primary" 
+          />
+        </View>
+
+        {/* Patient-Friendly Translation */}
+        {patientTranslation ? (
+          <>
+            <Text style={styles.sectionTitle}>What This Means For You</Text>
+            <View style={styles.pointSection}>
+              <Text style={styles.pointText}>{patientTranslation}</Text>
+            </View>
+          </>
+        ) : null}
+
+        {/* Score Factors */}
+        {scoreFactors.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Score Factors</Text>
+            <View style={styles.pointSection}>
+              {scoreFactors.map((factor: string, i: number) => (
+                <Text key={i} style={[styles.pointText, { marginBottom: 6 }]}>• {factor}</Text>
+              ))}
+            </View>
+          </>
+        )}
+
+        {/* Clinical History & Reason — Fallback */}
         <Text style={styles.sectionTitle}>{t('portfolio.sections.history')}</Text>
         <View style={styles.pointSection}>
            <Text style={styles.pointText}>{t('portfolio.sections.historyText')}</Text>

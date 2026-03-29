@@ -6,7 +6,9 @@ import {
   ScrollView, 
   TouchableOpacity, 
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +16,7 @@ import { ArrowLeft, Eye, EyeOff, ScanFace } from 'lucide-react-native';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { loginUser } from '../../../shared/services/api';
 
 export const LoginScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -22,11 +25,36 @@ export const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Validation logic
   const isEmailValid = email.includes('@');
   const isPasswordValid = password.length >= 8;
   const isFormValid = isEmailValid && isPasswordValid;
+
+  const handleLogin = async () => {
+    if (!isFormValid || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const result = await loginUser({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+      if (result.success) {
+        navigation.replace('Main');
+      }
+    } catch (error: any) {
+      Alert.alert(
+        'Login Failed',
+        error.message || 'Invalid email or password. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,33 +104,25 @@ export const LoginScreen: React.FC = () => {
           >
             <Text style={styles.forgotText}>{t('auth.forgotPassword')}</Text>
           </TouchableOpacity>
-{/* 
-          <TouchableOpacity 
-            style={styles.checkboxRow}
-            onPress={() => setKeepSignedIn(!keepSignedIn)}
-          >
-            <View style={[styles.checkbox, keepSignedIn && styles.checkboxActive]}>
-              {keepSignedIn && <View style={styles.checkboxCheck} />}
-            </View>
-            <Text style={styles.checkboxLabel}>Keep me signed in</Text>
-          </TouchableOpacity> */}
 
           <View style={styles.footerSpacer} />
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button
-            title={t('common.login')}
-            disabled={!isFormValid}
-            onPress={() => navigation.replace('Main')}
-          />
-          
-          {/* <TouchableOpacity style={styles.faceIdContainer}>
-             <View style={styles.faceIdIconBox}>
-                <ScanFace stroke="#A0A0A0" size={48} />
-             </View>
-             <Text style={styles.faceIdText}>Face ID</Text>
-          </TouchableOpacity> */}
+          <View>
+            <Button
+              title={isLoading ? '' : t('common.login')}
+              disabled={!isFormValid || isLoading}
+              onPress={handleLogin}
+            />
+            {isLoading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
+                style={{ position: 'absolute', alignSelf: 'center', top: 18 }}
+              />
+            )}
+          </View>
 
           <View style={styles.registerRow}>
             <Text style={styles.registerText}>{t('auth.newHere')}</Text>

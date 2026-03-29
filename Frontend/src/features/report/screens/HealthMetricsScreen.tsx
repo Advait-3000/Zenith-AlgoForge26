@@ -17,6 +17,7 @@ import {
 } from 'lucide-react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { getLatestScanResult } from '../../../shared/services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -52,6 +53,7 @@ export const HealthMetricsScreen: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
+      // Sync manual fill tracker
       setSections(prev => {
         const next = { ...prev };
         Object.keys(FILLED_TRACKER).forEach(key => {
@@ -61,6 +63,70 @@ export const HealthMetricsScreen: React.FC = () => {
         });
         return next;
       });
+
+      // Load data from latest scan result
+      const loadScanData = async () => {
+        try {
+          const scanResult = await getLatestScanResult();
+          if (!scanResult?.analysis) return;
+
+          const analysis = scanResult.analysis;
+          const clinicalData = analysis.clinical_data || {};
+          const concerns = analysis.primary_clinical_concerns || [];
+          const secondary = analysis.secondary_findings || [];
+          const score = analysis.calculated_health_score || 'N/A';
+
+          setSections(prev => {
+            const next = { ...prev };
+
+            // Auto-populate body parameters from scan data
+            const findClinicalValue = (nameSubstring: string) => {
+              const key = Object.keys(clinicalData).find(k => 
+                k.toLowerCase().includes(nameSubstring.toLowerCase())
+              );
+              return key ? clinicalData[key].split('(')[0].trim() : null; // Remove reference range in parentheses
+            };
+
+            const extractedOxygen = findClinicalValue('Oxygen');
+            const extractedPressure = findClinicalValue('Blood Pressure');
+            const extractedHeartRate = findClinicalValue('Pulse Rate');
+
+            const hasExtractableData = extractedOxygen || extractedPressure || extractedHeartRate;
+
+            if (hasExtractableData || concerns.length > 0) {
+              next.body = {
+                ...next.body,
+                isFilled: true,
+                data: {
+                  ...next.body.data,
+                  ...(extractedOxygen && { oxygen: extractedOxygen }),
+                  ...(extractedPressure && { pressure: extractedPressure }),
+                  ...(extractedHeartRate && { heartRate: extractedHeartRate }),
+                  healthScore: score,
+                },
+              };
+
+              // Populate anamnesis from concerns
+              if (concerns.length > 0) {
+                const chronicList = concerns.map((c: any) => c.implication).join(', ');
+                next.anamnesis = {
+                  ...next.anamnesis,
+                  isFilled: true,
+                  data: {
+                    ...next.anamnesis.data,
+                    chronic: chronicList || next.anamnesis.data.chronic,
+                  },
+                };
+              }
+            }
+
+            return next;
+          });
+        } catch (err) {
+          console.warn('Failed to load scan data for metrics:', err);
+        }
+      };
+      loadScanData();
     }, [])
   );
 

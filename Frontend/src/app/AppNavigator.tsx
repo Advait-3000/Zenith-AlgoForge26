@@ -71,7 +71,7 @@ export type RootStackParamList = {
   HealthMetricsEdit: { type: string };
   VisitSummaries: undefined;
   SummaryProcessing: { files: any[] };
-  MedicalPortfolio: undefined;
+  MedicalPortfolio: { scanResult?: any } | undefined;
   EditProfile: undefined;
   NotificationSettings: undefined;
   ChangeEmail: undefined;

@@ -7,7 +7,9 @@ import {
   TouchableOpacity, 
   Dimensions, 
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, Droplets } from 'lucide-react-native';
@@ -15,6 +17,7 @@ import { ProgressBar } from '../../../shared/components/ProgressBar';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { updateUserProfile } from '../../../shared/services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +25,7 @@ const BLOOD_TYPES = ['O (I)', 'A (II)', 'B (III)', 'AB (IV)'];
 
 export const HealthAssessmentScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const [isLoading, setIsLoading] = useState(false);
   const [bloodType, setBloodType] = useState('');
   const [rhFactor, setRhFactor] = useState('');
   const [formData, setFormData] = useState({
@@ -151,14 +155,63 @@ export const HealthAssessmentScreen: React.FC = () => {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button
-            title="Next"
-            disabled={!isFormValid}
-            onPress={() => {
-              console.log('Health data collected');
-              navigation.navigate('LifestyleInfo');
-            }}
-          />
+          <View>
+            <Button
+              title={isLoading ? '' : "Next"}
+              disabled={!isFormValid || isLoading}
+              onPress={async () => {
+                setIsLoading(true);
+                try {
+                  // Build blood group string
+                  const typeMap: Record<string, string> = {
+                    'O (I)': 'O', 'A (II)': 'A', 'B (III)': 'B', 'AB (IV)': 'AB'
+                  };
+                  const rhSign = rhFactor === 'Rh +' ? '+' : '-';
+                  const bloodGroup = `${typeMap[bloodType] || bloodType}${rhSign}`;
+
+                  const heightCm = parseFloat(formData.height);
+                  const weightKg = parseFloat(formData.weight);
+                  const bmi = heightCm > 0 ? parseFloat((weightKg / ((heightCm / 100) ** 2)).toFixed(1)) : 0;
+
+                  const allergiesArray = formData.allergies
+                    ? formData.allergies.split(',').map(a => a.trim()).filter(Boolean)
+                    : [];
+
+                  const diseaseHistory = formData.chronicConditions
+                    ? formData.chronicConditions.split(',').map(d => ({
+                        disease_name: d.trim(),
+                        status: 'Present' as const,
+                      })).filter(d => d.disease_name)
+                    : [];
+
+                  await updateUserProfile({
+                    patient_details: {
+                      vitals: {
+                        height_cm: heightCm,
+                        weight_kg: weightKg,
+                        bmi,
+                        blood_group: bloodGroup,
+                        allergies: allergiesArray,
+                      },
+                      disease_history: diseaseHistory,
+                    },
+                  });
+                  navigation.navigate('LifestyleInfo');
+                } catch (error: any) {
+                  Alert.alert('Update Failed', error.message || 'Could not save. Please try again.');
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+            />
+            {isLoading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
+                style={{ position: 'absolute', alignSelf: 'center', top: 18 }}
+              />
+            )}
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
