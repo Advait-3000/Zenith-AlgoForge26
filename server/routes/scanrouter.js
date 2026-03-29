@@ -1,8 +1,8 @@
 import express from "express";
 import { uploadScan } from "../middlewares/upload.js";
-// Using the standardized auth guard
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 import { analyzeMedicalImage } from "../controllers/ai.controller.js";
+import { v2 as cloudinary } from "cloudinary";
 
 const router = express.Router();
 
@@ -10,15 +10,33 @@ router.post(
   "/upload-scan",
   protect,      // 1. Ensure user is logged in
   authorize("Doctor", "Patient", "Admin"), // 2. RBAC Guard
-  uploadScan.single("medical_document"), // 3. Multer automatically uploads to Cloudinary
+  uploadScan.single("medical_document"), 
   async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ success: false, message: "No medical document was attached to the request." });
       }
 
-      // 4. Cloudinary automatically provides the secure URL!
-      const originalFileUrl = req.file.path; 
+      // 4. Manually upload to Cloudinary using memory buffer
+      // This fixes the 'Invalid Signature' issue caused by the automated multer storage
+      const uploadToCloudinary = () => {
+        return new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: "medical_scans",
+              resource_type: "auto",
+            },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          uploadStream.end(req.file.buffer);
+        });
+      };
+
+      const cloudinaryResult = await uploadToCloudinary();
+      const originalFileUrl = cloudinaryResult.secure_url;
 
       // 🚀 PDF RASTERIZATION TRICK:
       // Google Cloud Vision ONLY accepts remote Image URLs. It crashes if you feed it a remote PDF.
@@ -29,7 +47,6 @@ router.post(
       }
 
       // 5. Trigger Gemini Multimodal Analysis (OCR + Medical Synthesis in one step)
-      // This bypasses the need for separate Google Cloud Vision or Tesseract!
       const patientId = req.body.patientId || req.user.id;
       const uploaderId = req.user.id;
 

@@ -1,23 +1,26 @@
-import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
 
-import dotenv from "dotenv";
-dotenv.config();
+// Use in-memory storage instead of multer-storage-cloudinary
+// to avoid signature computation issues with the Cloudinary SDK.
+// The actual Cloudinary upload is now handled manually in the route handler.
+const storage = multer.memoryStorage();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "medical_scans", 
-    allowed_formats: ["jpg", "png", "jpeg", "pdf"],
-    resource_type: "auto"
+export const uploadScan = multer({
+  storage,
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20 MB max
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+      "application/pdf",
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only JPG, PNG, JPEG, and PDF files are allowed."));
+    }
   },
 });
-
-export const uploadScan = multer({ storage });

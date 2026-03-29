@@ -6,10 +6,8 @@ import scanRouter from "./routes/scanrouter.js";
 export default (app) => {
   // Maps to: /api/auth/...
   app.use("/auth", authRouter);
-
-  // protected routes
   app.use("/chatbot", chatBotRouter);
+  app.use("/ask", chatBotRouter); // New general chatbot route
   app.use("/twin", twinRouter);
-  // Maps to: /api/ocr/...
   app.use("/ocr", scanRouter);
 };

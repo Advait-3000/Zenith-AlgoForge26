@@ -20,7 +20,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import { getLatestScanResult, getUserData } from '../../../shared/services/api';
+import { getLatestScanResult, getUserData, bookEmergencyAppointment } from '../../../shared/services/api';
+import { Alert, ActivityIndicator } from 'react-native';
+import { Power } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -56,22 +58,25 @@ export const HomeScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [healthData, setHealthData] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(null);
   const [userName, setUserName] = useState('User');
+  const [isEmergencyLoading, setIsEmergencyLoading] = useState(false);
 
   // Load health data and user info on focus (so it refreshes after scanning)
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
         try {
-          const [scanResult, userData] = await Promise.all([
+          const [scanResult, user] = await Promise.all([
             getLatestScanResult(),
             getUserData(),
           ]);
+          setUserData(user);
           if (scanResult?.analysis) {
             setHealthData(scanResult.analysis);
           }
-          if (userData?.full_name) {
-            setUserName(userData.full_name.split(' ')[0]);
+          if (user?.full_name) {
+            setUserName(user.full_name.split(' ')[0]);
           }
         } catch (err) {
           console.warn('Failed to load health data:', err);
@@ -80,6 +85,46 @@ export const HomeScreen: React.FC = () => {
       loadData();
     }, [])
   );
+
+  const handleEmergencySOS = async () => {
+    if (isEmergencyLoading) return;
+    
+    Alert.alert(
+      "CONFIRM EMERGENCY",
+      "This will trigger an SOS alert to nearby hospitals and your emergency contacts. Proceed?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "YES, SOS", 
+          style: "destructive",
+          onPress: async () => {
+            setIsEmergencyLoading(true);
+            try {
+              if (!userData) throw new Error("User data not loaded");
+              
+              // Get coordinates from user profile [lng, lat]
+              const coords = userData.location_coordinates?.coordinates || [72.870968, 19.0460726];
+              const lng = coords[0];
+              const lat = coords[1];
+
+              await bookEmergencyAppointment({
+                patient_id: userData.id || userData._id,
+                reason: "Emergency SOS: Immediate medical assistance required",
+                lat,
+                lng
+              });
+
+              Alert.alert("SOS Sent!", "Help is on the way. Emergency contacts notified via Twilio.");
+            } catch (error: any) {
+              Alert.alert("SOS Failed", error.message || "Could not trigger emergency protocol.");
+            } finally {
+              setIsEmergencyLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return '#4ADE80';
@@ -309,6 +354,23 @@ export const HomeScreen: React.FC = () => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Floating Emergency SOS Button */}
+      <TouchableOpacity 
+        style={styles.sosButton} 
+        onPress={handleEmergencySOS}
+        activeOpacity={0.8}
+        disabled={isEmergencyLoading}
+      >
+        {isEmergencyLoading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <>
+            <Power stroke="#FFFFFF" size={24} />
+            <Text style={styles.sosText}>SOS</Text>
+          </>
+        )}
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -761,6 +823,29 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 110,
+  },
+  sosButton: {
+    position: 'absolute',
+    bottom: 120,
+    right: 40,
+    backgroundColor: '#FF5252',
+    width: 65,
+    height: 65,
+    borderRadius: 33,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#FF5252',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 10,
+    zIndex: 999,
+  },
+  sosText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+    marginTop: 2,
   },
 });
 

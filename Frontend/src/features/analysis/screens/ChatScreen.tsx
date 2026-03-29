@@ -28,7 +28,7 @@ import {
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { askChatbot } from '../../../shared/services/api';
+import { askChatbot, askGeneralAI } from '../../../shared/services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -114,8 +114,14 @@ export const ChatScreen: React.FC = () => {
     setMessages(prev => [...prev, typingMessage]);
 
     try {
-      // Call the real chatbot API
-      const response = await askChatbot(userQuestion);
+      // 🏥 First attempt with Medical AI
+      let response = await askChatbot(userQuestion);
+      
+      // 🛠️ If Medical AI rejects (e.g. asking for recipes), try General AI
+      if (response.success === false && response.answer?.includes('medical')) {
+        console.log('🔄 Medical AI rejected. Switching to General AI...');
+        response = await askGeneralAI(userQuestion);
+      }
 
       // Remove typing indicator and add real response
       setMessages(prev => {
@@ -123,7 +129,7 @@ export const ChatScreen: React.FC = () => {
         const aiMessage: Message = {
           id: (Date.now() + 2).toString(),
           sender: 'ai',
-          text: response.answer || 'I could not process that. Please try again.',
+          text: response.answer || response.message || 'I could not process that. Please try again.',
           time: getTimeString(),
           status: 'read',
         };
@@ -138,7 +144,7 @@ export const ChatScreen: React.FC = () => {
         const errorMessage: Message = {
           id: (Date.now() + 2).toString(),
           sender: 'ai',
-          text: `⚠️ ${error.message || 'Unable to connect to the server. Please check your connection and try again.'}`,
+          text: `⚠️ ${error.message || 'Unable to connect to the server.'}`,
           time: getTimeString(),
           status: 'read',
         };
