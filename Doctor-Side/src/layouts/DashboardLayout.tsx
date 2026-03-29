@@ -3,13 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users,
   Calendar, 
-  Settings, 
   LogOut, 
   Search, 
   Bell, 
   ClipboardList,
-  User as UserIcon,
-  History
+  User as UserIcon
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import appLogo from '../assets/applogo.png';

@@ -1,18 +1,15 @@
 import express from "express";
 import { uploadScan } from "../middlewares/upload.js";
-// Using the default auth guard
-import authMiddleware from "../utilities/verifyToken.js";
-import { isMedicalStaff,isPatient } from "../middlewares/appwrapper.js";
+// Using the standardized auth guard
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 import { analyzeMedicalImage } from "../controllers/ai.controller.js";
 
 const router = express.Router();
 
 router.post(
   "/upload-scan",
-  authMiddleware,      // 1. Ensure user is logged in
-  isMedicalStaff,
-  isPatient,
-        // 2. RBAC Guard (e.g., Doctors only)
+  protect,      // 1. Ensure user is logged in
+  authorize("Doctor", "Patient", "Admin"), // 2. RBAC Guard
   uploadScan.single("medical_document"), // 3. Multer automatically uploads to Cloudinary
   async (req, res) => {
     try {

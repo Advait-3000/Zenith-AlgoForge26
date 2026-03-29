@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import appLogo from '../../../assets/applogo.png';
 import { 
   Users, 
   Calendar, 
@@ -9,8 +8,6 @@ import {
   Clock, 
   ShieldAlert, 
   ArrowRight, 
-  Heart,
-  Droplets,
   FileText,
   AlertCircle,
   CalendarDays,
@@ -33,11 +30,11 @@ import {
 import { Button } from '@/components/BaseComponents';
 
 // Mock Data
-const STATS = [
-  { label: 'Total Patients', value: '2,482', change: '+12%', icon: Users, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { label: 'Weekly Consults', value: '48', change: '+5%', icon: Calendar, color: 'text-cura-primary', bg: 'bg-cura-primary/10' },
-  { label: 'Reports Analyzed', value: '154', change: '+18%', icon: Activity, color: 'text-sky-500', bg: 'bg-sky-50' },
-  { label: 'Risk Alerts', value: '3', change: '-2%', icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-50' },
+const STATS_INIT = [
+    { label: 'Total Patients', value: '0', icon: Users, color: 'text-blue-500', bg: 'bg-blue-50', trend: '+0%' },
+    { label: 'Weekly Consults', value: '0', icon: Calendar, color: 'text-emerald-500', bg: 'bg-emerald-50', trend: '+0%' },
+    { label: 'Reports Analyzed', value: '0', icon: Activity, color: 'text-indigo-500', bg: 'bg-indigo-50', trend: '+0%' },
+    { label: 'Risk Alerts', value: '0', icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-50', trend: '-0%' },
 ];
 
 const WEEKLY_DATA = [
@@ -51,40 +48,111 @@ const MONTHLY_DATA = [
 ];
 
 const RISK_DATA = [
-  { name: 'Low', value: 65, color: '#10B981' },
-  { name: 'Medium', value: 25, color: '#F59E0B' },
-  { name: 'High', value: 10, color: '#EF4444' },
+    { name: 'Low', value: 65, color: '#10B981' },
+    { name: 'Medium', value: 25, color: '#F59E0B' },
+    { name: 'High', value: 10, color: '#EF4444' },
 ];
 
-import { APPOINTMENTS } from '../../../data/mockPatients';
+import axios from 'axios';
 
 export const DashboardPage: React.FC = () => {
+    const [patients, setPatients] = useState<any[]>([]);
+    const [stats, setStats] = useState(STATS_INIT);
+    const [riskData, setRiskData] = useState(RISK_DATA);
+    const [weeklyData, setWeeklyData] = useState(WEEKLY_DATA);
+    const [monthlyData, setMonthlyData] = useState(MONTHLY_DATA);
+    const [loading, setLoading] = useState(true);
+    const [volumeView, setVolumeView] = useState('Week');
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
-    const [volumeView, setVolumeView] = useState<'Week' | 'Month'>('Week');
     const [showRiskModal, setShowRiskModal] = useState<any>(null);
     const [showFullSchedule, setShowFullSchedule] = useState(false);
+
+    React.useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                setLoading(true);
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                // 1. Fetch Patients
+                const patientsRes = await axios.get('http://localhost:3000/auth/patients', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (patientsRes.data.success) {
+                    const mapped = patientsRes.data.patients.map((p: any) => ({
+                        id: p._id,
+                        patientName: p.full_name || 'Unknown Patient',
+                        avatar: p.full_name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name)}&background=0D9488&color=fff&bold=true` : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                        age: p.patient_details?.date_of_birth ? new Date().getFullYear() - new Date(p.patient_details.date_of_birth).getFullYear() : 35,
+                        gender: p.patient_details?.gender || 'Unspecified',
+                        vitals: p.patient_details?.vitals || {},
+                        summary: p.patient_details?.disease_history?.length > 0 
+                            ? `History of ${p.patient_details.disease_history[0].disease_name}.`
+                            : 'New patient registered via Cura Portal.',
+                        risk: (p.patient_details?.current_health_score ?? 85) < 40 ? 'High' : ((p.patient_details?.current_health_score ?? 85) < 75 ? 'Medium' : 'Low'),
+                        score: p.patient_details?.current_health_score ?? 85,
+                        time: 'Clinical Dashboard',
+                        status: 'Registered',
+                        phone: p.phone_number || p.contact_number || 'N/A'
+                    }));
+                    setPatients(mapped);
+                }
+
+                // 2. Fetch Stats
+                const statsRes = await axios.get('http://localhost:3000/auth/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (statsRes.data.success) {
+                    const s = statsRes.data.stats || {};
+                    setStats([
+                        { ...STATS_INIT[0], value: s.totalPatients?.toLocaleString() || '0', trend: s.totalPatientsTrend || '+0%' },
+                        { ...STATS_INIT[1], value: s.weeklyConsults?.toString() || '0', trend: s.weeklyConsultsTrend || '+0%' },
+                        { ...STATS_INIT[2], value: s.reportsAnalyzed?.toString() || '0', trend: s.reportsAnalyzedTrend || '+0%' },
+                        { ...STATS_INIT[3], value: s.riskStats?.find((rs:any)=>rs.name==='High')?.value?.toString() || '0', trend: s.riskAlertsTrend || '-0%' },
+                    ]);
+                    if (s.riskStats) {
+                        setRiskData(s.riskStats.map((rs: any) => ({
+                            name: rs.name,
+                            value: rs.value,
+                            color: rs.color
+                        })));
+                    }
+                    if (s.weeklyData) setWeeklyData(s.weeklyData);
+                    if (s.monthlyData) setMonthlyData(s.monthlyData);
+                }
+
+            } catch (error) {
+                console.error("Dashboard Fetch Error", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboardData();
+    }, []);
 
     return (
         <div className="space-y-10 max-w-[1600px] mx-auto animate-in fade-in duration-700">
             {/* Upper Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {STATS.map((stat, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats.map((stat, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                         key={stat.label} 
-                        className="cura-card p-6 flex items-center gap-6"
+                        className="cura-card p-8 group hover:bg-white"
                     >
-                        <div className={`w-14 h-14 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center shadow-sm`}>
-                            <stat.icon size={28} />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-cura-text-soft uppercase tracking-wider mb-1">{stat.label}</p>
-                            <div className="flex items-end gap-3">
-                                <h3 className="text-2xl font-black text-slate-800 tracking-tight">{stat.value}</h3>
-                                <span className={`text-xs font-black ${stat.change.startsWith('+') ? 'text-cura-primary' : 'text-red-500'} mb-1.5`}>{stat.change}</span>
+                        <div className="flex items-start justify-between">
+                            <div className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
+                                <stat.icon size={26} />
                             </div>
+                            <div className="text-right">
+                                <span className={`text-xs font-black ${(stat.trend || '').startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>{stat.trend}</span>
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <p className="text-sm font-bold text-cura-text-soft uppercase tracking-widest">{stat.label}</p>
+                            <h3 className="text-3xl font-black text-slate-800 mt-1">{loading ? '--' : stat.value}</h3>
                         </div>
                     </motion.div>
                 ))}
@@ -111,7 +179,7 @@ export const DashboardPage: React.FC = () => {
                     
                     <div className="h-72 w-full mt-auto">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={volumeView === 'Week' ? WEEKLY_DATA : MONTHLY_DATA}>
+                            <LineChart data={volumeView === 'Week' ? weeklyData : monthlyData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontWeight: 600, fontSize: 13}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontWeight: 600, fontSize: 13}} />
@@ -136,50 +204,46 @@ export const DashboardPage: React.FC = () => {
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="cura-card p-8 flex flex-col items-center"
+                    className="cura-card p-8 flex flex-col"
                 >
                     <div className="w-full mb-6">
                         <h3 className="text-xl font-black text-slate-800 tracking-tight">AI Risk Matrix</h3>
                         <p className="text-sm font-medium text-cura-text-soft">Current patient population health</p>
                     </div>
                     
-                    <div className="relative h-48 w-full">
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                            <div className="w-[72px] h-[72px] bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-slate-50/50 p-2">
-                                <img src={appLogo} alt="Cura Center Logo" className="w-full h-full object-contain" />
+                    <div className="relative w-64 h-64 mx-auto mb-10">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={riskData}
+                                    innerRadius={80}
+                                    outerRadius={100}
+                                    paddingAngle={8}
+                                    dataKey="value"
+                                    stroke="none"
+                                    animationDuration={1500}
+                                >
+                                    {riskData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                            </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <div className="w-16 h-16 bg-white rounded-full shadow-cura-soft flex items-center justify-center">
+                                <Activity className="text-cura-primary" size={28} />
                             </div>
-                        </div>
-                        <div className="relative z-10 w-full h-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={RISK_DATA}
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={8}
-                                        dataKey="value"
-                                        onClick={(data, index) => setShowRiskModal(RISK_DATA[index])}
-                                        className="cursor-pointer hover:opacity-80 transition-opacity outline-none focus:outline-none"
-                                        stroke="none"
-                                    >
-                                        {RISK_DATA.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
                         </div>
                     </div>
 
-                    <div className="w-full space-y-3 mt-6">
-                        {RISK_DATA.map(item => (
-                            <div key={item.name} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div className="space-y-4">
+                        {riskData.map((item) => (
+                            <div key={item.name} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-colors">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: item.color}} />
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
                                     <span className="text-sm font-bold text-slate-600">{item.name} Criticality</span>
                                 </div>
-                                <span className="text-sm font-black text-slate-800">{item.value}%</span>
+                                <span className="font-black text-slate-800">{item.value}%</span>
                             </div>
                         ))}
                     </div>
@@ -197,14 +261,17 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {APPOINTMENTS.map((apt, i) => (
+                    {patients.length > 0 ? patients.map((apt: any, i: number) => (
                         <motion.div 
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.1 }}
                             key={apt.id} 
-                            onClick={() => setSelectedPatient(apt)}
-                            className="cura-card p-6 cursor-pointer group hover:bg-white active:scale-98"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedPatient(apt);
+                            }}
+                            className="cura-card p-6 cursor-pointer group hover:bg-white active:scale-98 relative"
                         >
                             <div className="flex items-start justify-between mb-6">
                                 <div className="flex items-center gap-4">
@@ -232,12 +299,17 @@ export const DashboardPage: React.FC = () => {
                                     <AlertCircle size={14} />
                                     <span className="text-xs font-black uppercase tracking-tight">{apt.risk} Risk</span>
                                 </div>
+                                <div className="text-xs font-black text-slate-400">Score: {apt.score}</div>
                                 <button className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-cura-primary group-hover:text-white transition-all">
                                     <ChevronRight size={20} />
                                 </button>
                             </div>
                         </motion.div>
-                    ))}
+                    )) : (
+                        <div className="col-span-full py-20 text-center cura-card bg-slate-50/50">
+                            <p className="text-slate-400 font-bold">No registered patients found.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -286,7 +358,7 @@ export const DashboardPage: React.FC = () => {
                             <div>
                                 <h4 className="font-bold text-slate-800 text-sm mb-3">Patients in Category</h4>
                                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                    {APPOINTMENTS.filter(p => p.risk === showRiskModal.name).map(apt => (
+                                    {patients.filter((p: any) => p.risk === showRiskModal.name).map((apt: any) => (
                                         <div 
                                             key={apt.id} 
                                             onClick={() => { setShowRiskModal(null); setSelectedPatient(apt); }} 
@@ -300,7 +372,7 @@ export const DashboardPage: React.FC = () => {
                                             <ChevronRight className="ml-auto text-slate-400" size={16} />
                                         </div>
                                     ))}
-                                    {APPOINTMENTS.filter(p => p.risk === showRiskModal.name).length === 0 && (
+                                    {patients.filter((p: any) => p.risk === showRiskModal.name).length === 0 && (
                                         <div className="text-center font-bold text-xs text-slate-400 py-4">No patients detected in this category.</div>
                                     )}
                                 </div>
@@ -338,7 +410,7 @@ export const DashboardPage: React.FC = () => {
                             </div>
                             <div className="p-10 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/50">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {APPOINTMENTS.map((apt) => (
+                                    {patients.map((apt) => (
                                         <div 
                                             key={apt.id} 
                                             onClick={() => { setShowFullSchedule(false); setSelectedPatient(apt); }}
@@ -380,9 +452,63 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
     const [isRescheduling, setIsRescheduling] = useState(false);
     const [rescheduleDate, setRescheduleDate] = useState('');
     const [newTimeSlot, setNewTimeSlot] = useState<string | null>(null);
+    const [aiSummary, setAiSummary] = useState<any>(null);
+    const [isLoadingAI, setIsLoadingAI] = useState(false);
+    const [historyRecords, setHistoryRecords] = useState<any[]>([]);
+    const [selectedReport, setSelectedReport] = useState<any>(null);
+
+    React.useEffect(() => {
+        const fetchAIInsights = async () => {
+            if (!patient.id) return;
+            try {
+                setIsLoadingAI(true);
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const res = await axios.get(`http://localhost:3000/auth/latest/${patient.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if ((res.data.success || res.status === 200) && res.data.records?.length > 0) {
+                    const latestRecord = res.data.records[0];
+                    const latest = latestRecord.ai_analysis || latestRecord;
+                    setAiSummary({
+                        summary: latest.concise_summary || "Document parsed successfully. Synthesized insights visible.",
+                        findings: latest.detected_abnormalities || latest.findings || [],
+                        score: latest.calculated_health_score || patient.score
+                    });
+                    
+                    // Build history data for graph
+                    const records = [...res.data.records].reverse().map((r, i) => ({
+                        date: new Date(r.upload_date || r.createdAt || Date.now() - (res.data.records.length - i)*86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+                        score: r.ai_analysis?.calculated_health_score || r.calculated_health_score || patient.score,
+                        title: r.document_type || "Clinical Report",
+                        id: r._id || i,
+                        ocrText: r.ocr_extracted_text || "No raw OCR text successfully extracted.",
+                        summary: r.ai_analysis?.concise_summary || "No AI summary generated for this document.",
+                        fileUrl: r.s3_file_url || null,
+                        findings: r.ai_analysis?.detected_abnormalities || r.ai_analysis?.findings || [],
+                        fullAnalysis: r.ai_analysis || null
+                    }));
+                    setHistoryRecords(records);
+                } else {
+                    setAiSummary({
+                        summary: "Patient records synchronize from the Cura Native App. Awaiting patient upload.",
+                        findings: [],
+                        score: patient.score
+                    });
+                    setHistoryRecords([]);
+                }
+            } catch (err) {
+                console.error("AI Insights Error:", err);
+            } finally {
+                setIsLoadingAI(false);
+            }
+        };
+        fetchAIInsights();
+    }, [patient.id, patient.score]);
 
     const handleReschedule = () => {
-        // In a real app, make API call here.
         alert(`Appointment rescheduled to ${rescheduleDate} at ${newTimeSlot}`);
         setIsRescheduling(false);
         onClose();
@@ -420,13 +546,17 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                     </div>
 
                     <div className="space-y-4">
-                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-2">Primary Symptom</h5>
-                            <p className="text-sm font-bold text-slate-700">Persistent Chronic Fatigue</p>
+                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 text-center">
+                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-1">Health Score</h5>
+                            <div className="text-3xl font-black text-cura-primary">{patient.score || '--'}</div>
                         </div>
                         <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-2">Appointment Contact</h5>
-                            <p className="text-sm font-bold text-slate-700">+1 (555) 092-2342</p>
+                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-2">Blood Group</h5>
+                            <p className="text-sm font-bold text-slate-700">{patient.vitals?.blood_group || 'Not Recorded'}</p>
+                        </div>
+                        <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+                            <h5 className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest mb-2">Contact</h5>
+                            <p className="text-sm font-bold text-slate-700">{patient.phone || 'N/A'}</p>
                         </div>
                     </div>
 
@@ -463,8 +593,87 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                 </div>
 
                 {/* Right Clinical Insights Panel */}
-                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                    <div className="flex items-center justify-between mb-8">
+                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar relative">
+                    {selectedReport ? (
+                        <div className="absolute inset-0 bg-white z-10 flex flex-col p-10 animate-in fade-in zoom-in-95 duration-300">
+                             <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">{selectedReport.title}</h3>
+                                    <p className="text-sm font-semibold text-cura-text-soft">{selectedReport.date} • Insight Score: {selectedReport.score}</p>
+                                </div>
+                                <button onClick={() => setSelectedReport(null)} className="w-10 h-10 rounded-full hover:bg-slate-100 transition-colors flex items-center justify-center text-slate-400"><X /></button>
+                             </div>
+                             
+                             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                                  <div className="bg-cura-primary/5 rounded-2xl p-6 border border-cura-primary/10">
+                                      <h4 className="font-black text-cura-primary uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1.5"><TrendingUp size={14}/> Synthesized Context</h4>
+                                      <p className="text-sm font-medium text-slate-700 leading-relaxed mb-4">{selectedReport.summary}</p>
+                                      {selectedReport.findings?.length > 0 && (
+                                          <div className="flex flex-wrap gap-2">
+                                              {selectedReport.findings.map((f: string, idx: number) => (
+                                                  <span key={idx} className="px-3 py-1 bg-white/60 border border-cura-primary/10 rounded-lg text-[11px] font-bold text-cura-primary">{f}</span>
+                                              ))}
+                                          </div>
+                                      )}
+                                  </div>
+                                  {selectedReport.fullAnalysis?.primary_clinical_concerns?.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className="font-black text-rose-500 uppercase tracking-widest text-[10px] mb-2">Priority Clinical Concerns</h4>
+                                        <div className="grid gap-3">
+                                            {selectedReport.fullAnalysis.primary_clinical_concerns.map((c: any, i: number) => (
+                                                <div key={i} className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex flex-col">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <h5 className="font-bold text-slate-800 text-sm">{c.test_name}</h5>
+                                                        <span className="bg-white px-2 py-0.5 rounded text-xs font-black text-rose-600 shadow-sm border border-rose-100">{c.result} {c.unit}</span>
+                                                    </div>
+                                                    <p className="text-[11px] font-medium text-rose-600 mb-1">Ref: {c.reference_range}</p>
+                                                    <p className="text-xs font-medium text-slate-600 leading-relaxed">{c.implication}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                  )}
+
+                                  {selectedReport.fullAnalysis?.keyMetrics && Object.keys(selectedReport.fullAnalysis.keyMetrics).length > 0 && (
+                                      <div>
+                                          <h4 className="font-black text-slate-800 uppercase tracking-widest text-[10px] mb-3">Key Extracted Metrics</h4>
+                                          <div className="grid grid-cols-3 gap-3">
+                                              {Object.entries(selectedReport.fullAnalysis.keyMetrics).map(([k, v]) => (
+                                                  <div key={k} className="p-3 bg-white border border-slate-200 rounded-xl shadow-sm text-center flex flex-col justify-center">
+                                                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">{k}</span>
+                                                      <span className="text-sm font-black text-slate-800">{v as React.ReactNode}</span>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  )}
+                                  
+                                  {selectedReport.fullAnalysis?.patient_translation && (
+                                      <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
+                                          <h4 className="font-black text-emerald-600 uppercase tracking-widest text-[10px] mb-2 flex items-center gap-1.5">For The Patient</h4>
+                                          <p className="text-sm font-medium text-emerald-900 leading-relaxed">{selectedReport.fullAnalysis.patient_translation}</p>
+                                      </div>
+                                  )}
+
+                                  <div>
+                                      <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs mb-3">Logs & Extracted Raw Text (OCR)</h4>
+                                      <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-sm">
+                                          <p className="text-[13px] font-mono text-slate-700 whitespace-pre-wrap leading-[1.8] tracking-tight">{selectedReport.ocrText}</p>
+                                      </div>
+                                  </div>
+
+                                  {selectedReport.fileUrl && (
+                                      <div className="pt-4">
+                                          <a href={selectedReport.fileUrl} target="_blank" rel="noreferrer">
+                                              <Button variant="outline" className="w-full text-xs h-12">Open Original Document Location</Button>
+                                          </a>
+                                      </div>
+                                  )}
+                             </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-cura-primary/10 rounded-xl flex items-center justify-center">
                                 <FileText className="text-cura-primary" size={22} />
@@ -485,42 +694,94 @@ export const PatientDetailModal: React.FC<{ patient: any, onClose: () => void }>
                             <span className="text-[10px] font-black text-cura-primary tracking-widest uppercase">Live AI Sync</span>
                         </div>
                         
-                        <div className="flex items-center gap-2 mb-4">
-                             <TrendingUp size={20} className="text-cura-primary" />
-                             <h4 className="font-black text-cura-primary uppercase tracking-widest text-xs">AI Insight Summary</h4>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                 <TrendingUp size={20} className="text-cura-primary" />
+                                 <h4 className="font-black text-cura-primary uppercase tracking-widest text-xs">AI Insight Summary</h4>
+                            </div>
                         </div>
                         
-                        <p className="text-slate-700 font-medium leading-relaxed text-[15px]">
-                            Patient shows symptoms of progressive physical exertion fatigue. Last laboratory analysis (Feb 20) indicated **borderline high LDL** and slightly elevated glucose. Genetic risk factors for Type 2 Diabetes are noted in lineage.
-                        </p>
+                        {isLoadingAI ? (
+                            <div className="space-y-3">
+                                <div className="h-4 bg-cura-primary/10 rounded-full w-3/4 animate-pulse" />
+                                <div className="h-4 bg-cura-primary/10 rounded-full animate-pulse" />
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <p className="text-slate-700 font-medium leading-relaxed text-[15px]">
+                                    {aiSummary?.summary || "No recent AI analysis available for this patient. Upload a pathology report to begin sync."}
+                                </p>
+                                {aiSummary?.findings && (
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        {aiSummary.findings.map((f: string, idx: number) => (
+                                            <span key={idx} className="px-3 py-1 bg-white/60 border border-cura-primary/10 rounded-lg text-[11px] font-bold text-cura-primary">
+                                                {f}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </motion.div>
 
 
 
                     <div className="space-y-6">
-                        <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Pathology History</h4>
-                        <div className="space-y-4">
-                            {[1, 2].map(i => (
-                                <div key={i} className="flex items-center justify-between p-5 rounded-3xl border border-slate-100 hover:border-cura-primary/30 hover:bg-slate-50 transition-all group">
+                        <div className="flex items-center justify-between">
+                            <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Pathology History & Trends</h4>
+                        </div>
+                        
+                        {historyRecords.length > 1 && (
+                            <div className="h-40 w-full mb-6 relative">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={historyRecords}>
+                                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontWeight: 600, fontSize: 10}} dy={10} />
+                                        <Tooltip 
+                                            contentStyle={{backgroundColor: '#FFF', borderRadius: '12px', border: '1px solid #F1F5F9', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'}}
+                                            itemStyle={{color: '#0D9488', fontWeight: 700, fontSize: '12px'}}
+                                            labelStyle={{color: '#64748B', fontWeight: 600, fontSize: '10px'}}
+                                        />
+                                        <Line 
+                                            type="monotone" 
+                                            dataKey="score" 
+                                            name="Health Score"
+                                            stroke="#0D9488" 
+                                            strokeWidth={3} 
+                                            dot={{r: 4, fill: '#0D9488', strokeWidth: 2, stroke: '#FFF'}}
+                                            activeDot={{r: 6, strokeWidth: 0}}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+                        
+                        <div className="space-y-3">
+                            {historyRecords.length > 0 ? historyRecords.slice().reverse().map((r, i) => (
+                                <div key={r.id || i} className="flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:border-cura-primary/30 hover:bg-slate-50 transition-all group">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-cura-primary/10 group-hover:text-cura-primary transition-all">
-                                            <CalendarDays size={20} />
+                                        <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-cura-primary/10 group-hover:text-cura-primary transition-all">
+                                            <CalendarDays size={18} />
                                         </div>
                                         <div>
-                                            <h5 className="font-bold text-slate-800">Blood Glucose & Thyroid L1</h5>
-                                            <p className="text-xs font-semibold text-cura-text-soft">Feb 15, 2026 • General Screening</p>
+                                            <h5 className="font-bold text-slate-800 text-sm">{r.title}</h5>
+                                            <p className="text-[11px] font-semibold text-cura-text-soft">{r.date} • Health Score: {r.score}</p>
                                         </div>
                                     </div>
-                                    <button className="text-[11px] font-black text-cura-primary h-8 px-4 rounded-xl border border-cura-primary/20 hover:bg-cura-primary hover:text-white transition-all">VIEW REPORT</button>
+                                    <button onClick={() => setSelectedReport(r)} className="text-[10px] font-black text-cura-primary h-7 px-3 rounded-lg border border-cura-primary/20 hover:bg-cura-primary hover:text-white transition-all">VIEW</button>
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl">
+                                    <p className="text-xs font-bold text-slate-400">No clinical reports synced yet.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 
                     <div className="mt-10 pt-8 border-t border-slate-100 flex items-center gap-4">
-                        <Button className="flex-1 h-14" onClick={() => navigate('/consultation')}>Start Consultation</Button>
-                        <Button variant="outline" className="flex-1 h-14">Request New Lab Test</Button>
+                        <Button className="flex-1 h-14" onClick={() => navigate('/consultation', { state: { patient } })}>Start Consultation</Button>
                     </div>
+                    </>
+                    )}
                 </div>
             </motion.div>
         </div>

@@ -13,7 +13,7 @@ import {
   Clock,
   ChevronRight
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Input } from '@/components/BaseComponents';
 
 interface Medicine {
@@ -26,6 +26,14 @@ interface Medicine {
 
 export const ConsultationPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const patient = location.state?.patient || {
+        patientName: 'Unknown Patient',
+        id: 'N/A',
+        avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+        vitals: { height_cm: '--', weight_kg: '--', blood_group: '--' },
+        score: '--'
+    };
     const [medicines, setMedicines] = useState<Medicine[]>([
         { id: '1', name: '', dosage: '', frequency: '', duration: '' }
     ]);
@@ -73,29 +81,23 @@ export const ConsultationPage: React.FC = () => {
                     <div className="cura-card p-8">
                         <div className="flex flex-col items-center text-center mb-8">
                             <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden border-4 border-slate-50 shadow-cura-soft mb-4">
-                                <img src="https://img.freepik.com/free-photo/young-beautiful-woman-pink-warm-sweater-natural-look-smiling-portrait-isolated-long-hair_285396-896.jpg" className="w-full h-full object-cover" />
+                                <img src={patient.avatar} className="w-full h-full object-cover" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-800">Sarah Jenkins</h3>
-                            <p className="text-sm font-bold text-cura-text-soft">Patient ID: #CURA-9023</p>
+                            <h3 className="text-xl font-black text-slate-800">{patient.patientName}</h3>
+                            <p className="text-sm font-bold text-cura-text-soft uppercase">Health Score: {patient.score}/100</p>
                         </div>
 
                         <div className="space-y-4">
                             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                <span className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest">Vitals Sync (10:25 AM)</span>
-                                <div className="flex items-center justify-between mt-2">
-                                    <div className="text-center">
-                                        <p className="text-xs font-bold text-slate-400 uppercase">Temp</p>
-                                        <p className="font-black text-slate-700">98.6°F</p>
+                                <span className="text-[10px] font-black text-cura-text-soft uppercase tracking-widest">Clinical Context Highlights</span>
+                                <div className="mt-4 space-y-3">
+                                    <div className="flex justify-between items-center text-xs font-bold">
+                                        <span className="text-slate-400">Weight</span>
+                                        <span className="text-slate-700">{patient.vitals?.weight_kg || '--'} kg</span>
                                     </div>
-                                    <div className="w-px h-8 bg-slate-200" />
-                                    <div className="text-center">
-                                        <p className="text-xs font-bold text-slate-400 uppercase">Heart</p>
-                                        <p className="font-black text-slate-700">72 BPM</p>
-                                    </div>
-                                    <div className="w-px h-8 bg-slate-200" />
-                                    <div className="text-center">
-                                        <p className="text-xs font-bold text-slate-400 uppercase">SpO2</p>
-                                        <p className="font-black text-slate-700">99%</p>
+                                    <div className="flex justify-between items-center text-xs font-bold">
+                                        <span className="text-slate-400">Blood Group</span>
+                                        <span className="text-slate-700 font-black text-cura-primary">{patient.vitals?.blood_group || '--'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -108,7 +110,7 @@ export const ConsultationPage: React.FC = () => {
                             <Activity size={16} /> AI Real-time Recap
                         </h4>
                         <p className="text-slate-700 font-medium leading-relaxed text-sm">
-                            Focus on "Borderline anemia markers" in recent bloodwork. Patient previously reported sensitivity to Aspirin-based compounds.
+                            Focus on the latest scan anomalies. {patient.risk === 'High' ? '⚠️ Critical risk detected: Immediate intervention required for vitals stabilization.' : 'System flags normal baseline with seasonal fluctuation observed in last report.'}
                         </p>
                     </div>
                 </div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button, Input } from '@/components/BaseComponents';
 import { Mail, Lock, User, AtSign, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import appLogo from '../../../assets/applogo.png';
 
 const AuthPage: React.FC = () => {
@@ -20,19 +21,13 @@ const AuthPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const res = await axios.post('http://localhost:3000/auth/login', {
           email: loginEmail,
           password: loginPassword,
           role: 'Doctor'
-        })
       });
-      const data = await res.json();
-      if (res.ok) {
+      const data = res.data;
+      if (data.success) {
         if (data.token) {
            localStorage.setItem('token', data.token);
         }
@@ -44,8 +39,9 @@ const AuthPage: React.FC = () => {
         console.error("Login failed:", data);
         alert(data.message || 'Login failed');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Network error:", err);
+      alert(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -55,20 +51,14 @@ const AuthPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const res = await axios.post('http://localhost:3000/auth/register', {
           full_name: regName,
           email: regEmail,
           password: regPassword,
           role: 'Doctor'
-        })
       });
-      const data = await res.json();
-      if (res.ok) {
+      const data = res.data;
+      if (data.success) {
         if (data.token) {
            localStorage.setItem('token', data.token);
         }
@@ -80,8 +70,9 @@ const AuthPage: React.FC = () => {
         console.error("Registration failed:", data);
         alert(data.message || 'Registration failed');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Network error:", err);
+      alert(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }

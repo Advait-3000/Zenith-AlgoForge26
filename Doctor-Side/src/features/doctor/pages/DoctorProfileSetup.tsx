@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Input } from '@/components/BaseComponents';
 import { 
-  Stethoscope, 
   MapPin, 
   Clock, 
   FileText, 
@@ -14,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const SPECIALIZATIONS = [
   'General Physician', 'Cardiologist', 'Neurologist', 'Pediatrician', 'Dermatologist', 'Psychiatrist'
@@ -49,12 +49,32 @@ export const DoctorProfileSetup: React.FC = () => {
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     setLoading(true);
-    setTimeout(() => {
-        setLoading(false);
+    try {
+        const token = localStorage.getItem('token');
+        await axios.put('http://localhost:3000/auth/updateProfile', 
+            {
+                name: formData.name,
+                specialization: formData.specialization,
+                hospital: formData.hospital,
+                experience: formData.experience,
+                availableDays: selectedDays.join(', ')
+            },
+            {
+                headers: {
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                }
+            }
+        );
         navigate('/dashboard');
-    }, 2000);
+    } catch (error) {
+        console.error("Setup Profile Error:", error);
+        alert("Failed to setup profile, continuing anyway.");
+        navigate('/dashboard');
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Award, 
   ShieldCheck, 
@@ -12,6 +12,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { Button } from '@/components/BaseComponents';
+import axios from 'axios';
 
 export const ProfilePage: React.FC = () => {
     const [isEditingSlots, setIsEditingSlots] = useState(false);
@@ -60,6 +61,30 @@ export const ProfilePage: React.FC = () => {
         };
     });
 
+    useEffect(() => {
+        const fetchProfile = async () => {
+             const token = localStorage.getItem('token');
+             if(!token) return;
+             try {
+                 const res = await axios.get('http://localhost:3000/auth/me', {
+                     headers: { 'Authorization': `Bearer ${token}` }
+                 });
+                 if(res.data.success && res.data.user) {
+                     const u = res.data.user;
+                     setBasicInfo(prev => ({
+                         ...prev,
+                         name: u.full_name || prev.name,
+                         email: u.email || prev.email,
+                         title: u.role === 'Doctor' ? 'Chief Cardiologist' : u.role || prev.title,
+                     }));
+                 }
+             } catch(err) {
+                 console.error("Failed to fetch profile", err);
+             }
+        };
+        fetchProfile();
+    }, []);
+
     const handleSlotChange = (day: string, value: string) => {
         setSlots(prev => ({ ...prev, [day]: value }));
     };
@@ -71,17 +96,14 @@ export const ProfilePage: React.FC = () => {
     const handleSaveBasicInfo = async () => {
         try {
             const token = localStorage.getItem('token');
-            await fetch('http://localhost:3000/auth/updateProfile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify({
-                    // Send basic info, adapting to common auth/updateProfile backend schema
-                    ...basicInfo
-                })
-            });
+            await axios.post('http://localhost:3000/auth/updateProfile', 
+                { ...basicInfo },
+                {
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    }
+                }
+            );
             setIsEditingBasic(false);
         } catch (error) {
             console.error("Failed to update profile", error);
