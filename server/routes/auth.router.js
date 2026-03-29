@@ -7,7 +7,10 @@ import {
   updateProfile,
   forgotPassword,
   resetPassword,
-  getMe
+  getMe,
+  getPatients,
+  getDashboardStats,
+  getLatestRecord
 } from "../controllers/auth.controller.js";
 
 import { protect } from "../middlewares/auth.middleware.js";
@@ -21,5 +24,9 @@ router.post("/reset-password", resetPassword);
 // 🔐 Protected routes
 router.put("/updateProfile", protect, updateProfile);
 router.get("/me", protect, getMe);
+router.get("/patients", protect, getPatients);
+router.get("/stats", protect, getDashboardStats);
+router.get("/latest/:patientId", protect, getLatestRecord);
+router.get("/stats", protect, getDashboardStats);
 
 export default router;

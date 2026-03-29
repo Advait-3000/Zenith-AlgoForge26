@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Award, 
   ShieldCheck, 
@@ -60,6 +60,30 @@ export const ProfilePage: React.FC = () => {
             language: 'English (Native)'
         };
     });
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+             const token = localStorage.getItem('token');
+             if(!token) return;
+             try {
+                 const res = await axios.get('http://localhost:3000/auth/me', {
+                     headers: { 'Authorization': `Bearer ${token}` }
+                 });
+                 if(res.data.success && res.data.user) {
+                     const u = res.data.user;
+                     setBasicInfo(prev => ({
+                         ...prev,
+                         name: u.full_name || prev.name,
+                         email: u.email || prev.email,
+                         title: u.role === 'Doctor' ? 'Chief Cardiologist' : u.role || prev.title,
+                     }));
+                 }
+             } catch(err) {
+                 console.error("Failed to fetch profile", err);
+             }
+        };
+        fetchProfile();
+    }, []);
 
     const handleSlotChange = (day: string, value: string) => {
         setSlots(prev => ({ ...prev, [day]: value }));

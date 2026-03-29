@@ -8,33 +8,41 @@ import axios from 'axios';
 export const PatientsPage: React.FC = () => {
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [patients, setPatients] = useState<any[]>(APPOINTMENTS);
+    const [patients, setPatients] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchPatients = async () => {
             try {
+                setLoading(true);
                 const token = localStorage.getItem('token');
                 if (!token) return;
                 const res = await axios.get('http://localhost:3000/auth/patients', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = res.data;
-                if (data.success && data.patients && data.patients.length > 0) {
+                if (data.success && data.patients) {
                     const mapped = data.patients.map((p: any) => ({
                         id: p._id,
                         patientName: p.full_name || 'Unknown Patient',
-                        avatar: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', // Generic default avatar
-                        // calculate age roughly if birthday exists
+                        avatar: p.full_name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(p.full_name)}&background=0D9488&color=fff&bold=true` : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                         age: p.patient_details?.date_of_birth ? new Date().getFullYear() - new Date(p.patient_details.date_of_birth).getFullYear() : 35,
                         gender: p.patient_details?.gender || 'Unspecified',
-                        summary: 'Registered via Cura Patient Portal.',
-                        risk: p.patient_details?.current_health_score < 50 ? 'High' : (p.patient_details?.current_health_score < 75 ? 'Medium' : 'Low'),
-                        time: 'Registered Patient'
+                        vitals: p.patient_details?.vitals || {},
+                        summary: p.patient_details?.disease_history?.length > 0 
+                            ? `History of ${p.patient_details.disease_history[0].disease_name}.`
+                            : 'Patient record active on Cura Network.',
+                        risk: p.patient_details?.current_health_score < 40 ? 'High' : (p.patient_details?.current_health_score < 75 ? 'Medium' : 'Low'),
+                        score: p.patient_details?.current_health_score || 0,
+                        time: 'Active Profile',
+                        phone: p.phone_number || p.contact_number || 'N/A'
                     }));
                     setPatients(mapped);
                 }
             } catch (error) {
                 console.error("Failed to fetch patients", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchPatients();
@@ -65,7 +73,11 @@ export const PatientsPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredPatients.map((apt, i) => (
+                {loading ? (
+                    [...Array(8)].map((_, i) => (
+                         <div key={i} className="cura-card p-6 h-64 bg-slate-50 animate-pulse border-none" />
+                    ))
+                ) : filteredPatients.map((apt, i) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -94,14 +106,14 @@ export const PatientsPage: React.FC = () => {
                                 <span className="text-[10px] font-black uppercase tracking-tight">{apt.risk}</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-cura-text-soft font-black text-[11px] uppercase tracking-wider">
-                                <Clock size={14} /> {apt.time}
+                                <Clock size={14} /> {apt.score}/100
                             </div>
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            {filteredPatients.length === 0 && (
+            {!loading && filteredPatients.length === 0 && (
                 <div className="py-20 text-center">
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Search size={32} className="text-slate-400" />

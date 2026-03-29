@@ -1,11 +1,13 @@
 import bcrypt from "bcryptjs";
 
 import User from "../models/user.model.js";
+import MedicalRecord from "../models/reports.model.js";
 import generateToken from "../utilities/generateToken.js";
 
 import { sendOTPEmail } from "../utilities/nodeMailer.js";
 import { sendOTPSMS } from "../utilities/twilio.js";
 import { generateOTP } from "../utilities/otp.js";
+import { decryptText } from "../utilities/cryptoutils.js";
 
 
 // 🔐 REGISTER
@@ -326,4 +328,131 @@ export const resetPassword = async (req, res) => {
       message: "Server error",
     });
   }
+};
+
+// 👥 GET PATIENTS
+export const getPatients = async (req, res) => {
+  try {
+    const patients = await User.find({ role: "Patient" }).select("-password_hash -otp_code -otp_expiry");
+    
+    res.json({
+      success: true,
+      patients
+    });
+  } catch (err) {
+    console.error("Get Patients Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
+// 📊 GET DASHBOARD STATS
+export const getDashboardStats = async (req, res) => {
+  try {
+    const totalPatients = await User.countDocuments({ role: "Patient" });
+    const reportsAnalyzed = await MedicalRecord.countDocuments({});
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weeklyConsults = await MedicalRecord.countDocuments({ upload_date: { $gte: sevenDaysAgo } });
+
+    // Aggregate Risk Distribution
+    const patients = await User.find({ role: "Patient" }).select("patient_details.current_health_score");
+    
+    let low = 0, medium = 0, high = 0;
+    patients.forEach(p => {
+        const score = p.patient_details?.current_health_score !== undefined && p.patient_details?.current_health_score !== null 
+            ? p.patient_details.current_health_score 
+            : 85; // Default healthy baseline
+        if (score >= 75) low++;
+        else if (score >= 40) medium++;
+        else high++;
+    });
+
+    const total = patients.length || 1;
+    const riskStats = [
+        { name: 'Low', value: Math.round((low/total)*100), color: '#10B981' },
+        { name: 'Medium', value: Math.round((medium/total)*100), color: '#F59E0B' },
+        { name: 'High', value: Math.round((high/total)*100), color: '#EF4444' },
+    ];
+
+    // Build Weekly Graph Data
+    const weeklyDataAgg = await MedicalRecord.aggregate([
+      { $match: { upload_date: { $gte: sevenDaysAgo } } },
+      { $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$upload_date" } },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weeklyData = [];
+    for(let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const match = weeklyDataAgg.find(w => w._id === dateStr);
+        weeklyData.push({ day: days[d.getDay()], count: match ? match.count : 0 });
+    }
+
+    // Build Monthly Graph Data
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+    const monthlyDataAgg = await MedicalRecord.aggregate([
+      { $match: { upload_date: { $gte: fourWeeksAgo } } },
+      { $group: {
+          _id: { $week: "$upload_date" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+    const monthlyData = monthlyDataAgg.map((m, i) => ({ day: `W${i+1}`, count: m.count }));
+    while(monthlyData.length < 4) monthlyData.push({ day: `W${monthlyData.length+1}`, count: 0 });
+
+    res.json({
+      success: true,
+      stats: {
+        totalPatients,
+        riskStats,
+        reportsAnalyzed,
+        weeklyConsults,
+        weeklyData,
+        monthlyData
+      }
+    });
+  } catch (err) {
+    console.error("Get Stats Error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// 📄 GET LATEST RECORD FOR PATIENT
+export const getLatestRecord = async (req, res) => {
+    try {
+        const { patientId } = req.params;
+        
+        // Import dynamic decrypt utility if needed inside or ensure it's at top
+        const records = await MedicalRecord.find({ patient_id: patientId })
+            .sort({ upload_date: -1 })
+            .limit(5);
+
+        const decryptedRecords = records.map(record => {
+            const r = record.toObject();
+            if (r.ocr_extracted_text) {
+                r.ocr_extracted_text = decryptText(r.ocr_extracted_text);
+            }
+            return r;
+        });
+
+        res.json({
+            success: true,
+            records: decryptedRecords
+        });
+    } catch (err) {
+        console.error("Get Records Error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
 };
