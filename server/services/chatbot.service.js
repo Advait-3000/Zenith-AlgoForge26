@@ -11,6 +11,13 @@ export const generatePatientFriendlyResponse = async (context, question) => {
     model: "llama-3.1-8b-instant",
     messages: [
       {
+        role: "system",
+        content: `You are a professional medical chatbot. 
+        STRIC RULE: You ONLY answer questions related to human medical health, anatomy, symptoms, and diseases. 
+        If the user asks about anything else (greetings like "How are you", weather, tech, sports, common chat), 
+        you MUST politely state: "I am a dedicated medical assistant. Please ask a health-related question."`
+      },
+      {
         role: "user",
         content: `${context}\nQuestion: ${question}`,
       },

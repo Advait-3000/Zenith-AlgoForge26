@@ -247,12 +247,12 @@ export const forgotPassword = async (req, res) => {
 
     const otp = generateOTP();
 
-    user.otp_code = otp;
-    user.otp_expiry = Date.now() + 10 * 60 * 1000;
-    user.otp_attempts = 0;
-    user.otp_last_sent = Date.now();
-
-    await user.save();
+    await User.findByIdAndUpdate(user._id, {
+      otp_code: otp,
+      otp_expiry: Date.now() + 10 * 60 * 1000,
+      otp_attempts: 0,
+      otp_last_sent: Date.now(),
+    });
 
     if (email) {
       await sendOTPEmail(email, otp);
