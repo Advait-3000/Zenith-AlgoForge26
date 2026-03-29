@@ -384,6 +384,7 @@ export const getPatients = async (req, res) => {
       message: "Server error"
     });
   }
+<<<<<<< Updated upstream
 };
 
 // 📊 GET DASHBOARD STATS
@@ -493,4 +494,6 @@ export const getLatestRecord = async (req, res) => {
         console.error("Get Records Error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
+=======
+>>>>>>> Stashed changes
 };

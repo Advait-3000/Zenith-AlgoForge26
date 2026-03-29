@@ -7,12 +7,16 @@ import axios from 'axios';
 export const PatientsPage: React.FC = () => {
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
+<<<<<<< Updated upstream
     const [patients, setPatients] = useState<any[]>(() => {
         const cached = sessionStorage.getItem('cura_patients_cache');
         return cached ? JSON.parse(cached) : [];
     });
     const [loading, setLoading] = useState(!sessionStorage.getItem('cura_patients_cache'));
     const [criticalityFilter, setCriticalityFilter] = useState('All');
+=======
+    const [patients, setPatients] = useState<any[]>([]);
+>>>>>>> Stashed changes
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -22,6 +26,7 @@ export const PatientsPage: React.FC = () => {
                 const res = await axios.get('http://localhost:3000/auth/patients', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+<<<<<<< Updated upstream
                 if (res.data.success && res.data.patients) {
                     const mapped = res.data.patients.map((p: any) => ({
                         id: p._id,
@@ -38,6 +43,30 @@ export const PatientsPage: React.FC = () => {
                         time: 'Active Profile',
                         phone: p.phone_number || p.contact_number || 'N/A'
                     }));
+=======
+                const data = res.data;
+                if (data.success && data.patients) {
+                    const mapped = data.patients.map((p: any) => {
+                        const birthYear = p.patient_details?.date_of_birth ? new Date(p.patient_details.date_of_birth).getFullYear() : null;
+                        const age = birthYear ? new Date().getFullYear() - birthYear : "??";
+                        const initial = p.full_name ? p.full_name.charAt(0).toUpperCase() : "P";
+                        
+                        return {
+                            id: p._id,
+                            patientName: p.full_name || 'Unknown Patient',
+                            initial: initial,
+                            age: age,
+                            gender: p.patient_details?.gender || 'Unspecified',
+                            height: p.patient_details?.height || 'N/A',
+                            weight: p.patient_details?.weight || 'N/A',
+                            bloodGroup: p.patient_details?.blood_group || 'N/A',
+                            vitals: p.patient_details?.vitals || {},
+                            summary: p.patient_details?.ai_summary || (p.patient_details?.disease_history?.[0]?.disease_name ? `History of ${p.patient_details.disease_history[0].disease_name}` : 'Registered via Cura Patient Portal.'),
+                            risk: p.patient_details?.current_health_score < 40 ? 'High' : (p.patient_details?.current_health_score < 70 ? 'Medium' : 'Low'),
+                            time: 'Registered Patient'
+                        };
+                    });
+>>>>>>> Stashed changes
                     setPatients(mapped);
                     sessionStorage.setItem('cura_patients_cache', JSON.stringify(mapped));
                 }
@@ -107,8 +136,8 @@ export const PatientsPage: React.FC = () => {
                         className="cura-card p-6 cursor-pointer group hover:bg-white active:scale-98 flex flex-col h-full bg-white border border-slate-50 hover:border-cura-primary/20 hover:shadow-cura-soft transition-all"
                     >
                         <div className="flex items-start gap-4 mb-5">
-                            <div className="w-16 h-16 rounded-[1.25rem] overflow-hidden shadow-sm shrink-0 border border-slate-100 p-0.5 bg-white">
-                                <img src={apt.avatar} alt={apt.patientName} className="w-full h-full object-cover rounded-2xl" />
+                            <div className="w-16 h-16 rounded-[1.25rem] bg-cura-primary/10 flex items-center justify-center shadow-sm shrink-0 border border-white text-2xl font-black text-cura-primary shadow-cura-soft">
+                                {apt.initial}
                             </div>
                             <div>
                                 <h4 className="text-lg font-black text-slate-800 group-hover:text-cura-primary transition-colors leading-tight tracking-tight">{apt.patientName}</h4>

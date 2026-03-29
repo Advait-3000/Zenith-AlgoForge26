@@ -8,9 +8,13 @@ import {
   forgotPassword,
   resetPassword,
   getMe,
+<<<<<<< Updated upstream
   getPatients,
   getDashboardStats,
   getLatestRecord
+=======
+  getPatients
+>>>>>>> Stashed changes
 } from "../controllers/auth.controller.js";
 
 import { protect } from "../middlewares/auth.middleware.js";
@@ -25,8 +29,11 @@ router.post("/reset-password", resetPassword);
 router.put("/updateProfile", protect, updateProfile);
 router.get("/me", protect, getMe);
 router.get("/patients", protect, getPatients);
+<<<<<<< Updated upstream
 router.get("/stats", protect, getDashboardStats);
 router.get("/latest/:patientId", protect, getLatestRecord);
 router.get("/stats", protect, getDashboardStats);
+=======
+>>>>>>> Stashed changes
 
 export default router;

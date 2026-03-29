@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button, Input } from '@/components/BaseComponents';
-import { Mail, Lock, User, AtSign, ChevronRight } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, AtSign, ChevronRight, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import appLogo from '../../../assets/applogo.png';
 
 const AuthPage: React.FC = () => {
@@ -12,6 +13,8 @@ const AuthPage: React.FC = () => {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -28,6 +31,7 @@ const AuthPage: React.FC = () => {
       });
       const data = res.data;
       if (data.success) {
+        toast.success('Access Granted');
         if (data.token) {
            localStorage.setItem('token', data.token);
         }
@@ -36,12 +40,10 @@ const AuthPage: React.FC = () => {
         }
         navigate('/dashboard');
       } else {
-        console.error("Login failed:", data);
-        alert(data.message || 'Login failed');
+        toast.error(data.message || 'Access Denied');
       }
     } catch (err: any) {
-      console.error("Network error:", err);
-      alert(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || 'Medical Link Failed');
     } finally {
       setLoading(false);
     }
@@ -55,10 +57,12 @@ const AuthPage: React.FC = () => {
           full_name: regName,
           email: regEmail,
           password: regPassword,
+          phone_number: `${countryCode}${regPhone}`,
           role: 'Doctor'
       });
       const data = res.data;
       if (data.success) {
+        toast.success('Profile Created Successfully');
         if (data.token) {
            localStorage.setItem('token', data.token);
         }
@@ -67,12 +71,10 @@ const AuthPage: React.FC = () => {
         }
         navigate('/setup');
       } else {
-        console.error("Registration failed:", data);
-        alert(data.message || 'Registration failed');
+        toast.error(data.message || 'Registration Refused');
       }
     } catch (err: any) {
-      console.error("Network error:", err);
-      alert(err.response?.data?.message || 'Registration failed');
+      toast.error(err.response?.data?.message || 'Registration Error');
     } finally {
       setLoading(false);
     }
@@ -104,16 +106,16 @@ const AuthPage: React.FC = () => {
         <motion.div 
           className="relative auth-perspective w-full"
           initial={false}
-          animate={{ height: isFlipped ? 620 : 540 }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
-        >
-          <motion.div
-            className="w-full h-full relative"
-            style={{ transformStyle: 'preserve-3d' }}
-            initial={false}
-            animate={{ rotateY: isFlipped ? 180 : 0 }}
+            animate={{ height: isFlipped ? 700 : 540 }}
             transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
           >
+            <motion.div
+              className="w-full h-full relative"
+              style={{ transformStyle: 'preserve-3d' }}
+              initial={false}
+              animate={{ rotateY: isFlipped ? 180 : 0 }}
+              transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
+            >
             {/* Front: Login */}
             <div 
               className="absolute inset-0 bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-cura-float border border-white/50 flex flex-col justify-between"
@@ -184,7 +186,7 @@ const AuthPage: React.FC = () => {
                   <Input 
                     placeholder="Dr. Julian Ross" 
                     label="Full Medical Name"
-                    icon={<User size={20} />}
+                    icon={<UserIcon size={20} />}
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                     required
@@ -198,6 +200,35 @@ const AuthPage: React.FC = () => {
                     onChange={(e) => setRegEmail(e.target.value)}
                     required
                   />
+                  <div className="w-full space-y-2 group">
+                    <label className="block text-sm font-semibold text-cura-text-soft transition-colors group-focus-within:text-cura-primary">
+                      Medical Phone Number
+                    </label>
+                    <div className="flex items-center gap-0">
+                      <select 
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="h-[52px] bg-white border border-cura-border border-r-0 rounded-l-2xl pl-4 pr-2 text-sm font-bold text-slate-700 outline-none focus:border-cura-primary transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+971">🇦🇪 +971</option>
+                      </select>
+                      <div className="relative flex-1 group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-cura-text-soft transition-colors group-focus-within:text-cura-primary">
+                          <Phone size={18} />
+                        </div>
+                        <input 
+                          placeholder="9922222222" 
+                          className="w-full h-[52px] bg-white border border-cura-border rounded-r-2xl pl-10 pr-4 py-3.5 transition-all duration-300 text-cura-text-main placeholder:text-slate-400 focus:border-cura-primary focus:ring-4 focus:ring-cura-primary/5 outline-none font-medium"
+                          value={regPhone}
+                          onChange={(e) => setRegPhone(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <Input 
                     type="password" 
                     placeholder="••••••••" 
