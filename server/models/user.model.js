@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema(
       enum: ["Patient", "Doctor", "Admin"],
       required: [true, "Role is required"],
     },
+    phone_number:{
+      type: String,
+      required: [true, "Phone number is required"],
+      unique: true,
+      trim: true,
+    },
 
     // ─── BASIC INFO ───────────────────────────────────────
     full_name: {
@@ -28,7 +34,7 @@ const userSchema = new mongoose.Schema(
     },
     contact_number: { type: String, trim: true },
 
-    // 🌍 GEO LOCATION (UPDATED)
+    // 🌍 GEO LOCATION
     location_coordinates: {
       type: {
         type: String,
@@ -102,6 +108,21 @@ const userSchema = new mongoose.Schema(
       ],
     },
 
+    // ─── 🔐 OTP / PASSWORD RESET ──────────────────────────
+    otp_code: {
+      type: String,
+    },
+    otp_expiry: {
+      type: Date,
+    },
+    otp_attempts: {
+      type: Number,
+      default: 0,
+    },
+    otp_last_sent: {
+      type: Date,
+    },
+
     // ─── SYSTEM META ───────────────────────────────────────
     is_active: { type: Boolean, default: true },
     last_login: Date,
@@ -114,10 +135,13 @@ const userSchema = new mongoose.Schema(
 
 // ─── INDEXES ─────────────────────────────────────────────
 
-// ✅ Geo index (for nearby search)
+// ✅ Geo index
 userSchema.index({ location_coordinates: "2dsphere" });
 
-// ✅ Role index (fast filtering)
+// ✅ Role index
 userSchema.index({ role: 1 });
+
+// (Optional) index for faster OTP lookup cleanup
+userSchema.index({ otp_expiry: 1 });
 
 export default mongoose.model("User", userSchema);

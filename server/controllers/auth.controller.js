@@ -3,19 +3,23 @@ import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import generateToken from "../utilities/generateToken.js";
 
+import { sendOTPEmail } from "../utilities/nodeMailer.js";
+import { sendOTPSMS } from "../utilities/twilio.js";
+import { generateOTP } from "../utilities/otp.js";
+
+
 // 🔐 REGISTER
 export const register = async (req, res) => {
   try {
-    const { email, password, full_name, role } = req.body;
+    const { email, password, full_name, role, phone_number } = req.body;
 
-    if (!email || !password || !full_name || !role) {
+    if (!email || !password || !full_name || !role || !phone_number) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
 
-    // Check existing user
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -25,19 +29,17 @@ export const register = async (req, res) => {
       });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const password_hash = await bcrypt.hash(password, salt);
+    const password_hash = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = await User.create({
       email,
       password_hash,
       full_name,
       role,
+      phone_number,
       location_coordinates: {
         type: "Point",
-        coordinates: [0, 0], // default (you can update later)
+        coordinates: [0, 0],
       },
     });
 
@@ -51,6 +53,7 @@ export const register = async (req, res) => {
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        phone_number: user.phone_number,
       },
     });
 
@@ -76,7 +79,10 @@ export const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    // Supports login by email or phone_number
+    const user = await User.findOne({ 
+      $or: [{ email: email }, { phone_number: email }] 
+    });
 
     if (!user) {
       return res.status(401).json({
@@ -107,6 +113,7 @@ export const login = async (req, res) => {
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        phone_number: user.phone_number,
       },
     });
 
@@ -119,12 +126,39 @@ export const login = async (req, res) => {
   }
 };
 
+
+// 👤 GET CURRENT USER
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password_hash -otp_code -otp_expiry -otp_attempts -otp_last_sent");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    console.error("Get User Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 // 🔄 UPDATE PROFILE
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
 console.log(1)
-    const { full_name, password, location_coordinates, patient_details } = req.body;
+    const { full_name, password, location_coordinates, patient_details,phone_number } = req.body;
+  
 
     const user = await User.findById(userId);
 
@@ -135,17 +169,14 @@ console.log(1)
       });
     }
 
-    // Update name
     if (full_name) user.full_name = full_name;
+    if (phone_number) user.phone_number = phone_number;
 
-    // Update password (if provided)
     if (password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password_hash = await bcrypt.hash(password, salt);
+      user.password_hash = await bcrypt.hash(password, 10);
     }
 
-    // Update location (optional)
-    if (location_coordinates && location_coordinates.coordinates) {
+    if (location_coordinates?.coordinates) {
       user.location_coordinates = location_coordinates;
     }
 
@@ -167,6 +198,7 @@ console.log(1)
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        phone_number: user.phone_number,
         location_coordinates: user.location_coordinates,
         patient_details: user.patient_details
       },
@@ -174,6 +206,132 @@ console.log(1)
 
   } catch (err) {
     console.error("Update Profile Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+// 🔐 FORGOT PASSWORD
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email, phone_number } = req.body;
+
+    if (!email && !phone_number) {
+      return res.status(400).json({
+        success: false,
+        message: "Provide email or phone_number",
+      });
+    }
+
+    const user = await User.findOne(
+      email ? { email } : { phone_number }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // ⛔ Rate limit
+    if (user.otp_last_sent && Date.now() - user.otp_last_sent < 60000) {
+      return res.status(429).json({
+        success: false,
+        message: "Wait before requesting OTP again",
+      });
+    }
+
+    const otp = generateOTP();
+
+    user.otp_code = otp;
+    user.otp_expiry = Date.now() + 10 * 60 * 1000;
+    user.otp_attempts = 0;
+    user.otp_last_sent = Date.now();
+
+    await user.save();
+
+    if (email) {
+      await sendOTPEmail(email, otp);
+    } else {
+      await sendOTPSMS(phone_number, otp);
+    }
+
+    res.json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+
+  } catch (err) {
+    console.error("Forgot Password Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+// 🔐 RESET PASSWORD
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, phone_number, otp, newPassword } = req.body;
+
+    if ((!email && !phone_number) || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Provide email/phone_number, OTP, and new password",
+      });
+    }
+
+    const user = await User.findOne(
+      email ? { email } : { phone_number }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.otp_code || user.otp_code !== otp) {
+      user.otp_attempts += 1;
+      await user.save();
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    if (user.otp_expiry < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired",
+      });
+    }
+
+    user.password_hash = await bcrypt.hash(newPassword, 10);
+
+    // Clear OTP
+    user.otp_code = undefined;
+    user.otp_expiry = undefined;
+    user.otp_attempts = 0;
+    user.otp_last_sent = undefined;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successful",
+    });
+
+  } catch (err) {
+    console.error("Reset Password Error:", err);
     res.status(500).json({
       success: false,
       message: "Server error",
