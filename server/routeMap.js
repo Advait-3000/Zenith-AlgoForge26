@@ -17,14 +17,10 @@ export default (app) => {
   app.use("/ask", unifiedRouter);
   // Maps to: /api/ocr/...
   app.use("/ocr", scanRouter);
-<<<<<<< Updated upstream
   
   // Maps to: /api/appointments/...
   app.use("/api/appointments", appointmentRouter);
   // Maps to: /api/emergency/...
   app.use("/api/emergency", emergencyRouter);
 };
-=======
-};
 
->>>>>>> Stashed changes

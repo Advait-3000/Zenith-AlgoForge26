@@ -1,10 +1,6 @@
 import express from "express";
 import { uploadScan } from "../middlewares/upload.js";
-<<<<<<< Updated upstream
 // Using the standardized auth guard
-=======
-// Using the default auth guard
->>>>>>> Stashed changes
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 import { analyzeMedicalImage } from "../controllers/ai.controller.js";
 

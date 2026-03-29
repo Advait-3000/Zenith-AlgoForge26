@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Button, Input } from '../../../components/BaseComponents';
+import { Button } from '../../../components/BaseComponents';
 
 interface Medicine {
   id: string;
@@ -44,7 +44,6 @@ export const ConsultationPage: React.FC = () => {
     // Get current patient from localStorage to preserve context
     const currentPatient = JSON.parse(localStorage.getItem('selectedPatient') || '{}');
     const patientName = currentPatient.patientName || "Sarah Jenkins";
-    const patientId = currentPatient.id ? `#CURA-${currentPatient.id.slice(-4)}` : "#CURA-9023";
     const patientAvatar = currentPatient.avatar || "https://img.freepik.com/free-photo/young-beautiful-woman-pink-warm-sweater-natural-look-smiling-portrait-isolated-long-hair_285396-896.jpg";
 
     const addMedicine = () => {
@@ -89,11 +88,10 @@ export const ConsultationPage: React.FC = () => {
                     <div className="cura-card p-8">
                         <div className="flex flex-col items-center text-center mb-8">
                             <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden border-4 border-slate-50 shadow-cura-soft mb-4">
-<<<<<<< Updated upstream
-                                <img src={patient.avatar} className="w-full h-full object-cover" />
+                                <img src={patient.avatar || patientAvatar} className="w-full h-full object-cover" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-800">{patient.patientName}</h3>
-                            <p className="text-sm font-bold text-cura-text-soft uppercase">Health Score: {patient.score}/100</p>
+                            <h3 className="text-xl font-black text-slate-800">{patient.patientName || patientName}</h3>
+                            <p className="text-sm font-bold text-cura-text-soft uppercase">Health Score: {patient.score || '--'}/100</p>
                         </div>
 
                         <div className="space-y-4">
@@ -111,15 +109,6 @@ export const ConsultationPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-=======
-                                <img src={patientAvatar} className="w-full h-full object-cover" />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-800">{patientName}</h3>
-                            <p className="text-sm font-bold text-cura-text-soft">Patient ID: {patientId}</p>
-                        </div>
-
-
->>>>>>> Stashed changes
                     </div>
 
                     <div className="cura-card p-8 bg-cura-primary/5 border-cura-primary/10 relative overflow-hidden">

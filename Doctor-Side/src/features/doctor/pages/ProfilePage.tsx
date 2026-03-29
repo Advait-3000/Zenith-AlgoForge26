@@ -71,19 +71,11 @@ export const ProfilePage: React.FC = () => {
             name: savedUser?.full_name || 'Dr. Julian Ross',
             specialization: savedUser?.doctor_details?.specialization || 'Chief Cardiologist',
             email: savedUser?.email || 'julian.ross@cura.com',
-<<<<<<< Updated upstream
-            phone: '+91 989 0922 411',
+            phone: savedUser?.phone_number || '+91 989 0922 411',
             location: 'New Delhi, India',
-            hospital: 'St. Maria Medical Center',
-            license: 'DL-MD-90123-922',
-            fee: '₹1000 / Session',
-=======
-            phone: savedUser?.phone_number || '+91 9922222222',
-            location: savedUser?.location_coordinates?.coordinates?.[0] ? 'New York, USA' : 'New York, USA',
             workplace_name: savedUser?.doctor_details?.workplace_name || 'St. Maria Medical Center',
-            registration_number: savedUser?.doctor_details?.verification?.registration_number || 'NY-MD-90123-922',
-            fee: '$180 / Session',
->>>>>>> Stashed changes
+            registration_number: savedUser?.doctor_details?.verification?.registration_number || 'DL-MD-90123-922',
+            fee: '₹1000 / Session',
             language: 'English (Native)'
         };
     });
@@ -102,7 +94,7 @@ export const ProfilePage: React.FC = () => {
                          ...prev,
                          name: u.full_name || prev.name,
                          email: u.email || prev.email,
-                         title: u.role === 'Doctor' ? 'Chief Cardiologist' : u.role || prev.title,
+                         specialization: u.role === 'Doctor' ? 'Chief Cardiologist' : u.role || prev.specialization,
                      }));
                  }
              } catch(err) {
@@ -143,11 +135,6 @@ export const ProfilePage: React.FC = () => {
                     }
                 }
             );
-<<<<<<< Updated upstream
-            setIsEditingBasic(false);
-            toast.success('Basic info updated successfully');
-=======
-
             if (res.data.success) {
                 const savedUserStr = localStorage.getItem('user');
                 if (savedUserStr) {
@@ -156,8 +143,8 @@ export const ProfilePage: React.FC = () => {
                     localStorage.setItem('user', JSON.stringify(updatedUser));
                 }
                 setIsEditingBasic(false);
+                toast.success('Basic info updated successfully');
             }
->>>>>>> Stashed changes
         } catch (error) {
             console.error("Failed to update profile", error);
             setIsEditingBasic(false);

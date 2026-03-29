@@ -23,15 +23,35 @@ const SIDEBAR_ITEMS = [
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Expose toggle for desktop refinement if needed
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'Dr. Smith requested a consult update.', time: '12:30 PM IST', unread: true },
+    { id: 2, text: 'Lab results for Emma Watson are ready.', time: '11:15 AM IST', unread: true },
+  ]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+  
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Global Notification Listener
+  React.useEffect(() => {
+    const handleNewNotification = (e: any) => {
+      const { message } = e.detail;
+      setNotifications(prev => [{
+        id: Date.now(),
+        text: message,
+        time: 'Just now',
+        unread: true
+      }, ...prev]);
+      setHasUnreadNotifications(true);
+    };
+
+    window.addEventListener('cura-notification', handleNewNotification);
+    return () => window.removeEventListener('cura-notification', handleNewNotification);
+  }, []);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  
   const savedUserStr = localStorage.getItem('user');
   const user = savedUserStr ? JSON.parse(savedUserStr) : null;
   const initial = user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'D';
@@ -152,27 +172,24 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="absolute top-16 right-56 w-80 bg-white rounded-[2rem] shadow-cura-float border border-slate-100 p-6 z-[100]"
+                            className="absolute top-20 right-0 w-80 bg-white rounded-[2rem] shadow-cura-float border border-slate-100 p-6 z-[100]"
                         >
                             <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-50">
                                 <h4 className="font-black text-slate-800 tracking-tight">Updates</h4>
-                                {hasUnreadNotifications && <span className="text-[10px] font-bold bg-cura-primary/10 text-cura-primary px-2 py-1 rounded-full uppercase">2 New</span>}
+                                {hasUnreadNotifications && <span className="text-[10px] font-bold bg-cura-primary/10 text-cura-primary px-2 py-1 rounded-full uppercase">New</span>}
                             </div>
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-2 h-2 mt-1.5 rounded-full bg-cura-primary shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-700">Dr. Smith requested a consult update.</p>
-                                        <p className="text-xs text-slate-400 font-medium mt-1">10 mins ago</p>
+                            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                {notifications.length > 0 ? notifications.map((notif) => (
+                                    <div key={notif.id} className="flex items-start gap-3">
+                                        <div className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${notif.unread ? 'bg-cura-primary' : 'bg-slate-200'}`} />
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-700">{notif.text}</p>
+                                            <p className="text-xs text-slate-400 font-medium mt-1">{notif.time}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-2 h-2 mt-1.5 rounded-full bg-cura-primary shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-700">Lab results for Emma Watson are ready.</p>
-                                        <p className="text-xs text-slate-400 font-medium mt-1">1 hour ago</p>
-                                    </div>
-                                </div>
+                                )) : (
+                                    <p className="text-xs text-center text-slate-400 py-4 font-bold">No new updates</p>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -181,9 +198,9 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
                 <div className="flex items-center gap-4 pl-4 border-l border-slate-100">
                     <div className="text-right hidden sm:block">
                         <h4 className="text-sm font-bold text-slate-800">{user?.full_name || 'Dr. Julian Ross'}</h4>
-                        <p className="text-xs font-semibold text-cura-primary">Chief Cardiologist</p>
+                        <p className="text-xs font-semibold text-cura-primary">{user?.doctor_details?.specialization || 'Chief Cardiologist'}</p>
                     </div>
-                    <div className="w-12 h-12 bg-cura-primary/10 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white shadow-cura-soft cursor-pointer hover:border-cura-primary/40 transition-all font-black text-xl text-cura-primary">
+                    <div className="w-12 h-12 bg-cura-primary/10 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white shadow-cura-soft cursor-pointer hover:border-cura-primary/40 transition-all font-black text-xl text-cura-primary ring-2 ring-slate-50">
                         {initial}
                     </div>
                 </div>
@@ -197,7 +214,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
       </div>
 
       <Toaster 
-          position="top-center" 
+          position="top-right" 
           toastOptions={{ 
               className: 'font-bold text-sm text-slate-800 rounded-2xl shadow-cura-soft border border-slate-100', 
               style: { padding: '16px 24px' } 

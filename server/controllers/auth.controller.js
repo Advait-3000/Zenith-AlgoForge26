@@ -158,13 +158,7 @@ export const getMe = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-<<<<<<< HEAD
-    const { full_name, password, location_coordinates, phone_number ,patient_details } = req.body;
-=======
-console.log(1)
-    const { full_name, password, location_coordinates, patient_details,phone_number } = req.body;
-  
->>>>>>> origin/features
+    const { full_name, password, location_coordinates, phone_number, patient_details, doctor_details } = req.body;
 
     const user = await User.findById(userId);
 
@@ -186,34 +180,21 @@ console.log(1)
       user.location_coordinates = location_coordinates;
     }
 
-    // Update patient details (vitals, emergency contacts, disease history, etc.)
-    if (patient_details) {
-      if (!user.patient_details) user.patient_details = {};
-
-      if (patient_details.date_of_birth) user.patient_details.date_of_birth = patient_details.date_of_birth;
-      if (patient_details.gender) user.patient_details.gender = patient_details.gender;
-
-      if (patient_details.vitals) {
-        if (!user.patient_details.vitals) user.patient_details.vitals = {};
-        Object.assign(user.patient_details.vitals, patient_details.vitals);
-      }
-
-      if (patient_details.emergency_contacts) {
-        user.patient_details.emergency_contacts = patient_details.emergency_contacts;
-      }
-
-      if (patient_details.disease_history) {
-        user.patient_details.disease_history = patient_details.disease_history;
-      }
-    }
-
-    user.markModified("patient_details");
-    // 🧬 Update Patient Details (Emergency Contacts, Vitals, etc.)
+    // 🧬 Unified Patient/Doctor Details update
     if (patient_details) {
       user.patient_details = {
-        ...user.patient_details.toObject(), // Keep existing fields
-        ...patient_details // Overwrite with new ones
+        ...(user.patient_details?.toObject() || {}),
+        ...patient_details
       };
+      user.markModified("patient_details");
+    }
+
+    if (doctor_details) {
+      user.doctor_details = {
+        ...(user.doctor_details?.toObject() || {}),
+        ...doctor_details
+      };
+      user.markModified("doctor_details");
     }
 
     await user.save();
@@ -227,9 +208,9 @@ console.log(1)
         full_name: user.full_name,
         role: user.role,
         patient_details: user.patient_details,
+        doctor_details: user.doctor_details,
         phone_number: user.phone_number,
-        location_coordinates: user.location_coordinates,
-        patient_details: user.patient_details
+        location_coordinates: user.location_coordinates
       },
     });
 
@@ -384,8 +365,8 @@ export const getPatients = async (req, res) => {
       message: "Server error"
     });
   }
-<<<<<<< Updated upstream
-};
+  }
+;
 
 // 📊 GET DASHBOARD STATS
 export const getDashboardStats = async (req, res) => {
@@ -494,6 +475,4 @@ export const getLatestRecord = async (req, res) => {
         console.error("Get Records Error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
-=======
->>>>>>> Stashed changes
 };

@@ -31,7 +31,10 @@ const AuthPage: React.FC = () => {
       });
       const data = res.data;
       if (data.success) {
-        toast.success('Access Granted');
+        // Dispatch custom event for persistent notification center
+        window.dispatchEvent(new CustomEvent('cura-notification', { 
+          detail: { message: `Doctor Access Granted: ${data.user?.full_name || 'Standard Practice'}` } 
+        }));
         if (data.token) {
            localStorage.setItem('token', data.token);
         }

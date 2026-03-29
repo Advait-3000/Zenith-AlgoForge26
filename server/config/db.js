@@ -35,11 +35,6 @@ const connectDB = async () => {
         );
       }
     }
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error("❌ MongoDB connection failed:", error.message);
-    console.warn("⚠️ Continuing server startup anyway (DB features will fail).");
-    // process.exit(1); // 👈 Do not exit, keep the server alive for debugging
   }
 };
 
